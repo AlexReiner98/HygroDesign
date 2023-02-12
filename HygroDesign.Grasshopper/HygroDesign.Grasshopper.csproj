@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <Version>1.0</Version>
+    <Title>HygroDesign</Title>
+    <Description>Description of HygroDesign</Description>
+    <TargetExt>.gha</TargetExt>
+    <BaseOutputPath>..\bin\</BaseOutputPath>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Grasshopper" Version="7.26.23009.7001" IncludeAssets="compile;build" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Reference Include="HygroDesign.Core">
+      <HintPath>..\HygroDesign.Core\bin\Debug\net48\HygroDesign.Core.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  
+  <PropertyGroup Condition="$(Configuration) == 'Debug' AND $([MSBuild]::IsOSPlatform(Windows))">
+    <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
+    <StartArguments></StartArguments>
+    <StartAction>Program</StartAction>
+  </PropertyGroup>
+  
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="Copy &quot;..\bin\Debug\net48\HygroDesign.Grasshopper.gha&quot; &quot;$(AppData)\Grasshopper\Libraries\HygroDesign.Grasshopper.gha&quot;" />
+  </Target>
+
+</Project>
