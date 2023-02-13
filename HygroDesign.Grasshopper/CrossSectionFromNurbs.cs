@@ -5,11 +5,12 @@ using System;
 using System.Collections.Generic;
 
 using HygroDesign.Core;
+using ABxM.Core;
 
 namespace HygroDesign.Grasshopper.Components
 {
 
-    public class BilayerCrossSection : GH_Component
+    public class CrossSectionFromNurbs : GH_Component
     {
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
@@ -18,9 +19,9 @@ namespace HygroDesign.Grasshopper.Components
         /// Subcategory the panel. If you use non-existing tab or panel names, 
         /// new tabs/panels will automatically be created.
         /// </summary>
-        public BilayerCrossSection()
-          : base("Bilayer Cross Section", "CroSec",
-            "Generate bilayer cross section curve.",
+        public CrossSectionFromNurbs()
+          : base("Cross section from nurbs curve", "CroSec",
+            "Generate bilayer cross section from nurbs curve.",
             "HygroDesign", "Design")
         {
         }
@@ -30,12 +31,9 @@ namespace HygroDesign.Grasshopper.Components
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddNumberParameter("Radii", "R", "List of radii for cross section", GH_ParamAccess.list);
-            pManager.AddIntegerParameter("Directions", "D", "List of curvature directions for cross section", GH_ParamAccess.list);
-            pManager.AddNumberParameter("Board Width", "W", "Board width used in composite", GH_ParamAccess.item, 0.15);
-            pManager.AddNumberParameter("Snap Tolerance", "T", "Maximum distance to snap to closed cross section", GH_ParamAccess.item, 0.1);
-            pManager.AddNumberParameter("Support Parameters", "S", "Parameters along cross section to re-orient to the base plane", GH_ParamAccess.list);
-            pManager.AddPlaneParameter("Base Plane", "P", "Base plane for cross seciton", GH_ParamAccess.item, Plane.WorldZX);
+            pManager.AddCurveParameter("Nurbs Curve", "N", "The nurbs curve for generating the cross section", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Minimum Radius", "R", "Minimum radius that will constrain cross section curvature", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Board Width", "W", "Width of each board within the cross section", GH_ParamAccess.item);
 
         }
 
@@ -54,21 +52,16 @@ namespace HygroDesign.Grasshopper.Components
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            List<double> radii = new List<double>();
-            List<int> directions = new List<int>();
+            NurbsCurve nurbsCurve = null;
+            double minRadius = 0.0;
             double boardWidth = 0.0;
-            double snapTolerance = 0.0;
-            List<double> supportParameters = new List<double>();
-            Plane basePlane = Plane.Unset;
 
-            if (!DA.GetDataList(0, radii)) return;
-            if (!DA.GetDataList(1, directions)) return;
+
+            if (!DA.GetData(0,ref nurbsCurve)) return;
+            if (!DA.GetData(1, ref minRadius)) return;
             if (!DA.GetData(2, ref boardWidth)) return;
-            if (!DA.GetData(3, ref snapTolerance)) return;
-            if (!DA.GetDataList(4, supportParameters)) return;
-            if (!DA.GetData(5, ref basePlane)) return;
 
-            CrossSection crossSection = new CrossSection(radii, directions, boardWidth, snapTolerance, supportParameters, basePlane);
+            CrossSection crossSection = new CrossSection(nurbsCurve,minRadius, boardWidth);
         
 
 
@@ -97,6 +90,6 @@ namespace HygroDesign.Grasshopper.Components
         /// It is vital this Guid doesn't change otherwise old ghx files 
         /// that use the old ID will partially fail during loading.
         /// </summary>
-        public override Guid ComponentGuid => new Guid("69D66242-48CC-45A4-8BCA-B448AECB0F2E");
+        public override Guid ComponentGuid => new Guid("4FE84F8E-8143-4437-964A-AF1E7316DFD5");
     }
 }

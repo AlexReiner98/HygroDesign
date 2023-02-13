@@ -18,6 +18,12 @@
     <ProjectReference Include="..\HygroDesign.Core\HygroDesign.Core.csproj" />
   </ItemGroup>
   
+  <ItemGroup>
+    <Reference Include="ABxM.Core">
+      <HintPath>..\..\..\..\AppData\Roaming\Grasshopper\Libraries\ABxM.Core.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  
   <PropertyGroup Condition="$(Configuration) == 'Debug' AND $([MSBuild]::IsOSPlatform(Windows))">
     <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
     <StartArguments></StartArguments>

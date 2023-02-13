@@ -17,11 +17,17 @@ namespace HygroDesign.Core
         /// </summary>
         public List<Arc> Arcs = new List<Arc>();
 
+
         public CrossSection(List<double> curvatures, List<int> directions, double boardWidth, double snapDistance, List<double> supportParameters, Plane basePlane)
         {
             Arcs = CreateArcs(curvatures, directions, boardWidth, basePlane);
             OrientSupportsToBasePlane(supportParameters,basePlane);
             SnapEnds(snapDistance);
+        }
+
+        public CrossSection(NurbsCurve nurbsCurve, double minRadius, double boardWidth)
+        {
+            //divide curve into arcs
         }
 
         private List<Arc> CreateArcs(List<double> radii, List<int> directions, double boardWidth, Plane basePlane)
