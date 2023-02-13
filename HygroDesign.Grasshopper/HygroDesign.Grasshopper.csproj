@@ -15,9 +15,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Reference Include="HygroDesign.Core">
-      <HintPath>..\HygroDesign.Core\bin\Debug\net48\HygroDesign.Core.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\HygroDesign.Core\HygroDesign.Core.csproj" />
   </ItemGroup>
   
   <PropertyGroup Condition="$(Configuration) == 'Debug' AND $([MSBuild]::IsOSPlatform(Windows))">

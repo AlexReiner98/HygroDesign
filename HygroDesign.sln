@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HygroDesign.Core", "HygroDesign.Core\HygroDesign.Core.csproj", "{FA8A4958-F100-4153-B1A9-3A2A42A88518}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HygroDesign.Grasshopper", "HygroDesign.Grasshopper\HygroDesign.Grasshopper.csproj", "{B8B5AD4E-0E9A-4CBA-A26A-2F0BFB74141A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{FA8A4958-F100-4153-B1A9-3A2A42A88518} = {FA8A4958-F100-4153-B1A9-3A2A42A88518}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
