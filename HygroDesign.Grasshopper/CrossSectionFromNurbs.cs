@@ -31,8 +31,7 @@ namespace HygroDesign.Grasshopper.Components
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("Nurbs Curve", "N", "The nurbs curve for generating the cross section", GH_ParamAccess.item);
-            pManager.AddNumberParameter("Minimum Radius", "R", "Minimum radius that will constrain cross section curvature", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Nurbs Curve", "N", "The nurbs curve for generating the cross section", GH_ParamAccess.item);
             pManager.AddNumberParameter("Board Width", "W", "Width of each board within the cross section", GH_ParamAccess.item);
 
         }
@@ -42,7 +41,7 @@ namespace HygroDesign.Grasshopper.Components
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddArcParameter("Board Curves", "B", "Board cross section curves", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Board Curves", "B", "Board cross section curves", GH_ParamAccess.list);
         }
 
         /// <summary>
@@ -52,20 +51,18 @@ namespace HygroDesign.Grasshopper.Components
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            NurbsCurve nurbsCurve = null;
-            double minRadius = 0.0;
+            Curve nurbsCurve = null;
             double boardWidth = 0.0;
 
 
             if (!DA.GetData(0,ref nurbsCurve)) return;
-            if (!DA.GetData(1, ref minRadius)) return;
-            if (!DA.GetData(2, ref boardWidth)) return;
+            if (!DA.GetData(1, ref boardWidth)) return;
 
-            CrossSection crossSection = new CrossSection(nurbsCurve,minRadius, boardWidth);
+            CrossSection crossSection = new CrossSection(nurbsCurve as NurbsCurve, boardWidth);
         
 
 
-            DA.SetDataList(0, crossSection.Arcs);
+            DA.SetData(0, crossSection);
         }
 
 
