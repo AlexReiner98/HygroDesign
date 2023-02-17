@@ -33,6 +33,7 @@ namespace HygroDesign.Grasshopper.Components
         {
             pManager.AddGenericParameter("Nurbs Curve", "N", "The nurbs curve for generating the cross section", GH_ParamAccess.item);
             pManager.AddNumberParameter("Board Width", "W", "Width of each board within the cross section", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Minimum Radius", "R", "Minimum radius for this bilayer cross section", GH_ParamAccess.item);
 
         }
 
@@ -53,12 +54,15 @@ namespace HygroDesign.Grasshopper.Components
         {
             Curve nurbsCurve = null;
             double boardWidth = 0.0;
+            double minRadius = 0.0;
 
 
             if (!DA.GetData(0,ref nurbsCurve)) return;
             if (!DA.GetData(1, ref boardWidth)) return;
+            if (!DA.GetData(2, ref minRadius)) return;
 
-            CrossSection crossSection = new CrossSection(nurbsCurve as NurbsCurve, boardWidth);
+
+            CrossSection crossSection = new CrossSection(nurbsCurve as NurbsCurve, boardWidth, minRadius);
         
 
 
