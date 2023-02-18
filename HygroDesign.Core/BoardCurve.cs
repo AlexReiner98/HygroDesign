@@ -5,6 +5,7 @@ using System.Text;
 
 using Rhino;
 using Rhino.Geometry;
+using Rhino.Geometry.Collections;
 using System.Linq;
 
 
@@ -13,9 +14,19 @@ namespace HygroDesign.Core
     public class BoardCurve
     {
         /// <summary>
+        /// The parent Nurbs Curve from which this segment was constructed
+        /// </summary>
+        public NurbsCurve ParentCurve;
+
+        /// <summary>
         /// A single arc curve within a cross section.
         /// </summary>
         public Curve Curve;
+
+        /// <summary>
+        /// The mid point on the board curve segment.
+        /// </summary>
+        public Point3d MidPoint;
 
         /// <summary>
         /// A the radius of the arc.
@@ -44,8 +55,13 @@ namespace HygroDesign.Core
         /// <param name="arc"></param>
         public BoardCurve(NurbsCurve parent, Interval bounds)
         {
+            ParentCurve = parent;
             Curve = parent.ToNurbsCurve(bounds);
             Curve.Domain = new Interval(0, 1);
+            MidPoint = Curve.PointAt(0.5);
+
+            //get closest control point
+            ControlPointID = ClosestControlPoint(MidPoint);
 
             //analyze curvature
             int samplePoints = 10;
@@ -80,6 +96,32 @@ namespace HygroDesign.Core
             Vector3d positive = plane.YAxis;
             if (Vector3d.VectorAngle(positive, curvature) <= Math.PI * 0.5) return 1.0;
             else return -1.0;
+        }
+
+
+        public int ClosestControlPoint(Point3d point)
+        {
+            Line midLine = new Line(ParentCurve.PointAtStart, ParentCurve.PointAtEnd);
+
+            NurbsCurvePointList controlPoints = ParentCurve.Points;
+
+            int closestID = 0;
+            double closestDist = double.MaxValue;
+
+            for (int i = 0; i < controlPoints.Count; i++)
+            {
+                if (i == 0 | i == controlPoints.Count - 1) continue;
+                Point3d controlPoint = midLine.ClosestPoint(controlPoints[i].Location,true);
+                point = midLine.ClosestPoint(point,true);
+                double distance = point.DistanceTo(controlPoint);
+
+                if (distance < closestDist)
+                {
+                    closestID = i;
+                    closestDist = distance;
+                }
+            }
+            return closestID;
         }
     }
 }

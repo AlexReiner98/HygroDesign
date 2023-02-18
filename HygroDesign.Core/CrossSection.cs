@@ -14,6 +14,17 @@ namespace HygroDesign.Core
     public class CrossSection
     {
         /// <summary>
+        /// Underlying nurbs curve from which the cross section was built
+        /// </summary>
+        public NurbsCurve NurbsCurve;
+
+        /// <summary>
+        /// the constant board width in this cross section
+        /// </summary>
+        public double BoardWidth;
+
+
+        /// <summary>
         /// The list of arcs describing the geometry of the cross section.
         /// </summary>
         public List<Arc> Arcs = new List<Arc>();
@@ -28,8 +39,117 @@ namespace HygroDesign.Core
         /// </summary>
         public List<BoardCurve> BoardCurves = new List<BoardCurve>();
 
+        /// <summary>
+        /// The minimum average radius alowed in this cross section
+        /// </summary>
+        public double MinimumRadius;
+
         
 
+        
+        /// <summary>
+        /// Create a cross section from a nurbs curve
+        /// </summary>
+        /// <param name="nurbsCurve">Input nurbs curve to be replicated in cross section form.</param>
+        /// <param name="boardWidth">Board width constant.</param>
+        /// <param name="minRadius">Minimum possible radius for cross section, derived from bilayer properties.</param>
+        public CrossSection(NurbsCurve nurbsCurve, double boardWidth, double minRadius)
+        {
+            NurbsCurve = nurbsCurve;
+            BoardWidth = boardWidth;
+            BoardCurves = NurbsToBoardCurves(nurbsCurve, boardWidth);
+            MinimumRadius = minRadius;
+
+            SatisfyMinimumRadius();
+        }
+
+
+
+        
+
+        public List<BoardCurve> NurbsToBoardCurves(NurbsCurve nurbsCurve, double boardWidth)
+        {
+            List<BoardCurve> boardCurves = new List<BoardCurve>();
+
+            //precalculate projection plane for closest control point distance
+            if (!nurbsCurve.TryGetPlane(out Plane plane));
+            else plane = Plane.WorldZX;
+            Vector3d rotationAxis = new Vector3d(nurbsCurve.PointAtEnd - nurbsCurve.PointAtStart);
+            plane.Rotate(Math.PI * 0.5, rotationAxis);
+
+            double nurbsLength = nurbsCurve.GetLength();
+
+            int boardCount = (int)Math.Ceiling(nurbsLength / boardWidth) + 1;
+            double remainderBoardWidth = ((nurbsLength / boardWidth) - Math.Floor(nurbsLength / boardWidth)) * boardWidth;
+            if (remainderBoardWidth == 0) boardCount -= 1;
+
+            double endLength;
+            double startLength = 0;
+
+            for (int i = 0; i < boardCount; i++)
+            {
+                endLength = (boardWidth * i) + (remainderBoardWidth / 2);
+                if (i == boardCount - 1) endLength = nurbsLength;
+
+                nurbsCurve.LengthParameter(startLength, out double startParam);
+                nurbsCurve.LengthParameter(endLength, out double endParam);
+
+                BoardCurve boardCurve = new BoardCurve(nurbsCurve,new Interval(startParam,endParam));
+                boardCurves.Add(boardCurve);
+
+                startLength = endLength;
+            }
+            return boardCurves;
+        }
+
+        //Satisfy radius
+        private void SatisfyMinimumRadius()
+        {
+            bool satisfied = false;
+            int safety = 1000;
+            double stepSize = 0.1;
+
+            Line midLine = new Line(NurbsCurve.Points[0].Location, NurbsCurve.Points[NurbsCurve.Points.Count - 1].Location);
+
+            while(satisfied == false && safety > 0)
+            {
+                safety--;
+                for (int i = 0; i < NurbsCurve.Points.Count; i++)
+                {
+                    //skip first and last as they are fixed
+                    if (i == 0 || i == NurbsCurve.Points.Count - 1) continue;
+
+                    int tooSmall = 0;
+                    foreach(BoardCurve boardCurve in this.BoardCurves)
+                    {
+                        if (boardCurve.ControlPointID != i) continue;
+                        if (boardCurve.AverageRadius < MinimumRadius) tooSmall++;
+                    }
+                    if (tooSmall == 0) continue;
+
+
+                    Point3d targetPoint = midLine.ClosestPoint(NurbsCurve.Points[i].Location, true);
+                    Vector3d moveVector = new Vector3d(targetPoint - NurbsCurve.Points[i].Location);
+                    moveVector.Unitize();
+                    moveVector *= stepSize;
+                    NurbsCurve.Points.SetPoint(i,new Point3d(NurbsCurve.Points[i].Location.X,0.0,(NurbsCurve.Points[i].Location + moveVector).Z));
+                }
+
+                //update boardcurves with new nurbscurve
+                BoardCurves = NurbsToBoardCurves(NurbsCurve, BoardWidth);
+
+                int escape = 0;
+                foreach(BoardCurve boardCurve in this.BoardCurves)
+                {
+                    if (boardCurve.AverageRadius < MinimumRadius) escape++;
+                }
+                if (escape == 0) satisfied = true;
+            }
+            return;
+        }
+
+
+        /*
         /// <summary>
         /// Create a cross section from a set of curvatures
         /// </summary>
@@ -44,27 +164,6 @@ namespace HygroDesign.Core
             Arcs = CreateArcs(curvatures, directions, boardWidth, basePlane);
             OrientSupportsToBasePlane(supportParameters,basePlane);
             SnapEnds(snapDistance);
-        }
-
-        /// <summary>
-        /// Create a cross section from a nurbs curve
-        /// </summary>
-        /// <param name="nurbsCurve">Input nurbs curve to be replicated in cross section form.</param>
-        /// <param name="boardWidth">Board width constant.</param>
-        /// <param name="minRadius">Minimum possible radius for cross section, derived from bilayer properties.</param>
-        public CrossSection(NurbsCurve nurbsCurve, double boardWidth, double minRadius)
-        {
-            //first analyze curvature of existing board divisions
-            // --- avg radius
-            // --- radius variation
-
-            AnalyzeDivisionCurvatures(nurbsCurve, boardWidth, minRadius);
-
-
-
-
-
-            //BoardArcs = NurbsToBoardArcs(nurbsCurve, boardWidth);
         }
 
         private List<Arc> CreateArcs(List<double> radii, List<int> directions, double boardWidth, Plane basePlane)
@@ -169,6 +268,7 @@ namespace HygroDesign.Core
             return;
         }
 
+        
         /// <summary>
         /// create a list of BoardArcs from an input nurbs curve and a board width
         /// </summary>
@@ -215,30 +315,6 @@ namespace HygroDesign.Core
             }
             return boardArcs;
         }
-
-        public int ClosestControlPoint(Point3d point, NurbsCurve nurbsCurve, Plane plane)
-        {
-            
-
-            NurbsCurvePointList controlPoints = nurbsCurve.Points;
-
-            int closestID = 0;
-            double closestDist = double.MaxValue;
-
-            for (int i = 0; i < controlPoints.Count; i++)
-            {
-                if(i == 0 | i == controlPoints.Count - 1) continue;
-                Point3d controlPoint = plane.ClosestPoint(controlPoints[i].Location);
-                point = plane.ClosestPoint(point);
-                double distance = point.DistanceTo(controlPoint);
-
-                if (distance < closestDist)
-                {
-                    closestID = i;
-                    closestDist = distance;
-                }
-            }
-            return closestID;
-        }
+        */
     }
 }
