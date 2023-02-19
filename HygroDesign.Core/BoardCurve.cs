@@ -28,6 +28,12 @@ namespace HygroDesign.Core
         /// </summary>
         public Point3d MidPoint;
 
+
+        /// <summary>
+        /// The parameter of the mid point on the parent nurbs curve
+        /// </summary>
+        private double MidPointParentParameter;
+
         /// <summary>
         /// A the radius of the arc.
         /// </summary>
@@ -60,8 +66,10 @@ namespace HygroDesign.Core
             Curve.Domain = new Interval(0, 1);
             MidPoint = Curve.PointAt(0.5);
 
-            //get closest control point
-            ControlPointID = ClosestControlPoint(MidPoint);
+            ParentCurve.ClosestPoint(MidPoint,out MidPointParentParameter);
+
+            //set home control point
+            MostInfluentialControlPoint();
 
             //analyze curvature
             int samplePoints = 10;
@@ -82,13 +90,14 @@ namespace HygroDesign.Core
             {
                 Vector3d curvature = Curve.CurvatureAt(i * stepSize);
                 double direction = OverUnder(plane, curvature);
-                double currentRadius = curvature.Length * direction;
+                double currentRadius =  (1/ curvature.Length) * direction;
                 if (currentRadius < minRadius) minRadius = currentRadius;
                 if (currentRadius > maxRadius) maxRadius = currentRadius;
-                AverageRadius += currentRadius;
+                AverageRadius += Math.Abs(currentRadius);
             }
             RadiusBounds = new Interval(minRadius, maxRadius);
             RadiusVariation = maxRadius - minRadius;
+            AverageRadius /= samplePoints;
         }
 
         private double OverUnder(Plane plane, Vector3d curvature)
@@ -98,30 +107,60 @@ namespace HygroDesign.Core
             else return -1.0;
         }
 
+        private void MostInfluentialControlPoint()
+        {
+            Point3d basePoint = MidPoint;
 
+            double largestDistance = 0;
+            int mostInfluentialPointID = 0;
+            for(int i = 1; i < ParentCurve.Points.Count-2; i++)
+            {
+                double distance = ParentCurve.PointAt(MidPointParentParameter).DistanceTo(basePoint);
+                if( distance > largestDistance) { largestDistance = distance;  mostInfluentialPointID = i; }
+            }
+            ControlPointID = mostInfluentialPointID;
+        }
+
+
+
+        /*
         public int ClosestControlPoint(Point3d point)
         {
+            //generate line between end points - represents a neutral axis
             Line midLine = new Line(ParentCurve.PointAtStart, ParentCurve.PointAtEnd);
 
             NurbsCurvePointList controlPoints = ParentCurve.Points;
 
             int closestID = 0;
+            int nextClosestID = 0;
             double closestDist = double.MaxValue;
 
             for (int i = 0; i < controlPoints.Count; i++)
             {
-                if (i == 0 | i == controlPoints.Count - 1) continue;
+                if (i == 0 || i == controlPoints.Count - 1) continue;
                 Point3d controlPoint = midLine.ClosestPoint(controlPoints[i].Location,true);
                 point = midLine.ClosestPoint(point,true);
                 double distance = point.DistanceTo(controlPoint);
 
                 if (distance < closestDist)
                 {
+                    nextClosestID = closestID;
                     closestID = i;
                     closestDist = distance;
                 }
             }
+
+            int mostInfluential = 0;
+            double farthestDist = 0.0;
+            Line baseLine = new Line(ParentCurve.PointAtStart, ParentCurve.PointAtEnd);
+
+            for(int i = 0; i < closestIDs.Length; i++)
+            {
+                double currentDistance = baseLine.ClosestPoint(controlPoints[closestIDs[i]].Location, true).DistanceTo(controlPoints[closestIDs[i]].Location);
+                if (currentDistance > farthestDist) { closestID = closestIDs[i]; farthestDist = currentDistance; }
+            }
             return closestID;
         }
+        */
     }
 }

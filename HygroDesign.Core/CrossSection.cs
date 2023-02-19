@@ -57,30 +57,26 @@ namespace HygroDesign.Core
         {
             NurbsCurve = nurbsCurve;
             BoardWidth = boardWidth;
-            BoardCurves = NurbsToBoardCurves(nurbsCurve, boardWidth);
+            BoardCurves = NurbsToBoardCurves();
             MinimumRadius = minRadius;
 
             SatisfyMinimumRadius();
         }
 
-
-
-        
-
-        public List<BoardCurve> NurbsToBoardCurves(NurbsCurve nurbsCurve, double boardWidth)
+        public List<BoardCurve> NurbsToBoardCurves()
         {
             List<BoardCurve> boardCurves = new List<BoardCurve>();
 
             //precalculate projection plane for closest control point distance
-            if (!nurbsCurve.TryGetPlane(out Plane plane));
+            if (!NurbsCurve.TryGetPlane(out Plane plane));
             else plane = Plane.WorldZX;
-            Vector3d rotationAxis = new Vector3d(nurbsCurve.PointAtEnd - nurbsCurve.PointAtStart);
+            Vector3d rotationAxis = new Vector3d(NurbsCurve.PointAtEnd - NurbsCurve.PointAtStart);
             plane.Rotate(Math.PI * 0.5, rotationAxis);
 
-            double nurbsLength = nurbsCurve.GetLength();
+            double nurbsLength = NurbsCurve.GetLength();
 
-            int boardCount = (int)Math.Ceiling(nurbsLength / boardWidth) + 1;
-            double remainderBoardWidth = ((nurbsLength / boardWidth) - Math.Floor(nurbsLength / boardWidth)) * boardWidth;
+            int boardCount = (int)Math.Ceiling(nurbsLength / BoardWidth) + 1;
+            double remainderBoardWidth = ((nurbsLength / BoardWidth) - Math.Floor(nurbsLength / BoardWidth)) * BoardWidth;
             if (remainderBoardWidth == 0) boardCount -= 1;
 
             double endLength;
@@ -88,13 +84,13 @@ namespace HygroDesign.Core
 
             for (int i = 0; i < boardCount; i++)
             {
-                endLength = (boardWidth * i) + (remainderBoardWidth / 2);
+                endLength = (BoardWidth * i) + (remainderBoardWidth / 2);
                 if (i == boardCount - 1) endLength = nurbsLength;
 
-                nurbsCurve.LengthParameter(startLength, out double startParam);
-                nurbsCurve.LengthParameter(endLength, out double endParam);
+                NurbsCurve.LengthParameter(startLength, out double startParam);
+                NurbsCurve.LengthParameter(endLength, out double endParam);
 
-                BoardCurve boardCurve = new BoardCurve(nurbsCurve,new Interval(startParam,endParam));
+                BoardCurve boardCurve = new BoardCurve(NurbsCurve, new Interval(startParam, endParam));
                 boardCurves.Add(boardCurve);
 
                 startLength = endLength;
@@ -105,45 +101,33 @@ namespace HygroDesign.Core
         //Satisfy radius
         private void SatisfyMinimumRadius()
         {
-            bool satisfied = false;
-            int safety = 1000;
-            double stepSize = 0.1;
+            double minimumStep = 0.01;
+            int safety = 200;
 
-            Line midLine = new Line(NurbsCurve.Points[0].Location, NurbsCurve.Points[NurbsCurve.Points.Count - 1].Location);
-
-            while(satisfied == false && safety > 0)
+            while(safety > 0)
             {
                 safety--;
-                for (int i = 0; i < NurbsCurve.Points.Count; i++)
-                {
-                    //skip first and last as they are fixed
-                    if (i == 0 || i == NurbsCurve.Points.Count - 1) continue;
+                List<Tuple<int,Point3d>> nurbsPoints = new List<Tuple<int, Point3d>>();
+                int satisfied = 0;
 
-                    int tooSmall = 0;
-                    foreach(BoardCurve boardCurve in this.BoardCurves)
-                    {
-                        if (boardCurve.ControlPointID != i) continue;
-                        if (boardCurve.AverageRadius < MinimumRadius) tooSmall++;
-                    }
-                    if (tooSmall == 0) continue;
-
-
-                    Point3d targetPoint = midLine.ClosestPoint(NurbsCurve.Points[i].Location, true);
-                    Vector3d moveVector = new Vector3d(targetPoint - NurbsCurve.Points[i].Location);
-                    moveVector.Unitize();
-                    moveVector *= stepSize;
-                    NurbsCurve.Points.SetPoint(i,new Point3d(NurbsCurve.Points[i].Location.X,0.0,(NurbsCurve.Points[i].Location + moveVector).Z));
-                }
-
-                //update boardcurves with new nurbscurve
-                BoardCurves = NurbsToBoardCurves(NurbsCurve, BoardWidth);
-
-                int escape = 0;
                 foreach(BoardCurve boardCurve in this.BoardCurves)
                 {
-                    if (boardCurve.AverageRadius < MinimumRadius) escape++;
+                    if (boardCurve.AverageRadius > MinimumRadius) { satisfied++; continue; }
+                    Line midLine = new Line(NurbsCurve.Points[boardCurve.ControlPointID - 1].Location, NurbsCurve.Points[boardCurve.ControlPointID + 1].Location);
+                    Point3d targetPoint = midLine.ClosestPoint(NurbsCurve.Points[boardCurve.ControlPointID].Location, true);
+                    Vector3d moveVector = new Vector3d(targetPoint - NurbsCurve.Points[boardCurve.ControlPointID].Location);
+                    moveVector *= 0.1;
+                    if (moveVector.Length < minimumStep) { moveVector.Unitize(); moveVector *= minimumStep; }
+                    nurbsPoints.Add(new Tuple<int, Point3d>(boardCurve.ControlPointID, new Point3d(NurbsCurve.Points[boardCurve.ControlPointID].Location.X, 0.0, (NurbsCurve.Points[boardCurve.ControlPointID].Location + moveVector).Z)));
                 }
-                if (escape == 0) satisfied = true;
+                if (satisfied == BoardCurves.Count - 1) return;
+
+                //update nurbs curve with new points
+                foreach (Tuple<int, Point3d> pair in nurbsPoints) NurbsCurve.Points.SetPoint(pair.Item1, pair.Item2);
+
+                //update boardcurves with new nurbscurve
+                BoardCurves = NurbsToBoardCurves();
+
             }
             return;
         }
