@@ -9,9 +9,9 @@
     <BaseOutputPath>..\bin\</BaseOutputPath>
     <OutputType>Library</OutputType>
   </PropertyGroup>
-  
+	
   <ItemGroup>
-    <PackageReference Include="Grasshopper" Version="7.26.23009.7001" IncludeAssets="compile;build" />
+    <PackageReference Include="Grasshopper" Version="7.26.23009.7001" />
   </ItemGroup>
   
   <ItemGroup>

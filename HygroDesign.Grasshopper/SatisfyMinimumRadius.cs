@@ -10,7 +10,7 @@ using ABxM.Core;
 namespace HygroDesign.Grasshopper.Components
 {
 
-    public class CrossSectionFromNurbs : GH_Component
+    public class SatisfyMinimumRadius : GH_Component
     {
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
@@ -19,10 +19,12 @@ namespace HygroDesign.Grasshopper.Components
         /// Subcategory the panel. If you use non-existing tab or panel names, 
         /// new tabs/panels will automatically be created.
         /// </summary>
-        public CrossSectionFromNurbs()
-          : base("Cross section from nurbs curve", "CroSec",
-            "Generate bilayer cross section from nurbs curve.",
-            "HygroDesign", "Design")
+        public SatisfyMinimumRadius()
+          : base("Satisfy Minimum Radius", 
+                "MinRad",
+                "Update cross section to conform with minimum radius requirement.",
+                "HygroDesign", 
+                "Design")
         {
         }
 
@@ -31,9 +33,8 @@ namespace HygroDesign.Grasshopper.Components
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("Nurbs Curve", "N", "The nurbs curve for generating the cross section", GH_ParamAccess.item);
-            pManager.AddNumberParameter("Board Width", "W", "Width of each board within the cross section", GH_ParamAccess.item);
-
+            pManager.AddGenericParameter("Cross Section", "C", "The cross section", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Minimum Radius", "R", "Minimum radius for this bilayer cross section", GH_ParamAccess.item);
         }
 
         /// <summary>
@@ -41,7 +42,7 @@ namespace HygroDesign.Grasshopper.Components
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("Cross Section", "C", "The generated cross section", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Cross Section", "C", "The updated cross section with minimum radius", GH_ParamAccess.list);
         }
 
         /// <summary>
@@ -51,19 +52,18 @@ namespace HygroDesign.Grasshopper.Components
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            Curve nurbsCurve = null;
-            double boardWidth = 0.0;
+            CrossSection iCrossSection = null;
+            double iMinRadius = 0.0;
 
+            if (!DA.GetData(0,ref iCrossSection)) return;
+            if (!DA.GetData(1, ref iMinRadius)) return;
 
-            if (!DA.GetData(0,ref nurbsCurve)) return;
-            if (!DA.GetData(1, ref boardWidth)) return;
-
-
-            CrossSection crossSection = new CrossSection(nurbsCurve as NurbsCurve, boardWidth);
+            CrossSection thisCrossSection = new CrossSection(iCrossSection);
+            thisCrossSection.SatisfyMinimumRadius(iMinRadius);
         
 
 
-            DA.SetData(0, crossSection);
+            DA.SetData(0, thisCrossSection);
         }
 
 
@@ -88,6 +88,6 @@ namespace HygroDesign.Grasshopper.Components
         /// It is vital this Guid doesn't change otherwise old ghx files 
         /// that use the old ID will partially fail during loading.
         /// </summary>
-        public override Guid ComponentGuid => new Guid("4FE84F8E-8143-4437-964A-AF1E7316DFD5");
+        public override Guid ComponentGuid => new Guid("8DD9069E-46A2-4108-BF0A-477442AA9EE6");
     }
 }

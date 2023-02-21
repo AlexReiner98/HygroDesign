@@ -13,10 +13,12 @@ namespace HygroDesign.Core
 {
     public class BoardCurve
     {
+
+
         /// <summary>
-        /// The parent Nurbs Curve from which this segment was constructed
+        /// The cross section this segment belongs to
         /// </summary>
-        public NurbsCurve ParentCurve;
+        public CrossSection CrossSection;
 
         /// <summary>
         /// A single arc curve within a cross section.
@@ -27,7 +29,6 @@ namespace HygroDesign.Core
         /// The mid point on the board curve segment.
         /// </summary>
         public Point3d MidPoint;
-
 
         /// <summary>
         /// The parameter of the mid point on the parent nurbs curve
@@ -59,14 +60,14 @@ namespace HygroDesign.Core
         /// The input arc to create a BoardArc object.
         /// </summary>
         /// <param name="arc"></param>
-        public BoardCurve(NurbsCurve parent, Interval bounds)
+        public BoardCurve(CrossSection parent, Interval bounds)
         {
-            ParentCurve = parent;
-            Curve = parent.ToNurbsCurve(bounds);
+            CrossSection = parent;
+            Curve = CrossSection.NurbsCurve.ToNurbsCurve(bounds);
             Curve.Domain = new Interval(0, 1);
             MidPoint = Curve.PointAt(0.5);
 
-            ParentCurve.ClosestPoint(MidPoint,out MidPointParentParameter);
+            CrossSection.NurbsCurve.ClosestPoint(MidPoint,out MidPointParentParameter);
 
             //set home control point
             MostInfluentialControlPoint();
@@ -111,13 +112,25 @@ namespace HygroDesign.Core
         {
             Point3d basePoint = MidPoint;
 
+            
+
+            Vector3d testVector = CrossSection.CurvePlane.ZAxis;
+            testVector.Unitize(); testVector *= 0.01;
+
             double largestDistance = 0;
             int mostInfluentialPointID = 0;
-            for(int i = 1; i < ParentCurve.Points.Count-2; i++)
+            for(int i = 0; i < CrossSection.NurbsCurve.Points.Count; i++)
             {
-                double distance = ParentCurve.PointAt(MidPointParentParameter).DistanceTo(basePoint);
-                if( distance > largestDistance) { largestDistance = distance;  mostInfluentialPointID = i; }
+                NurbsCurve testCurve = (NurbsCurve)CrossSection.NurbsCurve.Duplicate();
+                int currentCP = i;
+                if (i == 0) currentCP = 1;
+                if (i == testCurve.Points.Count - 1) currentCP = testCurve.Points.Count - 2;
+                testCurve.Points.SetPoint(currentCP, testCurve.Points[currentCP].Location + testVector);
+                testCurve.ClosestPoint(basePoint, out double t);
+                double distance = testCurve.PointAt(t).DistanceTo(basePoint);
+                if( distance > largestDistance) { largestDistance = distance;  mostInfluentialPointID = currentCP; }
             }
+            
             ControlPointID = mostInfluentialPointID;
         }
 

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
@@ -8,6 +8,10 @@
     <TargetExt>.dll</TargetExt>
     <BaseOutputPath>..\bin\</BaseOutputPath>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grasshopper" Version="7.26.23009.7001" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="ABxM.Core">
