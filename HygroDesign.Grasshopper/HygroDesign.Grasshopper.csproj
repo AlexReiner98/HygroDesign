@@ -9,13 +9,19 @@
     <BaseOutputPath>..\bin\</BaseOutputPath>
     <OutputType>Library</OutputType>
   </PropertyGroup>
-  
+	
   <ItemGroup>
-    <PackageReference Include="Grasshopper" Version="7.26.23009.7001" IncludeAssets="compile;build" />
+    <PackageReference Include="Grasshopper" Version="7.26.23009.7001" />
   </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\HygroDesign.Core\HygroDesign.Core.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Reference Include="ABxM.Core">
+      <HintPath>..\..\..\..\AppData\Roaming\Grasshopper\Libraries\ABxM.Core.dll</HintPath>
+    </Reference>
   </ItemGroup>
   
   <PropertyGroup Condition="$(Configuration) == 'Debug' AND $([MSBuild]::IsOSPlatform(Windows))">
