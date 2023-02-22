@@ -60,8 +60,6 @@ namespace HygroDesign.Grasshopper.Components
 
             CrossSection thisCrossSection = new CrossSection(iCrossSection);
             thisCrossSection.SatisfyMinimumRadius(iMinRadius);
-        
-
 
             DA.SetData(0, thisCrossSection);
         }

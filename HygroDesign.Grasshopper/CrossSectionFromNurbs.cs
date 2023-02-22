@@ -54,14 +54,10 @@ namespace HygroDesign.Grasshopper.Components
             Curve nurbsCurve = null;
             double boardWidth = 0.0;
 
-
             if (!DA.GetData(0,ref nurbsCurve)) return;
             if (!DA.GetData(1, ref boardWidth)) return;
 
-
             CrossSection crossSection = new CrossSection(nurbsCurve as NurbsCurve, boardWidth);
-        
-
 
             DA.SetData(0, crossSection);
         }
