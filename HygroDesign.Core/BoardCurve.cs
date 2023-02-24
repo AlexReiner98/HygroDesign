@@ -6,15 +6,12 @@ using System.Text;
 using Rhino;
 using Rhino.Geometry;
 using Rhino.Geometry.Collections;
-using System.Linq;
 
 
 namespace HygroDesign.Core
 {
     public class BoardCurve
     {
-
-
         /// <summary>
         /// The cross section this segment belongs to
         /// </summary>
