@@ -64,7 +64,7 @@ namespace HygroDesign.Core
             Curve.Domain = new Interval(0, 1);
             MidPoint = Curve.PointAt(0.5);
 
-            CrossSection.NurbsCurve.ClosestPoint(MidPoint,out MidPointParentParameter);
+            //CrossSection.NurbsCurve.ClosestPoint(MidPoint,out MidPointParentParameter);
 
             //set home control point
             MostInfluentialControlPoint();

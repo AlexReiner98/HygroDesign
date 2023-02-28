@@ -18,11 +18,6 @@ namespace HygroDesign.Core
         public NurbsCurve NurbsCurve;
 
         /// <summary>
-        /// Original nurbs curve which can be returned to on reset
-        /// </summary>
-        public NurbsCurve StartingNurbsCurve;
-
-        /// <summary>
         /// the plane of the nurbscurve
         /// </summary>
         public Plane CurvePlane;
@@ -47,10 +42,10 @@ namespace HygroDesign.Core
         /// </summary>
         public CrossSection(CrossSection crossSection)
         {
-            NurbsCurve = StartingNurbsCurve = new NurbsCurve(crossSection.NurbsCurve);
+            NurbsCurve = new NurbsCurve(crossSection.NurbsCurve);
             BoardWidth = crossSection.BoardWidth;
             CurvePlane = new Plane(crossSection.CurvePlane);
-            BoardCurves = NurbsToBoardCurves();
+            NurbsToBoardCurves();
         }
 
         
@@ -61,14 +56,14 @@ namespace HygroDesign.Core
         /// <param name="boardWidth">Board width constant.</param>
         public CrossSection(NurbsCurve nurbsCurve, double boardWidth)
         {
-            NurbsCurve = StartingNurbsCurve = nurbsCurve;
+            NurbsCurve = nurbsCurve;
             BoardWidth = boardWidth;
             NurbsCurve.TryGetPlane(out CurvePlane);
 
-            BoardCurves = NurbsToBoardCurves();
+            NurbsToBoardCurves();
         }
 
-        public List<BoardCurve> NurbsToBoardCurves()
+        public void NurbsToBoardCurves()
         {
             List<BoardCurve> boardCurves = new List<BoardCurve>();
 
@@ -94,7 +89,8 @@ namespace HygroDesign.Core
 
                 startLength = endLength;
             }
-            return boardCurves;
+            BoardCurves =  boardCurves;
+            return;
         }
         public void SatisfyMinimumRadius(double minRadius)
         {
@@ -136,7 +132,7 @@ namespace HygroDesign.Core
                     NurbsCurve.Points.SetPoint(pair.Item1, pair.Item2);
 
                 //update nurbs curve
-                BoardCurves = NurbsToBoardCurves();
+                NurbsToBoardCurves();
             }
         }    
     }

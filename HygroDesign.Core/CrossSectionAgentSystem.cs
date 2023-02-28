@@ -20,7 +20,6 @@ namespace HygroDesign.Core
         public CrossSectionAgentSystem(CrossSection crossSection, List<CrossSectionAgent> agents)
         {
             CrossSection = crossSection;
-            CrossSection.StartingNurbsCurve = CrossSection.NurbsCurve;
 
             Agents = new List<AgentBase>();
             for (int index = 0; index < agents.Count; ++index)
@@ -35,7 +34,7 @@ namespace HygroDesign.Core
         public override void Reset()
         {
             base.Reset();
-            CrossSection.NurbsCurve = CrossSection.StartingNurbsCurve;
+            UpdateCrossSection();
         }
 
         public override void PreExecute()
@@ -52,7 +51,7 @@ namespace HygroDesign.Core
         {
             base.PostExecute();
             UpdateCrossSection();
-            //CrossSection.NurbsToBoardCurves();
+            CrossSection.NurbsToBoardCurves();
         }
 
         public override bool IsFinished() => base.IsFinished();
