@@ -107,12 +107,11 @@ namespace HygroDesign.Grasshopper.Components
             // update behaviours
             if (!positionsChanged && behaviorsChanged)
             {
-                foreach (CartesianAgent pa in agents)
+                foreach (CrossSectionAgent ca in agents)
                 {
-                    pa.Behaviors = iBehaviors;
+                    ca.Behaviors = iBehaviors;
                 }
             }
-
 
             DA.SetDataList("Cross Section Agent", agents);
         }

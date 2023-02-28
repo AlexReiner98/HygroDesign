@@ -18,6 +18,11 @@ namespace HygroDesign.Core
         public NurbsCurve NurbsCurve;
 
         /// <summary>
+        /// Original nurbs curve which can be returned to on reset
+        /// </summary>
+        public NurbsCurve StartingNurbsCurve;
+
+        /// <summary>
         /// the plane of the nurbscurve
         /// </summary>
         public Plane CurvePlane;
@@ -42,7 +47,7 @@ namespace HygroDesign.Core
         /// </summary>
         public CrossSection(CrossSection crossSection)
         {
-            NurbsCurve = new NurbsCurve(crossSection.NurbsCurve);
+            NurbsCurve = StartingNurbsCurve = new NurbsCurve(crossSection.NurbsCurve);
             BoardWidth = crossSection.BoardWidth;
             CurvePlane = new Plane(crossSection.CurvePlane);
             BoardCurves = NurbsToBoardCurves();
@@ -56,7 +61,7 @@ namespace HygroDesign.Core
         /// <param name="boardWidth">Board width constant.</param>
         public CrossSection(NurbsCurve nurbsCurve, double boardWidth)
         {
-            NurbsCurve = nurbsCurve;
+            NurbsCurve = StartingNurbsCurve = nurbsCurve;
             BoardWidth = boardWidth;
             NurbsCurve.TryGetPlane(out CurvePlane);
 

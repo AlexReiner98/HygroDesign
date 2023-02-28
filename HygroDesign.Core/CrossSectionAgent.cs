@@ -16,22 +16,32 @@ namespace HygroDesign.Core
     {
         public CrossSectionAgentSystem CrossSectionAgentSystem;
 
-        public CrossSectionAgent(Point3d startPosition, List<BehaviorBase> behaviours) : base(startPosition, behaviours)
+        public CrossSectionAgent(Point3d startPosition, List<BehaviorBase> behaviours)
+            : base(startPosition, behaviours)
         {
-            this.StartPosition = this.Position = startPosition;
-            ((AgentBase)this).Behaviors = behaviours;
+            StartPosition = Position = startPosition;
         }
 
-        
+        public override void Reset()
+        {
+            base.Reset();
+            Position = StartPosition;
+        }
 
+        public override void PreExecute()
+        {
+            base.PreExecute();
+        }
 
-        public override void Reset() => base.Reset();
+        public override void Execute()
+        {
+            base.Execute();
+        }
 
-        public override void PreExecute() => base.PreExecute();
-
-        public override void Execute() => base.Execute();
-
-        public override void PostExecute() => base.PostExecute();
+        public override void PostExecute()
+        {
+            base.PostExecute();
+        }
 
         public override List<object> GetDisplayGeometries() => new List<object>()
     {
