@@ -45,7 +45,7 @@ namespace HygroDesign.Core
             NurbsCurve = new NurbsCurve(crossSection.NurbsCurve);
             BoardWidth = crossSection.BoardWidth;
             CurvePlane = new Plane(crossSection.CurvePlane);
-            BoardCurves = NurbsToBoardCurves();
+            NurbsToBoardCurves();
         }
 
         
@@ -60,10 +60,10 @@ namespace HygroDesign.Core
             BoardWidth = boardWidth;
             NurbsCurve.TryGetPlane(out CurvePlane);
 
-            BoardCurves = NurbsToBoardCurves();
+            NurbsToBoardCurves();
         }
 
-        public List<BoardCurve> NurbsToBoardCurves()
+        public void NurbsToBoardCurves()
         {
             List<BoardCurve> boardCurves = new List<BoardCurve>();
 
@@ -89,7 +89,8 @@ namespace HygroDesign.Core
 
                 startLength = endLength;
             }
-            return boardCurves;
+            BoardCurves =  boardCurves;
+            return;
         }
         public void SatisfyMinimumRadius(double minRadius)
         {
@@ -131,7 +132,7 @@ namespace HygroDesign.Core
                     NurbsCurve.Points.SetPoint(pair.Item1, pair.Item2);
 
                 //update nurbs curve
-                BoardCurves = NurbsToBoardCurves();
+                NurbsToBoardCurves();
             }
         }    
     }

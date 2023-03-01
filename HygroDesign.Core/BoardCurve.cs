@@ -6,15 +6,12 @@ using System.Text;
 using Rhino;
 using Rhino.Geometry;
 using Rhino.Geometry.Collections;
-using System.Linq;
 
 
 namespace HygroDesign.Core
 {
     public class BoardCurve
     {
-
-
         /// <summary>
         /// The cross section this segment belongs to
         /// </summary>
@@ -67,7 +64,7 @@ namespace HygroDesign.Core
             Curve.Domain = new Interval(0, 1);
             MidPoint = Curve.PointAt(0.5);
 
-            CrossSection.NurbsCurve.ClosestPoint(MidPoint,out MidPointParentParameter);
+            //CrossSection.NurbsCurve.ClosestPoint(MidPoint,out MidPointParentParameter);
 
             //set home control point
             MostInfluentialControlPoint();
