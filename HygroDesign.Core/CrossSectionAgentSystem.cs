@@ -16,6 +16,8 @@ namespace HygroDesign.Core
     public class CrossSectionAgentSystem : CartesianAgentSystem
     {
         public CrossSection CrossSection;
+        public double TotalDisplacement = double.MaxValue;
+        public double DisplacementThreshold = -1.0;
 
         public CrossSectionAgentSystem(CrossSection crossSection, List<CrossSectionAgent> agents)
         {
@@ -35,6 +37,7 @@ namespace HygroDesign.Core
         {
             base.Reset();
             UpdateCrossSection();
+            TotalDisplacement = double.MaxValue;
         }
 
         public override void PreExecute()
@@ -49,6 +52,8 @@ namespace HygroDesign.Core
 
         public override void PostExecute()
         {
+            TotalDisplacement = 0.0;
+
             base.PostExecute();
             UpdateCrossSection();
             CrossSection.NurbsToBoardCurves();

@@ -66,7 +66,7 @@ namespace HygroDesign.Grasshopper.Components
             {
                 for (int i = 0; i < agents.Count; i++)
                 {
-                    if (agents[i].Position != iPositions[i])
+                    if (agents[i].StartPosition != iPositions[i])
                     {
                         positionsChanged = true;
                         break;
@@ -99,13 +99,12 @@ namespace HygroDesign.Grasshopper.Components
                 for (int i = 0; i < iPositions.Count; i++)
                 {
                     Point3d thisPosition = iPositions[i];
-
                     agents.Add(new CrossSectionAgent(thisPosition, iBehaviors));
                 }
             }
 
             // update behaviours
-            if (!positionsChanged && behaviorsChanged)
+            if (behaviorsChanged)
             {
                 foreach (CrossSectionAgent ca in agents)
                 {

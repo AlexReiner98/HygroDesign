@@ -1,6 +1,7 @@
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
+using Rhino;
 using System;
 using System.Collections.Generic;
 
@@ -35,7 +36,7 @@ namespace HygroDesign.Grasshopper.Components
         {
             pManager.AddGenericParameter("Cross Section", "CS", "The initial cross section for this agent system", GH_ParamAccess.item);
             pManager.AddGenericParameter("Agents", "A", "The cross section agents", GH_ParamAccess.list);
-
+            pManager.AddNumberParameter("Displacement Threshold", "T", "The threshold after which agent system ends", GH_ParamAccess.item,-1.0);
         }
 
         /// <summary>
@@ -59,6 +60,9 @@ namespace HygroDesign.Grasshopper.Components
             List<CrossSectionAgent> iAgents = new List<CrossSectionAgent>();
             DA.GetDataList("Agents", iAgents);
 
+            double iDisplacementThreshold = 0;
+            DA.GetData("Displacement Threshold", ref iDisplacementThreshold);
+
             // check if agents changed
             bool agentsChanged = false;
             if (agents.Count != iAgents.Count)
@@ -78,8 +82,8 @@ namespace HygroDesign.Grasshopper.Components
             }
             agents = iAgents;
 
-            if(agentsChanged)
-                agentSystem = new CrossSectionAgentSystem(crossSection, agents);
+            if(agentsChanged) agentSystem = new CrossSectionAgentSystem(crossSection, agents);
+            agentSystem.DisplacementThreshold = iDisplacementThreshold;
 
             DA.SetData("Agent System", agentSystem);
         }
