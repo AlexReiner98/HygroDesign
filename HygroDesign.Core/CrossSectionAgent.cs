@@ -16,6 +16,8 @@ namespace HygroDesign.Core
     {
         public CrossSectionAgentSystem CrossSectionAgentSystem;
 
+        public double Utilization = 0;
+
         public CrossSectionAgent(Point3d startPosition, List<BehaviorBase> behaviours)
             : base(startPosition, behaviours)
         {

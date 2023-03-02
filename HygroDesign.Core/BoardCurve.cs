@@ -27,10 +27,6 @@ namespace HygroDesign.Core
         /// </summary>
         public Point3d MidPoint;
 
-        /// <summary>
-        /// The parameter of the mid point on the parent nurbs curve
-        /// </summary>
-        private double MidPointParentParameter;
 
         /// <summary>
         /// A the radius of the arc.

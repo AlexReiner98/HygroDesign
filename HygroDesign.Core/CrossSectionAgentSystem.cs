@@ -37,6 +37,7 @@ namespace HygroDesign.Core
         {
             base.Reset();
             UpdateCrossSection();
+            CrossSection.NurbsToBoardCurves();
             TotalDisplacement = double.MaxValue;
         }
 
