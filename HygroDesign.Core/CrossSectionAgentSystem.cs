@@ -15,7 +15,7 @@ namespace HygroDesign.Core
 {
     public class CrossSectionAgentSystem : CartesianAgentSystem
     {
-        public CrossSection CrossSection;
+        public CrossSection CrossSection = null;
         public double TotalDisplacement = double.MaxValue;
         public double DisplacementThreshold = -1.0;
 

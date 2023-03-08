@@ -16,8 +16,9 @@ namespace HygroDesign.Grasshopper.Components
 
     public class DefineCrossSectionAgentSystem : GH_Component
     {
-
-        
+        CrossSectionAgentSystem agentSystem;
+        List<CrossSectionAgent> agents = new List<CrossSectionAgent>();
+        CrossSection thisCrossSection;
 
         public DefineCrossSectionAgentSystem()
           : base("Cross section agent system", "AgentSystem",
@@ -25,9 +26,6 @@ namespace HygroDesign.Grasshopper.Components
             "HygroDesign", "Design")
         {
         }
-
-        CrossSectionAgentSystem agentSystem = null;
-        List<CrossSectionAgent> agents = new List<CrossSectionAgent>();
 
         /// <summary>
         /// Registers all the input parameters for this component.
@@ -82,7 +80,14 @@ namespace HygroDesign.Grasshopper.Components
             }
             agents = iAgents;
 
-            if(agentsChanged) agentSystem = new CrossSectionAgentSystem(crossSection, agents);
+            
+            //check if cross section changed
+            bool crossSectionChanged = false;
+            if(agentSystem == null || crossSection != thisCrossSection) crossSectionChanged = true;
+            thisCrossSection = crossSection;
+            
+
+            if(agentsChanged | crossSectionChanged) agentSystem = new CrossSectionAgentSystem(crossSection, agents);
             agentSystem.DisplacementThreshold = iDisplacementThreshold;
 
             DA.SetData("Agent System", agentSystem);
