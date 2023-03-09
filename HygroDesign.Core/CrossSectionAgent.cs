@@ -10,6 +10,13 @@ using Rhino.Geometry.Collections;
 using ABxM.Core.Agent;
 using ABxM.Core.Behavior;
 
+using static Tensorflow.Binding;
+using Tensorflow;
+using Tensorflow.Keras.Engine;
+using static Tensorflow.KerasApi;
+using System.IO;
+using ABxM.Core.Agent;
+
 namespace HygroDesign.Core
 {
     public class CrossSectionAgent : CartesianAgent
@@ -17,6 +24,16 @@ namespace HygroDesign.Core
         public CrossSectionAgentSystem CrossSectionAgentSystem;
 
         public double Utilization = 0;
+
+        //DQL variables
+        public int Action;
+        public double Reward;
+        public List<double> StateIn = new List<double>();
+        public List<double> PrevState = new List<double>();
+        public List<double> ResetState = new List<double>();
+
+        public static double InitialEpsilon = 0.8;
+        public double Epsilon = InitialEpsilon;
 
         public CrossSectionAgent(Point3d startPosition, List<BehaviorBase> behaviours)
             : base(startPosition, behaviours)
@@ -28,6 +45,7 @@ namespace HygroDesign.Core
         {
             base.Reset();
             Position = StartPosition;
+            Reward = 0;
         }
 
         public override void PreExecute()

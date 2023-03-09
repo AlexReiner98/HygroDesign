@@ -10,6 +10,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HygroDesign.Grasshopper", "
 		{FA8A4958-F100-4153-B1A9-3A2A42A88518} = {FA8A4958-F100-4153-B1A9-3A2A42A88518}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HygroDesign.Core.DQL", "HygroDesign.Core.DQL\HygroDesign.Core.DQL.csproj", "{416CEC16-9467-4343-8F28-4285AF15D775}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,6 +26,10 @@ Global
 		{B8B5AD4E-0E9A-4CBA-A26A-2F0BFB74141A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B8B5AD4E-0E9A-4CBA-A26A-2F0BFB74141A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B8B5AD4E-0E9A-4CBA-A26A-2F0BFB74141A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{416CEC16-9467-4343-8F28-4285AF15D775}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{416CEC16-9467-4343-8F28-4285AF15D775}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{416CEC16-9467-4343-8F28-4285AF15D775}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{416CEC16-9467-4343-8F28-4285AF15D775}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

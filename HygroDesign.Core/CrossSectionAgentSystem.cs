@@ -10,6 +10,8 @@ using Rhino.Geometry.Collections;
 using ABxM.Core.Agent;
 using ABxM.Core.AgentSystem;
 
+using HygroDesign.Core.DQL;
+
 
 namespace HygroDesign.Core
 {
@@ -18,6 +20,7 @@ namespace HygroDesign.Core
         public CrossSection CrossSection;
         public double TotalDisplacement = double.MaxValue;
         public double DisplacementThreshold = -1.0;
+        public Trainer Trainer = new Trainer();
 
         public CrossSectionAgentSystem(CrossSection crossSection, List<CrossSectionAgent> agents)
         {
@@ -58,6 +61,7 @@ namespace HygroDesign.Core
             base.PostExecute();
             UpdateCrossSection();
             CrossSection.NurbsToBoardCurves();
+
         }
 
         public override bool IsFinished() => base.IsFinished();

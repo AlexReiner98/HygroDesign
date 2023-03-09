@@ -5,18 +5,21 @@ using Rhino;
 using System;
 using System.Collections.Generic;
 
+using static Tensorflow.Binding;
 using HygroDesign.Core;
 using ABxM.Core;
 using ABxM.Core.Agent;
 using ABxM.Core.AgentSystem;
 using ABxM.Core.Behavior;
 
+
+
 namespace HygroDesign.Grasshopper.Components
 {
 
     public class DQLTraining : GH_Component
     {
-        DQLTraining dqlTrainingBehaviour = new DQLTraining();
+        
 
         public DQLTraining()
           : base("DQLTrainingBehaviour", "DQLTraining",
@@ -37,8 +40,7 @@ namespace HygroDesign.Grasshopper.Components
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            dqlTrainingBehaviour.Update();
-            DA.SetData("Behaviour", dqlTrainingBehaviour);
+            DA.SetData("Behaviour", new DQLTrainingBehaviour());
         }
         public override GH_Exposure Exposure => GH_Exposure.primary;
         protected override System.Drawing.Bitmap Icon => null;

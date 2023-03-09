@@ -8,13 +8,15 @@
     <TargetExt>.gha</TargetExt>
     <BaseOutputPath>..\bin\</BaseOutputPath>
     <OutputType>Library</OutputType>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 	
   <ItemGroup>
-    <PackageReference Include="Grasshopper" Version="7.26.23009.7001" />
+    <PackageReference Include="Grasshopper" Version="7.27.23032.13001" />
   </ItemGroup>
-  
+	
   <ItemGroup>
+    <ProjectReference Include="..\HygroDesign.Core.DQL\HygroDesign.Core.DQL.csproj" />
     <ProjectReference Include="..\HygroDesign.Core\HygroDesign.Core.csproj" />
   </ItemGroup>
   

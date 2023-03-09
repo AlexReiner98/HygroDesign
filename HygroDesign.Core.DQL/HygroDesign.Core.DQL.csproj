@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <BaseOutputPath>..\bin\</BaseOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NumSharp" Version="0.30.0" />
+    <PackageReference Include="SciSharp.TensorFlow.Redist" Version="2.11.0" />
+    <PackageReference Include="TensorFlow.Keras" Version="0.10.4" />
+    <PackageReference Include="TensorFlow.NET" Version="0.100.4" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="Copy &quot;..\bin\Debug\netstandard2.0\HygroDesign.Core.DQL.dll&quot; &quot;$(AppData)\Grasshopper\Libraries\HygroDesign.Core.DQL.dll&quot;" />
+  </Target>
+
+</Project>
