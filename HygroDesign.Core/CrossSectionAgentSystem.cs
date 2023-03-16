@@ -42,6 +42,7 @@ namespace HygroDesign.Core
             UpdateCrossSection();
             CrossSection.NurbsToBoardCurves();
             TotalDisplacement = double.MaxValue;
+            Trainer.Models.Clear();
         }
 
         public override void PreExecute()

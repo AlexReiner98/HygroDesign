@@ -58,12 +58,14 @@ namespace HygroDesign.Grasshopper.Components
             }
 
             CrossSectionAgentSystem agentSystem = agents[0].AgentSystem as CrossSectionAgentSystem;
+            if(agentSystem.Trainer.Models.Count==0)return;
 
-            foreach(CrossSectionAgent agent in agents)
+            foreach (CrossSectionAgent agent in agents)
             {
                 Tuple<List<double>, int, double, List<double>> memorySample = new Tuple<List<double>, int, double, List<double>>(agent.PrevState, agent.Action, agent.Reward, agent.StateIn);
-                RhinoApp.WriteLine(agentSystem.Trainer.Models.Count.ToString());
-                agent.Epsilon = agentSystem.Trainer.Train(agent.Id, memorySample, agent.Epsilon);
+                
+                agent.Epsilon = agentSystem.Trainer.Train(agent.Id-1, memorySample, agent.Epsilon);
+                RhinoApp.WriteLine("trained");
                 agent.PrevState = agent.StateIn;
 
                 /*

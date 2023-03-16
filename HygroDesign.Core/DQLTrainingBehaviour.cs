@@ -32,8 +32,8 @@ namespace HygroDesign.Core
         //Update agent position based on chosen behaviour
         public void UpdateAgent(CrossSectionAgent agent)
         {
-            if (agent.Action == 0) agent.Moves.Add(Vector3d.ZAxis); agent.Weights.Add(1.0);
-            if (agent.Action == 1) agent.Moves.Add(Vector3d.ZAxis * -1); agent.Weights.Add(1.0);
+            if (agent.Action == 0) agent.Moves.Add(Vector3d.ZAxis); agent.Weights.Add(0.1);
+            if (agent.Action == 1) agent.Moves.Add(Vector3d.ZAxis * -1); agent.Weights.Add(0.1);
         }
 
         public override void Execute(AgentBase agent)
@@ -42,10 +42,16 @@ namespace HygroDesign.Core
             CrossSectionAgent CSAgent = agent as CrossSectionAgent;
 
             CrossSectionAgentSystem agentSystem = agent.AgentSystem as CrossSectionAgentSystem;
-            if (agentSystem.Trainer.Models.Count < CSAgent.Id + 1) agentSystem.Trainer.BuildModel(InputLength, OutputLength);
+
+            if (agentSystem.Trainer.Models.Count < agentSystem.Agents.Count) 
+            { 
+                agentSystem.Trainer.BuildModel(InputLength, OutputLength); 
+                agentSystem.Trainer.Memory.Add(new List<Tuple<List<double>, int, double, List<double>>>());
+                RhinoApp.WriteLine("built"); 
+            }
 
             Inputs.Clear();
-            Inputs.Add(CSAgent.Position[0]); Inputs.Add(CSAgent.Position[1]); Inputs.Add(CSAgent.Position[2]);
+            Inputs.Add(CSAgent.Position[0]); Inputs.Add(CSAgent.Position[2]);
 
             CSAgent.StateIn = Inputs;
             if (agentSystem.Trainer.Models.Count < CSAgent.Id + 1) CSAgent.ResetState = CSAgent.StateIn;

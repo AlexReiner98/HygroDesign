@@ -5,6 +5,7 @@ using System.Text;
 
 using static Tensorflow.Binding;
 using Tensorflow;
+using Tensorflow.Keras;
 using Tensorflow.NumPy;
 using Tensorflow.Keras.Engine;
 using static Tensorflow.KerasApi;
@@ -15,11 +16,11 @@ namespace HygroDesign.Core.DQL
     {
         Random random = new Random();
 
-        private static int InputLength = 3;
+        private static int InputLength = 2;
         private static int OutputLength = 2;
 
         private static int MaxMemory = 10000;
-        private static int BatchSize = 64;
+        private static int BatchSize = 16;
 
         private static double Alpha = 1;
         private static double Gamma = 0.5;
@@ -28,9 +29,10 @@ namespace HygroDesign.Core.DQL
         private static double FinalEpsilon = 0.05;
 
 
-        public List<Functional> Models = new List<Functional>();
+        public List<Model> Models = new List<Model>();
         public List<List<Tuple<List<double>, int, double, List<double>>>> Memory = new List<List<Tuple<List<double>, int, double, List<double>>>>();
 
+        /*
         public void BuildModel(int inputLength, int outputLength)
         {
             var inputs = keras.Input(shape: (inputLength));
@@ -70,8 +72,59 @@ namespace HygroDesign.Core.DQL
 
             Models.Add(model);
         }
+        */
+        public void BuildModel(int inputLength, int outputLength)
+        {
+            var inputs = keras.Input(shape: inputLength);
+            var outputs = keras.Input(shape: outputLength);
 
-        private Tuple<int, bool> eGreedyPolicy(Tensor qEstimates,double epsilon, int outputLength)
+            List<ILayer> layers = new List<ILayer>();
+            layers.add(keras.layers.Dense(64,
+            input_shape: inputLength,
+            activation: keras.activations.Relu,
+            use_bias: true,
+            kernel_initializer: null,
+            bias_initializer: null));
+
+            layers.add(keras.layers.Dense(
+            32,
+            activation: keras.activations.Relu,
+            use_bias: true,
+            kernel_initializer: null,
+            bias_initializer: null
+            ));
+
+            layers.add(keras.layers.Dense(
+            16,
+            activation: keras.activations.Relu,
+            use_bias: true,
+            kernel_initializer: null,
+            bias_initializer: null
+            ));
+
+            Tensorflow.Keras.ArgsDefinition.ModelArgs args = new Tensorflow.Keras.ArgsDefinition.ModelArgs();
+            args.Inputs = inputs;
+            args.Outputs = outputs;
+            var model = new Model(args);
+
+            
+
+            /*
+            var model = keras.Model(
+               inputs: inputs,
+               outputs: outputs
+               );
+            */
+
+            string[] metrics = new string[1];
+            metrics[0] = "mae";
+
+            model.compile("rmsprop", "mse", metrics);
+            Models.Add(model);
+        }
+
+
+            private Tuple<int, bool> eGreedyPolicy(Tensor qEstimates,double epsilon, int outputLength)
         {
             Random random = new Random();
 
@@ -81,7 +134,7 @@ namespace HygroDesign.Core.DQL
             }
             else
             {
-                return new Tuple<int, bool>((int)np.argmax((NDArray)qEstimates), false);
+                return new Tuple<int, bool>((int)np.argmax((NDArray)qEstimates.ToArray<double>()), false);
             }
         }
 
@@ -96,45 +149,75 @@ namespace HygroDesign.Core.DQL
         {
             Memory[agentID].Add(memorySample);
 
-            if (Memory.Count > MaxMemory) Memory.RemoveAt(0);
+            if (Memory[agentID].Count > MaxMemory) Memory[agentID].RemoveAt(0);
 
-            List<List<List<double>>> batch = new List<List<List<double>>>();
-            if (BatchSize > Memory.Count) batch = (List<List<List<double>>>)Memory.OrderBy(v => random.Next()).Take(Memory.Count);
-            else batch = (List<List<List<double>>>)Memory.OrderBy(v => random.Next()).Take(BatchSize);
+            List<Tuple<List<double>, int, double, List<double>>> batch1 = new List<Tuple<List<double>, int, double, List<double>>>(Memory[agentID]);
+            batch1.OrderBy(v => random.Next());
+            List<Tuple<List<double>, int, double, List<double>>> batch;
+            if (BatchSize > Memory[agentID].Count) batch = batch1.Take(Memory[agentID].Count).ToList();
+            else batch = batch1.OrderBy(v => random.Next()).Take(BatchSize).ToList();
 
-            List<List<double>> tempStates = new List<List<double>>();
-            List<List<double>> tempNextStates = new List<List<double>>();
-            foreach (var sample in batch) tempStates.Add(sample[0]);
-            foreach (var sample in batch) tempNextStates.Add(sample[3]);
+            /*
+            List<Tuple<List<double>, int, double, List<double>>> batch = new List<Tuple<List<double>, int, double, List<double>>>();
+            if (BatchSize > Memory[agentID].Count) batch = (List<Tuple<List<double>, int, double, List<double>>>)Memory[agentID].OrderBy(v => random.Next()).Take(Memory[agentID].Count);
+            else batch = (List<Tuple<List<double>, int, double, List<double>>>)Memory[agentID].OrderBy(v => random.Next()).Take(BatchSize);
+            */
 
-            NDArray states = np.array(tempStates.ToArray());
-            NDArray nextStates = np.array(tempNextStates.ToArray());
+            double[,] tempStates = new double[batch.Count,InputLength];
+            double[,] nextStates = new double[batch.Count,InputLength];
+            for (int i = 0; i < batch.Count; i++)
+            {
+                for (int j = 0; j < batch[i].Item1.Count; j++)
+                {
+                    tempStates[i,j] = batch[i].Item1[j];
+                    nextStates[i,j] = batch[i].Item4[j];
+                }
+            }
 
-            Tensors qsa = Models[agentID].predict(states);
-            Tensors qsad = Models[agentID].predict(nextStates);
+            /*
+            List<double[]> temptempStates = new List<double[]>();
+            List<double[]> tempNextStates = new List<double[]>(); 
+            foreach (var sample in batch) temptempStates.Add(sample.Item1.ToArray());
+            tempStates = temptempStates.ToArray();
+            foreach (var sample in batch) tempNextStates.Add(sample.Item4.ToArray());
+            */
+
+            NDArray states = np.array(tempStates);
+            NDArray next = np.array(nextStates);
+
+            Tensor qsa = Models[agentID].predict(states, batch_size: BatchSize, steps: 1);
+            Tensor qsad = Models[agentID].predict(next, batch_size: BatchSize, steps: 1);
 
             var x = np.zeros(shape: (batch.Count, InputLength));
             var y = np.zeros(shape: (batch.Count, OutputLength));
 
             for (int j = 0; j < batch.Count; j++)
             {
-                int index = j;
-                List<List<double>> sample = batch[j];
-                NDArray stIn = np.array(sample[0].ToArray());
-                int actn = (int)sample[1][0];
-                double rwrd = sample[2][0];
-                List<double> nxtSt = sample[3];
-                Tensors currentQ = qsa[index];
+                //int index = j;
+                Tuple<List<double>, int, double, List<double>> sample = batch[j];
+                NDArray stIn = np.array(sample.Item1.ToArray());
+                int actn = sample.Item2;
+                double rwrd = sample.Item3;
+                List<double> nxtSt = sample.Item4;
+                NDArray currentQ = np.array(qsa[j].ToArray<double>());
 
-                currentQ[actn] = Alpha * (rwrd + Gamma * np.amax((NDArray)qsad[index]));
+                double newQ = Alpha * (rwrd + Gamma * np.amax(qsad[j].ToArray<double>()));
+                currentQ[actn] = newQ;
 
-                x[index] = stIn;
-                y[index] = (NDArray)currentQ;
+                x[j] = stIn;
+                y[j] = currentQ;
             }
 
-            Models[agentID].fit(x, y);
+            Models[agentID].fit(x, y,batch_size: BatchSize);
 
             return FinalEpsilon + (1 - Lamda) * (agentEpsilon - FinalEpsilon);
+        }
+
+        public double[] GetRow(double[,] matrix, int rowNumber)
+        {
+            return Enumerable.Range(0, matrix.GetLength(1))
+                    .Select(x => matrix[rowNumber, x])
+                    .ToArray();
         }
     }
 }
