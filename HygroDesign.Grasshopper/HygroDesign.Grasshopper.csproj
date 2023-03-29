@@ -9,6 +9,7 @@
     <BaseOutputPath>..\bin\</BaseOutputPath>
     <OutputType>Library</OutputType>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 	
   <ItemGroup>

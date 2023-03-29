@@ -92,25 +92,32 @@ namespace HygroDesign.Core
             BoardCurves =  boardCurves;
             return;
         }
-        public void SatisfyMinimumRadius(double minRadius)
+        public int[] SatisfyMinimumRadius(double minRadius)
         {
             MinimumRadius = minRadius;
             double minimumStep = 0.01;
-            int safety = 100;
+            int safety = 1000;
+            int originalSafety = safety;
+            bool[] memberSmaller = new bool[NurbsCurve.Points.Count];
+            int[] iterationCounts = new int[NurbsCurve.Points.Count];
 
             while(safety >= 0)
             {
                 safety--;
 
                 //loop to check clusters
-                bool[] memberSmaller = new bool[NurbsCurve.Points.Count];
+                
                 int falseCount = 0;
                 for (int i = 0; i < BoardCurves.Count; i++)
                 {
-                    if (BoardCurves[i].AverageRadius < MinimumRadius) memberSmaller[BoardCurves[i].ControlPointID] = true;
+                    if (BoardCurves[i].AverageRadius < MinimumRadius) 
+                    { 
+                        memberSmaller[BoardCurves[i].ControlPointID] = true;
+                        if (originalSafety - safety > iterationCounts[BoardCurves[i].ControlPointID]) iterationCounts[BoardCurves[i].ControlPointID] = originalSafety - safety;
+                    }
                     else falseCount++;
                 }
-                if (falseCount == BoardCurves.Count) return;
+                if (falseCount == BoardCurves.Count) return iterationCounts;
 
                 List<Tuple<int, Point3d>> nurbsPoints = new List<Tuple<int, Point3d>>();
                 //loop to update control points
@@ -119,9 +126,9 @@ namespace HygroDesign.Core
                     if (memberSmaller[i] == false) continue;
 
                     Line midLine = new Line(NurbsCurve.Points[i - 1].Location, NurbsCurve.Points[i + 1].Location);
-                    Point3d targetPoint = midLine.ClosestPoint(NurbsCurve.Points[i].Location, true);
+                    Point3d targetPoint = midLine.PointAt(0.5);
                     Vector3d moveVector = new Vector3d(targetPoint - NurbsCurve.Points[i].Location);
-                    moveVector *= 0.1;
+                    moveVector *= 0.5;
 
                     if (moveVector.Length < minimumStep) { moveVector.Unitize(); moveVector *= minimumStep; }
 
@@ -134,6 +141,7 @@ namespace HygroDesign.Core
                 //update nurbs curve
                 NurbsToBoardCurves();
             }
+            return iterationCounts;
         }    
     }
 }

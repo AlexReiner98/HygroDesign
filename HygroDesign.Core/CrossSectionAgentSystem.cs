@@ -11,7 +11,7 @@ using ABxM.Core.Agent;
 using ABxM.Core.AgentSystem;
 
 using HygroDesign.Core.DQL;
-
+using ABxM.Core.Behavior;
 
 namespace HygroDesign.Core
 {
@@ -20,7 +20,7 @@ namespace HygroDesign.Core
         public CrossSection CrossSection;
         public double TotalDisplacement = double.MaxValue;
         public double DisplacementThreshold = -1.0;
-        public Trainer Trainer = new Trainer();
+        public int Iterations = 0;
 
         public CrossSectionAgentSystem(CrossSection crossSection, List<CrossSectionAgent> agents)
         {
@@ -39,10 +39,22 @@ namespace HygroDesign.Core
         public override void Reset()
         {
             base.Reset();
+
             UpdateCrossSection();
             CrossSection.NurbsToBoardCurves();
             TotalDisplacement = double.MaxValue;
-            Trainer.Models.Clear();
+            Iterations = 0;
+        }
+
+        //reset everything except for the DQL models
+        //used to reset the states of the agent iteratively during training
+        public void SoftReset()
+        {
+            foreach (CrossSectionAgent agent in Agents) agent.SoftReset();
+            UpdateCrossSection();
+            CrossSection.NurbsToBoardCurves();
+            TotalDisplacement = double.MaxValue;
+            Iterations = 0;
         }
 
         public override void PreExecute()
@@ -62,6 +74,7 @@ namespace HygroDesign.Core
             base.PostExecute();
             UpdateCrossSection();
             CrossSection.NurbsToBoardCurves();
+            Iterations++;
 
         }
 

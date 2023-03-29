@@ -43,6 +43,7 @@ namespace HygroDesign.Grasshopper.Components
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddGenericParameter("Cross Section", "C", "The updated cross section with minimum radius", GH_ParamAccess.list);
+            pManager.AddIntegerParameter("Iterations", "I", "The number of iterations required to satisfy the curvature requirements", GH_ParamAccess.list);
         }
 
         /// <summary>
@@ -59,9 +60,10 @@ namespace HygroDesign.Grasshopper.Components
             if (!DA.GetData(1, ref iMinRadius)) return;
 
             CrossSection thisCrossSection = new CrossSection(iCrossSection);
-            thisCrossSection.SatisfyMinimumRadius(iMinRadius);
+            int[] iterations = thisCrossSection.SatisfyMinimumRadius(iMinRadius);
 
             DA.SetData(0, thisCrossSection);
+            DA.SetDataList(1, iterations);
         }
 
 

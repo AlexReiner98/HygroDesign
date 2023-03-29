@@ -6,16 +6,6 @@ using System;
 using System.Collections.Generic;
 
 using HygroDesign.Core;
-using ABxM.Core;
-
-using Tensorflow;
-using Tensorflow.NumPy;
-using Tensorflow.Keras.Engine;
-using static Tensorflow.KerasApi;
-using System.IO;
-using ABxM.Core.Agent;
-
-using System.Linq;
 
 namespace HygroDesign.Grasshopper.Components
 {
@@ -58,23 +48,16 @@ namespace HygroDesign.Grasshopper.Components
             }
 
             CrossSectionAgentSystem agentSystem = agents[0].AgentSystem as CrossSectionAgentSystem;
-            if(agentSystem.Trainer.Models.Count==0)return;
 
             foreach (CrossSectionAgent agent in agents)
             {
+                if (agent.AgentModel == null) continue;
                 Tuple<List<double>, int, double, List<double>> memorySample = new Tuple<List<double>, int, double, List<double>>(agent.PrevState, agent.Action, agent.Reward, agent.StateIn);
                 
-                agent.Epsilon = agentSystem.Trainer.Train(agent.Id-1, memorySample, agent.Epsilon);
+                agent.Epsilon = agent.AgentModel.Train(agent.Id, memorySample, agent.Epsilon);
                 RhinoApp.WriteLine("trained");
                 agent.PrevState = agent.StateIn;
 
-                /*
-                int i = agent.Behaviors[0].Solver.IterationCount;
-                if (i % ModelSaveFrequency == 0 && i > 0)
-                {
-                    agent.Model.save(Path.Combine(ModelSavePath, String.Format("{0}.h5", i)));
-                }
-                */
             }
             
         }

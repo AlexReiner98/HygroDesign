@@ -31,6 +31,7 @@ namespace HygroDesign.Grasshopper.Components
 
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
+            pManager.AddIntegerParameter("Perception", "P", "The number of neightbours each agent can percieve in each direction", GH_ParamAccess.item);
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -40,7 +41,9 @@ namespace HygroDesign.Grasshopper.Components
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            DA.SetData("Behaviour", new DQLTrainingBehaviour());
+            int perception = 0;
+            DA.GetData(0, ref perception);
+            DA.SetData("Behaviour", new DQLTrainingBehaviour(perception));
         }
         public override GH_Exposure Exposure => GH_Exposure.primary;
         protected override System.Drawing.Bitmap Icon => null;
