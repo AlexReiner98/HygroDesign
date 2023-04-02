@@ -35,7 +35,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="Copy &quot;..\bin\Debug\net48\HygroDesign.Core.dll&quot; &quot;$(AppData)\Grasshopper\Libraries\HygroDesign.Core.dll&quot;&#xD;&#xA;" />
+    <Exec Command="Copy &quot;..\bin\Debug\net48\HygroDesign.Core.dll&quot; &quot;$(AppData)\Grasshopper\Libraries\HygroDesign\HygroDesign.Core.dll&quot;&#xD;&#xA;" />
   </Target>
 
 </Project>

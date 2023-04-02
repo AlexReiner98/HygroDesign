@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 
 using HygroDesign.Core;
-using ABxM.Core;
-using ABxM.Core.Agent;
 using ABxM.Core.Behavior;
 
 namespace HygroDesign.Grasshopper.Components
