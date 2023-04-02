@@ -9,11 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Keras.NET" Version="3.8.5" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
     <PackageReference Include="NumSharp" Version="0.30.0" />
-    <PackageReference Include="SciSharp.TensorFlow.Redist" Version="2.11.0" />
-    <PackageReference Include="TensorFlow.NET" Version="0.100.4" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
