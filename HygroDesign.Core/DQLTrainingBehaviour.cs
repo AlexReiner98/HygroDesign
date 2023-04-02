@@ -12,8 +12,6 @@ using ABxM.Core.Behavior;
 using ABxM.Core.Agent;
 
 using HygroDesign.Core.DQL;
-//using Python.Runtime;
-//using Tensorflow;
 
 
 namespace HygroDesign.Core
@@ -21,8 +19,8 @@ namespace HygroDesign.Core
     public class DQLTrainingBehaviour : BehaviorBase
     {
         private int thisPerception;
-
-       
+        private int inputLength;
+        private int outputLength = 2;
 
         public DQLTrainingBehaviour( int perception)
         {
@@ -33,9 +31,7 @@ namespace HygroDesign.Core
         public void UpdateAgent(CrossSectionAgent agent)
         {
             if (agent.Action == 0) agent.Moves.Add(Vector3d.ZAxis * 0.1); agent.Weights.Add(1);
-            if (agent.Action == 1) agent.Moves.Add(Vector3d.ZAxis * 0); agent.Weights.Add(1);
-            if (agent.Action == 2) agent.Moves.Add(Vector3d.ZAxis * -0.1); agent.Weights.Add(1);
-
+            if (agent.Action == 1) agent.Moves.Add(Vector3d.ZAxis * -0.1); agent.Weights.Add(1);
         }
 
         public override void Execute(AgentBase agent)
@@ -53,32 +49,27 @@ namespace HygroDesign.Core
                 if (CSAgent.perceptionStart < 0) CSAgent.perceptionStart = 0;
                 CSAgent.perceptionEnd = CSAgent.Id + thisPerception;
                 if (CSAgent.perceptionEnd > csAS.Agents.Count - 1) CSAgent.perceptionEnd = csAS.Agents.Count - 1;
-                CSAgent.InputLength = (CSAgent.perceptionEnd - CSAgent.perceptionStart) + 1;
-                RhinoApp.WriteLine(CSAgent.Perception.ToString());
+                inputLength = (CSAgent.perceptionEnd - CSAgent.perceptionStart) + 1;
             }
 
             //build agent dql model
-            if (CSAgent.AgentModel == null) 
+            if (CSAgent.model == null) 
             {
-                CSAgent.AgentModel = new AgentModel(CSAgent.InputLength, CSAgent.OutputLength);
-                CSAgent.AgentModel.Memory = new List<Tuple<List<double>, int, double, List<double>>>();
-                RhinoApp.WriteLine("built, input = " + CSAgent.InputLength.ToString() + " output = " + CSAgent.OutputLength.ToString()); 
+                CSAgent.model = new AgentModel(inputLength, outputLength);
+                RhinoApp.WriteLine("Model built, input length = " + inputLength.ToString() + " output length = " + outputLength.ToString()); 
             }
 
             //create inputs
-            CSAgent.Inputs.Clear();
+            List<double> inputs = new List<double>();
             for (int i = CSAgent.perceptionStart; i <= CSAgent.perceptionEnd; i++)
             {
                 CrossSectionAgent currentAgent = csAS.Agents[i] as CrossSectionAgent;
-                CSAgent.Inputs.Add(currentAgent.Position[2]);
+                inputs.Add(currentAgent.Position[2]);
             }
             
-
-            CSAgent.StateIn = CSAgent.Inputs;
+            CSAgent.StateIn = inputs.ToArray();
             if (CSAgent.ResetState == null) CSAgent.ResetState = CSAgent.StateIn;
-            RhinoApp.WriteLine(CSAgent.StateIn.ToString());
-            CSAgent.Action = CSAgent.AgentModel.GetAction(CSAgent.StateIn, CSAgent.Epsilon, CSAgent.OutputLength);
-            RhinoApp.WriteLine(CSAgent.Action.ToString());
+            CSAgent.Action = CSAgent.model.GetAction(CSAgent.StateIn);
             UpdateAgent(CSAgent);
         }
     }

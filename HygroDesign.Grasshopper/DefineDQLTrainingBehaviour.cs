@@ -5,12 +5,8 @@ using Rhino;
 using System;
 using System.Collections.Generic;
 
-using static Tensorflow.Binding;
+
 using HygroDesign.Core;
-using ABxM.Core;
-using ABxM.Core.Agent;
-using ABxM.Core.AgentSystem;
-using ABxM.Core.Behavior;
 
 
 

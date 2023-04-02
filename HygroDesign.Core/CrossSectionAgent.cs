@@ -1,61 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using Rhino;
+﻿using System.Collections.Generic;
 using Rhino.Geometry;
-using Rhino.Geometry.Collections;
 
 using ABxM.Core.Agent;
+using ABxM.Core.AgentSystem;
 using ABxM.Core.Behavior;
-
-using static Tensorflow.Binding;
-using Tensorflow;
-using Tensorflow.Keras.Engine;
-using static Tensorflow.KerasApi;
-using System.IO;
-using ABxM.Core.Agent;
 using HygroDesign.Core.DQL;
 
 namespace HygroDesign.Core
-{
+{ 
     public class CrossSectionAgent : CartesianAgent
     {
-        public CrossSectionAgentSystem CrossSectionAgentSystem;
-
-        public double Utilization = 0;
-
-        //DQL variables
+        public AgentModel model;
         public int Action;
         public double Reward;
-        public List<double> StateIn = new List<double>();
-        public List<double> PrevState = new List<double>();
-        public List<double> ResetState = null;
-
-        public static double InitialEpsilon = 0.8;
-        public double Epsilon = InitialEpsilon;
-
-        public AgentModel AgentModel = null;
-
-        public int InputLength;
-        public int OutputLength = 3;
+        public double[] StateIn;
+        public double[] PrevState;
+        public double[] ResetState;
         public int Perception;
         public int perceptionStart;
         public int perceptionEnd;
 
-        public List<double> Inputs = new List<double>();
+        public CrossSectionAgentSystem CrossSectionAgentSystem;
 
-        public CrossSectionAgent(Point3d startPosition, List<BehaviorBase> behaviours)
-            : base(startPosition, behaviours)
+        public CrossSectionAgent(Point3d startPosition, List<BehaviorBase> behaviors) : base(startPosition,behaviors)
         {
-            StartPosition = Position = startPosition;
         }
 
         public override void Reset()
         {
             base.Reset();
-            AgentModel = null;
+            model = null;
             Reward = 0;
             StateIn = ResetState;
             ResetState = null;

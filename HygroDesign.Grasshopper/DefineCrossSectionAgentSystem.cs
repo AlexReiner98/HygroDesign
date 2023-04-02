@@ -31,6 +31,7 @@ namespace HygroDesign.Grasshopper.Components
             pManager.AddGenericParameter("Cross Section", "CS", "The initial cross section for this agent system", GH_ParamAccess.item);
             pManager.AddGenericParameter("Agents", "A", "The cross section agents", GH_ParamAccess.list);
             pManager.AddNumberParameter("Displacement Threshold", "T", "The threshold after which agent system ends", GH_ParamAccess.item,-1.0);
+            pManager.AddIntegerParameter("Soft Reset Value", "R", "Number of iterations between soft resets", GH_ParamAccess.item, -1);
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -48,6 +49,9 @@ namespace HygroDesign.Grasshopper.Components
 
             double iDisplacementThreshold = 0;
             DA.GetData("Displacement Threshold", ref iDisplacementThreshold);
+
+            int softReset = 0;
+            DA.GetData("Soft Reset Value", ref softReset);
 
             // check if agents changed
             bool agentsChanged = false;
@@ -74,6 +78,7 @@ namespace HygroDesign.Grasshopper.Components
             thisCrossSection = crossSection;
 
             if (agentsChanged | crossSectionChanged) agentSystem = new CrossSectionAgentSystem(crossSection, agents);
+            agentSystem.SoftResetIterations = softReset;
 
             agentSystem.DisplacementThreshold = iDisplacementThreshold;
 

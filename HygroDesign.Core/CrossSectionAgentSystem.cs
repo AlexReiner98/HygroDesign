@@ -12,6 +12,7 @@ using ABxM.Core.AgentSystem;
 
 using HygroDesign.Core.DQL;
 using ABxM.Core.Behavior;
+using ABxM.Core.Environments;
 
 namespace HygroDesign.Core
 {
@@ -21,6 +22,7 @@ namespace HygroDesign.Core
         public double TotalDisplacement = double.MaxValue;
         public double DisplacementThreshold = -1.0;
         public int Iterations = 0;
+        public int SoftResetIterations;
 
         public CrossSectionAgentSystem(CrossSection crossSection, List<CrossSectionAgent> agents)
         {
@@ -39,7 +41,6 @@ namespace HygroDesign.Core
         public override void Reset()
         {
             base.Reset();
-
             UpdateCrossSection();
             CrossSection.NurbsToBoardCurves();
             TotalDisplacement = double.MaxValue;
@@ -50,16 +51,20 @@ namespace HygroDesign.Core
         //used to reset the states of the agent iteratively during training
         public void SoftReset()
         {
-            foreach (CrossSectionAgent agent in Agents) agent.SoftReset();
+            foreach(CrossSectionAgent agent in Agents) agent.SoftReset();
+            TotalDisplacement = double.MaxValue;
             UpdateCrossSection();
             CrossSection.NurbsToBoardCurves();
-            TotalDisplacement = double.MaxValue;
             Iterations = 0;
         }
 
         public override void PreExecute()
         {
             base.PreExecute();
+            if (Iterations == SoftResetIterations)
+            {
+                SoftReset();
+            }
         }
 
         public override void Execute()
@@ -70,12 +75,11 @@ namespace HygroDesign.Core
         public override void PostExecute()
         {
             TotalDisplacement = 0.0;
-
             base.PostExecute();
+            
             UpdateCrossSection();
             CrossSection.NurbsToBoardCurves();
             Iterations++;
-
         }
 
         public override bool IsFinished() => base.IsFinished();

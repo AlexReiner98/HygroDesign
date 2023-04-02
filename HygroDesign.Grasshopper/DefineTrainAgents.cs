@@ -1,7 +1,5 @@
 using Rhino;
-using Grasshopper;
 using Grasshopper.Kernel;
-using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 
@@ -24,7 +22,6 @@ namespace HygroDesign.Grasshopper.Components
         {
             pManager.AddGenericParameter("Agents", "A", "The cross section agent to train", GH_ParamAccess.list);
             pManager.AddNumberParameter("Reward", "R", "The reward for the current behaviour", GH_ParamAccess.list);
-
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -51,15 +48,12 @@ namespace HygroDesign.Grasshopper.Components
 
             foreach (CrossSectionAgent agent in agents)
             {
-                if (agent.AgentModel == null) continue;
-                Tuple<List<double>, int, double, List<double>> memorySample = new Tuple<List<double>, int, double, List<double>>(agent.PrevState, agent.Action, agent.Reward, agent.StateIn);
+                if (agent.PrevState == null | agent.model == null) { agent.PrevState = agent.StateIn; continue; }
                 
-                agent.Epsilon = agent.AgentModel.Train(agent.Id, memorySample, agent.Epsilon);
-                RhinoApp.WriteLine("trained");
+                agent.model.Train(agent.PrevState, agent.Action, agent.Reward, agent.StateIn);
+                RhinoApp.WriteLine("Action: " + agent.Action.ToString() + "   Reward: " + agent.Reward.ToString());
                 agent.PrevState = agent.StateIn;
-
             }
-            
         }
 
 
