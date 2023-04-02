@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <Reference Include="ABxM.Core">
-      <HintPath>..\..\..\..\AppData\Roaming\Grasshopper\Libraries\ABxM.Core.dll</HintPath>
+      <HintPath>..\..\..\..\AppData\Roaming\Grasshopper\Libraries\HygroDesign\ABxM.Core.dll</HintPath>
     </Reference>
     <Reference Include="GH_IO">
       <HintPath>C:\Program Files\Rhino 7\Plug-ins\Grasshopper\GH_IO.dll</HintPath>

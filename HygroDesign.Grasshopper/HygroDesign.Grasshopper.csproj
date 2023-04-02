@@ -20,10 +20,10 @@
     <ProjectReference Include="..\HygroDesign.Core.DQL\HygroDesign.Core.DQL.csproj" />
     <ProjectReference Include="..\HygroDesign.Core\HygroDesign.Core.csproj" />
   </ItemGroup>
-  
+	
   <ItemGroup>
     <Reference Include="ABxM.Core">
-      <HintPath>..\..\..\..\AppData\Roaming\Grasshopper\Libraries\ABxM.Core.dll</HintPath>
+      <HintPath>..\..\..\..\AppData\Roaming\Grasshopper\Libraries\HygroDesign\ABxM.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
   
