@@ -68,7 +68,7 @@ namespace HygroDesign.Grasshopper.Components
             if (!DA.GetDataList(4, supportParameters)) return;
             if (!DA.GetData(5, ref basePlane)) return;
 
-            CrossSection crossSection = new CrossSection(radii, directions, boardWidth, snapTolerance, supportParameters, basePlane);
+            Panel crossSection = new CrossSection(radii, directions, boardWidth, snapTolerance, supportParameters, basePlane);
         
 
 
