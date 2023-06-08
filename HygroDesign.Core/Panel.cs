@@ -12,9 +12,6 @@ namespace BilayerDesign
     {
         public PanelBoard[][] Boards;
 
-        public double[][] DesiredCurvatures;
-        public Material[][] DesiredMaterials;
-
         public Plane BasePlane;
         public Surface Surface;
         public double Length;

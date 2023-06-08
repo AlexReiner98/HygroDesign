@@ -26,7 +26,7 @@ namespace HygroDesign.Grasshopper.Components
             pManager[0].Optional = true;
             pManager.AddGenericParameter("Board Width", "W", "The width of a single board in the panel", GH_ParamAccess.item);
             pManager.AddGenericParameter("Board Length", "L", "The length of a single board in the panel", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Width Count", "WC", "The number of boards in the width", GH_ParamAccess.item) ;
+            pManager.AddGenericParameter("Width Count", "WC", "The number of boards in the width", GH_ParamAccess.item);
             pManager.AddGenericParameter("Length Count", "LC", "The number of boards in the length", GH_ParamAccess.item);
         }
 

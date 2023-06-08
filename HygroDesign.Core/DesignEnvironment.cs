@@ -10,7 +10,7 @@ namespace BilayerDesign
 {
     public class DesignEnvironment
     {
-        StockPile StockPile { get; set; }
+        List<StockPile> StockPiles { get; set; }
         List<Panel> Panels { get; set; }
 
         public static Material BeechMaterial = new Material(0.0001, 0.002, 0.0041, 14000, 2280, 1160);
@@ -18,8 +18,12 @@ namespace BilayerDesign
 
         public static Material PassiveMaterial = SpruceMaterial;
         public static double PassiveThickness = 4;
-        
 
+        public DesignEnvironment(List<Panel> panels, List<StockPile> stockPiles)
+        {
+            Panels = panels;
+            StockPiles = stockPiles;
+        }
 
         public static double Timoshenko(double rtAngle, double wmcc, Material activeMaterial, Material passiveMaterial, double activeThickness, double passiveThickness, double timError)
         {
