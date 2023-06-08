@@ -10,6 +10,7 @@ namespace BilayerDesign
 {
     public class Material
     {
+        public string Name; 
         public double LExpansion;
         public double RExpansion;
         public double TExpansion;
@@ -17,8 +18,9 @@ namespace BilayerDesign
         public double RElasticModulus;
         public double TElasticModulus;
 
-        public Material(double LExp, double RExp, double TExp, double LElast, double RElast, double TElast)
+        public Material(string name, double LExp, double RExp, double TExp, double LElast, double RElast, double TElast)
         {
+            Name = name;
             LExpansion = LExp;
             RExpansion = RExp;
             TExpansion = TExp;

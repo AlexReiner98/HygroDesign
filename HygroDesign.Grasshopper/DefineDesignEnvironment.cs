@@ -45,7 +45,7 @@ namespace HygroDesign.Grasshopper.Components
 
             DesignEnvironment designEnvironment = new DesignEnvironment(panels, stockpiles);
 
-            DA.SetData(0, panels);
+            DA.SetDataList(0, designEnvironment.Panels);
         }
 
 

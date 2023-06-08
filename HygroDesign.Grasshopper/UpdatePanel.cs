@@ -47,7 +47,8 @@ namespace HygroDesign.Grasshopper.Components
             {
                 for(int j = 0; j < panel.Boards[i].Length; j++)
                 {
-                    PanelBoard board = boards.Branches[i][j] as PanelBoard;
+                    PanelBoard board;
+                    boards.Branches[i][j].CastTo<PanelBoard>(out board);
                     panel.Boards[i][j] = board;
                 }
             }

@@ -54,7 +54,10 @@ namespace BilayerDesign
                     {
                         Interval rowRange = new Interval(j* BoardLength, (j+1)* BoardLength);
                         Interval colRange = new Interval(Width - (i*BoardWidth), Width - ((i+1)* BoardWidth));
-                        row[j] = new PanelBoard(this, rowRange, colRange);
+                        PanelBoard board = new PanelBoard(this, rowRange, colRange);
+                        board.rowNumber = i;
+                        board.columnNumber = j;
+                        row[j] = board;
                     }
                     Boards[i] = row;
                 }
@@ -83,7 +86,11 @@ namespace BilayerDesign
                         rowRange = new Interval( (j * BoardLength)- (BoardLength / 2),((j+1) * BoardLength) - (BoardLength / 2));
                         }
 
-                        row[j] = new PanelBoard(this, rowRange, colRange);
+                        PanelBoard board = new PanelBoard(this, rowRange, colRange);
+                        board.rowNumber = i;
+                        board.columnNumber = j;
+                        row[j] = board;
+                        
                     }
                     Boards[i] = row;
                 }

@@ -31,6 +31,7 @@ namespace HygroDesign.Grasshopper.Components
         {
             pManager.AddGenericParameter("Board Polyline", "P", "The board polyline.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Board Centroid", "C", "The board centroid.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Material", "M", "The board Material.", GH_ParamAccess.item);
         }
 
         
@@ -41,10 +42,14 @@ namespace HygroDesign.Grasshopper.Components
 
             Polyline poly = board.Polyline;
             Point3d centroid = board.Centroid;
+            Material material = board.Material;
+            double radius = board.StockBoard.PotentialCurvatures[0];
             
 
             DA.SetData(0, poly);
             DA.SetData(1, centroid);
+            DA.SetData(2, material);
+
         }
 
 

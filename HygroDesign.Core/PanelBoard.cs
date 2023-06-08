@@ -15,6 +15,10 @@ namespace BilayerDesign
         public Interval RowRange;
         public Interval ColumnRange;
 
+        public int rowNumber;
+        public int columnNumber;
+        public int panelNumber;
+
         public Polyline Polyline;
         public Point3d Centroid = new Point3d(0,0,0);
 
@@ -22,6 +26,8 @@ namespace BilayerDesign
         public double RadiusWeight;
         public Material DesiredMaterial;
         public double MaterialWeight;
+
+        public StockBoard StockBoard;
 
         public List<PanelBoard> BoardsAbove = new List<PanelBoard>();
         public List<PanelBoard> BoardsBelow = new List<PanelBoard>();

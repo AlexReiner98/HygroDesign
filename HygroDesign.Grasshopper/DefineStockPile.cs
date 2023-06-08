@@ -61,7 +61,7 @@ namespace HygroDesign.Grasshopper.Components
                 boards.Add(new StockBoard(names[i], material, rts[i], lengths[i]));
             }
 
-            StockPile stockpile = new StockPile(boards, wmccs);
+            StockPile stockpile = new StockPile(material, boards, wmccs);
 
             DA.SetData(0, stockpile);
         }
