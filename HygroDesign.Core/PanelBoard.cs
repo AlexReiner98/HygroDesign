@@ -28,6 +28,8 @@ namespace BilayerDesign
         public double MaterialWeight;
 
         public StockBoard StockBoard;
+        public double Radius;
+        public double MoistureChange;
 
         public List<PanelBoard> BoardsAbove = new List<PanelBoard>();
         public List<PanelBoard> BoardsBelow = new List<PanelBoard>();

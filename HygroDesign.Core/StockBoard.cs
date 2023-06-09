@@ -19,6 +19,7 @@ namespace BilayerDesign
             Material = material;
             RTAngle = rtAngle;
             Length = length;
+            Height = 20;
         }
     }
 }

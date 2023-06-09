@@ -15,7 +15,7 @@ namespace BilayerDesign
 
         List<StockBoard> allStock = new List<StockBoard>();
         List<PanelBoard> allBoards = new List<PanelBoard>();
-        List<Tuple<int, double>> allCurvatures = new List<Tuple<int, double>>();
+        List<Tuple<int, double, double>> allCurvatures = new List<Tuple<int, double, double>>();
 
         public static Material BeechMaterial = new Material("beech",0.0001, 0.0020, 0.0041, 14000, 2280, 1160);
         public static Material SpruceMaterial = new Material("spruce",0.0001, 0.0019, 0.0036, 10000, 800, 450);
@@ -33,15 +33,20 @@ namespace BilayerDesign
 
         public void FlattenLists()
         {
+            allStock.Clear();
+            allBoards.Clear();
+            allCurvatures.Clear(); 
             int index = 0;
             foreach(StockPile stockpile in StockPiles)
             {
                 foreach(StockBoard board in stockpile.Boards)
                 {
                     allStock.Add(board);
+                    int moistureIndex = 0;
                     foreach(double curvature in board.PotentialCurvatures)
                     {
-                        allCurvatures.Add(new Tuple<int,double>(index, curvature));
+                        allCurvatures.Add(new Tuple<int,double,double>(index, curvature, stockpile.MoistureChanges[moistureIndex]));
+                        moistureIndex++;
                     }
                     index++;
                 }
@@ -95,14 +100,26 @@ namespace BilayerDesign
                     //find best closest curvature from flat list
                     double closestDifference = double.MaxValue;
                     int closestID = 0;
+                    double radius = 0;
+                    double moistureChange = 0;
                     for(int i = 0; i < allCurvatures.Count;i++)
                     {
                         double currentDifference = Math.Abs(allCurvatures[i].Item2 - board.DesiredRadius);
-                        if (currentDifference < closestDifference) { closestDifference = currentDifference; closestID = allCurvatures[i].Item1; }
+                        if (currentDifference < closestDifference) 
+                        { 
+                            closestDifference = currentDifference; 
+                            closestID = allCurvatures[i].Item1; 
+
+                            radius = allCurvatures[i].Item2; 
+                            moistureChange = allCurvatures[i].Item3; 
+                        }
                     }
 
                     //assign associated stock board's properties to the panel board
                     board.StockBoard = allStock[closestID];
+                    board.Radius = radius;
+                    board.MoistureChange = moistureChange;
+                    board.Name = allStock[closestID].Name;
 
                     //remove the stockboard from the flattened list and continue
                     allStock.Remove(allStock[closestID]);

@@ -31,10 +31,14 @@ namespace HygroDesign.Grasshopper.Components
         {
             pManager.AddGenericParameter("Board Polyline", "P", "The board polyline.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Board Centroid", "C", "The board centroid.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Material", "M", "The board Material.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Material", "M", "The board material.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Radius", "R", "The board radius.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("MoistureChange", "MC", "The board moisture change.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Name", "N", "The board name.", GH_ParamAccess.item);
+
         }
 
-        
+
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             PanelBoard board = null;
@@ -42,13 +46,18 @@ namespace HygroDesign.Grasshopper.Components
 
             Polyline poly = board.Polyline;
             Point3d centroid = board.Centroid;
-            Material material = board.Material;
-            double radius = board.StockBoard.PotentialCurvatures[0];
+            string material = board.Material.Name;
+            double radius = board.Radius;
+            double moistureChange = board.MoistureChange;
+            string name = board.Name;
             
 
             DA.SetData(0, poly);
             DA.SetData(1, centroid);
             DA.SetData(2, material);
+            DA.SetData(3, radius);
+            DA.SetData(4, moistureChange);
+            DA.SetData(5, name);
 
         }
 
