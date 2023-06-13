@@ -9,11 +9,11 @@ using Grasshopper.Kernel.Data;
 
 namespace HygroDesign.Grasshopper.Components
 {
+    /*
 
-    public class DefineSetBoardGoals : GH_Component
+    public class DefineUpdateBoard : GH_Component
     {
-        
-        public DefineSetBoardGoals()
+        public DefineUpdateBoard()
           : base("Set Board Goals", "Board Goals",
             "The the material and curvature goals of a board.",
             "HygroDesign", "Design")
@@ -54,12 +54,13 @@ namespace HygroDesign.Grasshopper.Components
             double materialWeight = 0;
             DA.GetData(4, ref materialWeight);
 
-            board.DesiredRadius = radius;
-            board.RadiusWeight = radiusWeight;
-            board.Material = material;
-            board.MaterialWeight = materialWeight;
 
-            DA.SetData(0, board);
+            boardCopy.DesiredRadius = radius;
+            boardCopy.RadiusWeight = radiusWeight;
+            boardCopy.Material = material;
+            boardCopy.MaterialWeight = materialWeight;
+
+            DA.SetData(0, boardCopy);
         }
 
 
@@ -71,5 +72,7 @@ namespace HygroDesign.Grasshopper.Components
 
 
         public override Guid ComponentGuid => new Guid("AC19D41D-B6C2-4FE3-AF4B-DCE112C37008");
+    
     }
+    */
 }

@@ -32,7 +32,7 @@ namespace BilayerDesign
                 foreach(double moistureChange in MoistureChanges)
                 {
                     
-                    double curvature = Timoshenko(Boards[i].RTAngle, moistureChange, Material, DesignEnvironment.PassiveMaterial, Boards[i].Height, DesignEnvironment.PassiveThickness, 1.0);
+                    double curvature = Timoshenko(Boards[i].RTAngle, moistureChange, Material, DesignEnvironment.PassiveMaterial, 20, DesignEnvironment.PassiveThickness, 1.0);
                     Boards[i].PotentialRadii.Add(curvature,moistureChange);
                 }
             }

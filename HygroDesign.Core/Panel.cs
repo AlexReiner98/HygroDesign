@@ -10,17 +10,18 @@ namespace BilayerDesign
 {
     public class Panel
     {
-        public PanelBoard[][] Boards;
+        public PanelBoard[][] Boards { get; set; }
 
-        public Plane BasePlane;
-        public Surface Surface;
-        public double Length;
-        public double Width;
+        public Plane BasePlane { get; set; }
+        public Surface Surface { get; set; }
+        public double Length { get; set; }
+        public double Width { get; set; }
 
-        public int LengthCount;
-        public int WidthCount;
-        public double BoardWidth;
-        public double BoardLength;
+        public int LengthCount { get; set; }
+        public int WidthCount { get; set; }
+        public double BoardWidth { get; set; }
+        public double BoardLength { get; set; }
+        public int ID { get; set; }
 
 
         public Panel(Plane basePlane, double boardWidth, double boardLength, int widthCount, int lengthCount)
@@ -41,6 +42,27 @@ namespace BilayerDesign
             GenerateBoards();
         }
 
+        public static Panel DeepCopy(Panel source)
+        {
+            Plane basePlane = new Plane(source.BasePlane);
+            Panel panel = new Panel(basePlane, source.BoardWidth, source.BoardLength, source.WidthCount, source.LengthCount);
+
+            int arrayCount = 0;
+            foreach(PanelBoard[] boards in source.Boards) 
+            {
+                PanelBoard[] copyBoards = new PanelBoard[boards.Length];
+                int boardCount = 0;
+                foreach(PanelBoard board in boards)
+                {
+                    panel.Boards[arrayCount][boardCount] = PanelBoard.DeepCopy(board, panel);
+                    boardCount++;
+                }
+                arrayCount++;
+            }
+            return panel;
+        }
+        
+
         private void GenerateBoards()
         {
             for(int i = 0; i < WidthCount; i++)
@@ -54,9 +76,9 @@ namespace BilayerDesign
                     {
                         Interval rowRange = new Interval(j* BoardLength, (j+1)* BoardLength);
                         Interval colRange = new Interval(Width - (i*BoardWidth), Width - ((i+1)* BoardWidth));
-                        PanelBoard board = new PanelBoard(this, rowRange, colRange);
-                        board.rowNumber = i;
-                        board.columnNumber = j;
+                        PanelBoard board = new PanelBoard(rowRange, colRange,this);
+                        board.RowNumber = i;
+                        board.ColumnNumber = j;
                         row[j] = board;
                     }
                     Boards[i] = row;
@@ -86,9 +108,9 @@ namespace BilayerDesign
                         rowRange = new Interval( (j * BoardLength)- (BoardLength / 2),((j+1) * BoardLength) - (BoardLength / 2));
                         }
 
-                        PanelBoard board = new PanelBoard(this, rowRange, colRange);
-                        board.rowNumber = i;
-                        board.columnNumber = j;
+                        PanelBoard board = new PanelBoard( rowRange, colRange,this);
+                        board.RowNumber = i;
+                        board.ColumnNumber = j;
                         row[j] = board;
                         
                     }

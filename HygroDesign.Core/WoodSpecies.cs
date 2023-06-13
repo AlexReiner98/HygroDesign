@@ -4,6 +4,7 @@ using System.Linq;
 
 using Rhino;
 using Rhino.Geometry;
+using static System.Net.Mime.MediaTypeNames;
 
 
 namespace BilayerDesign
@@ -27,6 +28,17 @@ namespace BilayerDesign
             LElasticModulus = LElast;
             RElasticModulus = RElast;
             TElasticModulus = TElast;
+        }
+
+        public Material(Material source)
+        {
+            Name = source.Name;
+            LExpansion = source.LExpansion;
+            RExpansion = source.RExpansion;
+            TExpansion = source.TExpansion;
+            LElasticModulus = source.LElasticModulus;
+            RElasticModulus = source.RElasticModulus;
+            TElasticModulus = source.TElasticModulus;
         }
 
         public Material() 

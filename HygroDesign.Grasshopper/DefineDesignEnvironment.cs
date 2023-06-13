@@ -24,7 +24,7 @@ namespace HygroDesign.Grasshopper.Components
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter("Panels", "P", "Desired panel designs.", GH_ParamAccess.list);
-            pManager.AddGenericParameter("Stockpile", "S", "The set of stock boards used in this design.", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Stockpiles", "S", "The set of stock boards used in this design.", GH_ParamAccess.list);
 
         }
 
@@ -32,9 +32,10 @@ namespace HygroDesign.Grasshopper.Components
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddGenericParameter("Panels", "P", "The updated panels with stock assigned.", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Stockpiles", "S", "The updated stockpiles with fabrication information.", GH_ParamAccess.list);
         }
 
-        
+
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             List<Panel> panels = new List<Panel>();
@@ -46,9 +47,8 @@ namespace HygroDesign.Grasshopper.Components
             DesignEnvironment designEnvironment = new DesignEnvironment(panels, stockpiles);
 
             DA.SetDataList(0, designEnvironment.Panels);
+            DA.SetDataList(1, designEnvironment.StockPiles);
         }
-
-
         
         public override GH_Exposure Exposure => GH_Exposure.primary;
 

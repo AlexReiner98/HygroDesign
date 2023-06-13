@@ -24,7 +24,10 @@ namespace HygroDesign.Grasshopper.Components
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter("Panel", "P", "Panel to update.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Boards", "B", "Boards with goal set.", GH_ParamAccess.tree);
+            pManager.AddGenericParameter("Radius", "R", "Desired radius of board.", GH_ParamAccess.tree);
+            pManager.AddGenericParameter("Radius Weight", "RW", "Importance factor for this board's radius.", GH_ParamAccess.tree);
+            pManager.AddGenericParameter("Material", "M", "Desired material of board.", GH_ParamAccess.tree);
+            pManager.AddGenericParameter("Material Weight", "MW", "Importance factor for this board's material.", GH_ParamAccess.tree);
 
         }
 
@@ -40,20 +43,39 @@ namespace HygroDesign.Grasshopper.Components
             Panel panel = null;
             DA.GetData(0, ref panel);
 
-            GH_Structure<IGH_Goo> boards = new GH_Structure<IGH_Goo>();
-            DA.GetDataTree(1, out boards);
+            GH_Structure<IGH_Goo> radius = new GH_Structure<IGH_Goo>();
+            DA.GetDataTree(1, out radius);
 
-            for(int i = 0; i < panel.Boards.Length; i++)
+            GH_Structure<IGH_Goo> radiusWeight = new GH_Structure<IGH_Goo>();
+            DA.GetDataTree(2, out radiusWeight);
+
+            GH_Structure<IGH_Goo> material = new GH_Structure<IGH_Goo>();
+            DA.GetDataTree(3, out material);
+
+            GH_Structure<IGH_Goo> materialWeight = new GH_Structure<IGH_Goo>();
+            DA.GetDataTree(4, out materialWeight);
+
+            Panel panelCopy = Panel.DeepCopy(panel);
+
+            for(int i = 0; i < panelCopy.Boards.Length; i++)
             {
-                for(int j = 0; j < panel.Boards[i].Length; j++)
+                for(int j = 0; j < panelCopy.Boards[i].Length; j++)
                 {
-                    PanelBoard board;
-                    boards.Branches[i][j].CastTo<PanelBoard>(out board);
-                    panel.Boards[i][j] = board;
+                    radius.Branches[i][j].CastTo<double>(out double DesiredRadius);
+                    panelCopy.Boards[i][j].DesiredRadius = DesiredRadius;
+
+                    radiusWeight.Branches[i][j].CastTo<double>(out double RadiusWeight);
+                    panelCopy.Boards[i][j].RadiusWeight = RadiusWeight;
+
+                    material.Branches[i][j].CastTo<object>(out object Material);
+                    panelCopy.Boards[i][j].DesiredMaterial = Material as Material;
+
+                    materialWeight.Branches[i][j].CastTo<double>(out double MaterialWeight);
+                    panelCopy.Boards[i][j].MaterialWeight = MaterialWeight;
                 }
             }
 
-            DA.SetData(0, panel);
+            DA.SetData(0, panelCopy);
         }
 
 

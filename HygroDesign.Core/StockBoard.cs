@@ -12,7 +12,7 @@ namespace BilayerDesign
     {
 
         public Dictionary<double, double> PotentialRadii = new Dictionary<double, double>();
-        public bool Available = true;
+        public double LengthAvailable = 0;
         public double SelectedRadius = 0;
         public double SelectedMoistureChange = 0;
 
@@ -21,8 +21,7 @@ namespace BilayerDesign
             Name = name;
             Material = material;
             RTAngle = rtAngle;
-            Length = length;
-            Height = 20;
+            LengthAvailable = Length = length;
         }
     }
 }

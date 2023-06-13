@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rhino;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,7 +8,7 @@ namespace BilayerDesign
 {
     public class DesignEnvironment
     {
-        List<StockPile> StockPiles { get; set; }
+        public List<StockPile> StockPiles { get; set; }
         public List<Panel> Panels { get; set; }
 
         List<StockBoard> allStock = new List<StockBoard>();
@@ -53,11 +54,12 @@ namespace BilayerDesign
             int boardID = 0;
             foreach(Panel panel in Panels)
             {
+                panel.ID = panelID;
                 foreach(PanelBoard[] array in panel.Boards)
                 {
                     foreach(PanelBoard board in array)
                     {
-                        board.panelNumber = panelID;
+                        board.PanelNumber = panelID;
                         allBoards.Add(board);
                     }
                     boardID++;
@@ -69,10 +71,9 @@ namespace BilayerDesign
 
         public void ApplyStock()
         {
+            
             //sort by material weight
             List<PanelBoard> materialWeightOrder = allBoards.OrderByDescending(o => o.MaterialWeight).ToList();
-
-            bool[] available = new bool[allStock.Count]; for(int i = 0; i < available.Length; i++) available[i] = true;
 
             //put into new dicts with lenghts limited by the number of stock boards with each material
             Dictionary<string, Tuple<int, List<PanelBoard>>> boardDicts = new Dictionary<string, Tuple<int, List<PanelBoard>>>();
@@ -82,7 +83,7 @@ namespace BilayerDesign
             {
                 foreach(string material in boardDicts.Keys)
                 {
-                    if (board.Material.Name == material & boardDicts[material].Item2.Count < boardDicts[material].Item1)
+                    if (board.DesiredMaterial.Name == material & boardDicts[material].Item2.Count < boardDicts[material].Item1)
                     {
                         boardDicts[material].Item2.Add(board);
                     }
@@ -92,17 +93,20 @@ namespace BilayerDesign
             //sort material lists by curvature weight
             foreach (string material in boardDicts.Keys)
             {
+                
                 List<PanelBoard> panelBoards = boardDicts[material].Item2;
+                
                 List<PanelBoard> radiusWeightOrder = panelBoards.OrderByDescending(o => o.RadiusWeight).ToList();
                 foreach (PanelBoard board in radiusWeightOrder)
                 {
+                    
                     //find closest curvature from flat list
                     double closestDifference = double.MaxValue;
                     StockBoard closestStock = null;
 
                     foreach(StockBoard stockBoard in allStock)
                     {
-                        if (stockBoard.Material.Name != material) continue;
+                        if (stockBoard.Material.Name != material | stockBoard.LengthAvailable < board.Length) continue;
 
                         foreach(double potentialRadius in stockBoard.PotentialRadii.Keys)
                         {
@@ -116,11 +120,11 @@ namespace BilayerDesign
                         }
                     }
                     closestStock.SelectedMoistureChange = closestStock.PotentialRadii[closestStock.SelectedRadius];
-                    closestStock.Available = false;
+                    closestStock.LengthAvailable -= board.Length;
                     board.SetStockBoard(closestStock);
 
                     //update board in panel
-                    Panels[board.panelNumber].Boards[board.rowNumber][board.columnNumber] = board;
+                    Panels[board.PanelNumber].Boards[board.RowNumber][board.ColumnNumber] = board;
                 }
             }
         }
