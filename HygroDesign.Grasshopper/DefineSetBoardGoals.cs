@@ -10,10 +10,10 @@ using Grasshopper.Kernel.Data;
 namespace HygroDesign.Grasshopper.Components
 {
 
-    public class SetBoardGoals : GH_Component
+    public class DefineSetBoardGoals : GH_Component
     {
         
-        public SetBoardGoals()
+        public DefineSetBoardGoals()
           : base("Set Board Goals", "Board Goals",
             "The the material and curvature goals of a board.",
             "HygroDesign", "Design")

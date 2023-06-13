@@ -30,6 +30,7 @@ namespace BilayerDesign
         public StockBoard StockBoard;
         public double Radius;
         public double MoistureChange;
+        public double Error;
 
         public List<PanelBoard> BoardsAbove = new List<PanelBoard>();
         public List<PanelBoard> BoardsBelow = new List<PanelBoard>();
@@ -60,6 +61,15 @@ namespace BilayerDesign
             Centroid += Parent.Surface.PointAt(RowRange[1], ColumnRange[1]);
             Centroid += Parent.Surface.PointAt(RowRange[0], ColumnRange[1]);
             Centroid /= 4;
+        }
+
+        public void SetStockBoard(StockBoard stockBoard)
+        {
+            StockBoard = stockBoard;
+            Name = stockBoard.Name;
+            Radius = stockBoard.SelectedRadius;
+            MoistureChange = stockBoard.SelectedMoistureChange;
+            Error = Math.Abs(Radius - DesiredRadius) / (Radius + DesiredRadius) * 100;
         }
     }
 }

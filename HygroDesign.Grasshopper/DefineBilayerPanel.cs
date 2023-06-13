@@ -9,10 +9,10 @@ using System.Collections.Generic;
 namespace HygroDesign.Grasshopper.Components
 {
 
-    public class BilayerPanel : GH_Component
+    public class DefineBilayerPanel : GH_Component
     {
         
-        public BilayerPanel()
+        public DefineBilayerPanel()
           : base("Bilayer Panel", "Panel",
             "Generate Bilayer Panel",
             "HygroDesign", "Design")

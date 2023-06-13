@@ -10,10 +10,10 @@ using Grasshopper.Kernel.Data;
 namespace HygroDesign.Grasshopper.Components
 {
 
-    public class WoodSpecies : GH_Component
+    public class DefineWoodSpecies : GH_Component
     {
         
-        public WoodSpecies()
+        public DefineWoodSpecies()
           : base("Wood Species", "Species",
             "The wood species with unique mechanical properties.",  
             "HygroDesign", "Design")

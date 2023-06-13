@@ -10,10 +10,10 @@ using Grasshopper.Kernel.Data;
 namespace HygroDesign.Grasshopper.Components
 {
 
-    public class DeconstructBoard : GH_Component
+    public class DefineDeconstructBoard : GH_Component
     {
         
-        public DeconstructBoard()
+        public DefineDeconstructBoard()
           : base("Deconstruct Board", "Dec Board",
             "Deconstructs a board object.",
             "HygroDesign", "Design")
@@ -29,12 +29,12 @@ namespace HygroDesign.Grasshopper.Components
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("Board Polyline", "P", "The board polyline.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Board Centroid", "C", "The board centroid.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Material", "M", "The board material.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Radius", "R", "The board radius.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("MoistureChange", "MC", "The board moisture change.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Name", "N", "The board name.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Polyline", "P", "The board polyline.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Radius", "R", "The board radius.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Moisture Change", "MC", "The board moisture change.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Error", "R", "The percent difference between desired radius and predicted radius.", GH_ParamAccess.item);
+
 
         }
 
@@ -45,19 +45,17 @@ namespace HygroDesign.Grasshopper.Components
             DA.GetData(0, ref board);
 
             Polyline poly = board.Polyline;
-            Point3d centroid = board.Centroid;
-            string material = board.Material.Name;
             double radius = board.Radius;
             double moistureChange = board.MoistureChange;
             string name = board.Name;
+            double error = board.Error;
             
 
-            DA.SetData(0, poly);
-            DA.SetData(1, centroid);
-            DA.SetData(2, material);
-            DA.SetData(3, radius);
-            DA.SetData(4, moistureChange);
-            DA.SetData(5, name);
+            DA.SetData("Polyline", poly);
+            DA.SetData("Radius", radius);
+            DA.SetData("Moisture Change", moistureChange);
+            DA.SetData("Name", name);
+            DA.SetData("Error", error);
 
         }
 

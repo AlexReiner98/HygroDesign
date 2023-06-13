@@ -11,7 +11,10 @@ namespace BilayerDesign
     public class StockBoard : BoardBase
     {
 
-        public List<double> PotentialCurvatures = new List<double>();
+        public Dictionary<double, double> PotentialRadii = new Dictionary<double, double>();
+        public bool Available = true;
+        public double SelectedRadius = 0;
+        public double SelectedMoistureChange = 0;
 
         public StockBoard(string name, Material material, double rtAngle, double length)
         {

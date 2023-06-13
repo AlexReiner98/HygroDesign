@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
+using Rhino;
 
 namespace HygroDesign.Grasshopper.Components
 {

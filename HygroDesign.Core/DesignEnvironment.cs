@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Rhino;
-using Rhino.Geometry;
-
 
 namespace BilayerDesign
 {
@@ -43,7 +40,7 @@ namespace BilayerDesign
                 {
                     allStock.Add(board);
                     int moistureIndex = 0;
-                    foreach(double curvature in board.PotentialCurvatures)
+                    foreach(double curvature in board.PotentialRadii.Keys)
                     {
                         allCurvatures.Add(new Tuple<int,double,double>(index, curvature, stockpile.MoistureChanges[moistureIndex]));
                         moistureIndex++;
@@ -75,6 +72,8 @@ namespace BilayerDesign
             //sort by material weight
             List<PanelBoard> materialWeightOrder = allBoards.OrderByDescending(o => o.MaterialWeight).ToList();
 
+            bool[] available = new bool[allStock.Count]; for(int i = 0; i < available.Length; i++) available[i] = true;
+
             //put into new dicts with lenghts limited by the number of stock boards with each material
             Dictionary<string, Tuple<int, List<PanelBoard>>> boardDicts = new Dictionary<string, Tuple<int, List<PanelBoard>>>();
             foreach(StockPile stockPile in StockPiles) boardDicts.Add(stockPile.Material.Name, new Tuple<int, List<PanelBoard>>(stockPile.BoardCount, new List<PanelBoard>()));
@@ -91,38 +90,34 @@ namespace BilayerDesign
             }
 
             //sort material lists by curvature weight
-            foreach(string material in boardDicts.Keys)
+            foreach (string material in boardDicts.Keys)
             {
                 List<PanelBoard> panelBoards = boardDicts[material].Item2;
                 List<PanelBoard> radiusWeightOrder = panelBoards.OrderByDescending(o => o.RadiusWeight).ToList();
                 foreach (PanelBoard board in radiusWeightOrder)
                 {
-                    //find best closest curvature from flat list
+                    //find closest curvature from flat list
                     double closestDifference = double.MaxValue;
-                    int closestID = 0;
-                    double radius = 0;
-                    double moistureChange = 0;
-                    for(int i = 0; i < allCurvatures.Count;i++)
-                    {
-                        double currentDifference = Math.Abs(allCurvatures[i].Item2 - board.DesiredRadius);
-                        if (currentDifference < closestDifference) 
-                        { 
-                            closestDifference = currentDifference; 
-                            closestID = allCurvatures[i].Item1; 
+                    StockBoard closestStock = null;
 
-                            radius = allCurvatures[i].Item2; 
-                            moistureChange = allCurvatures[i].Item3; 
+                    foreach(StockBoard stockBoard in allStock)
+                    {
+                        if (stockBoard.Material.Name != material) continue;
+
+                        foreach(double potentialRadius in stockBoard.PotentialRadii.Keys)
+                        {
+                            double currentDifference = Math.Abs(potentialRadius - board.DesiredRadius);
+                            if(currentDifference < closestDifference)
+                            {
+                                closestDifference = currentDifference;
+                                closestStock = stockBoard;
+                                closestStock.SelectedRadius = potentialRadius;
+                            }
                         }
                     }
-
-                    //assign associated stock board's properties to the panel board
-                    board.StockBoard = allStock[closestID];
-                    board.Radius = radius;
-                    board.MoistureChange = moistureChange;
-                    board.Name = allStock[closestID].Name;
-
-                    //remove the stockboard from the flattened list and continue
-                    allStock.Remove(allStock[closestID]);
+                    closestStock.SelectedMoistureChange = closestStock.PotentialRadii[closestStock.SelectedRadius];
+                    closestStock.Available = false;
+                    board.SetStockBoard(closestStock);
 
                     //update board in panel
                     Panels[board.panelNumber].Boards[board.rowNumber][board.columnNumber] = board;

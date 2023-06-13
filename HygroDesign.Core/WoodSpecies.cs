@@ -28,5 +28,10 @@ namespace BilayerDesign
             RElasticModulus = RElast;
             TElasticModulus = TElast;
         }
+
+        public Material() 
+        {
+            Name = null;
+        }
     }
 }

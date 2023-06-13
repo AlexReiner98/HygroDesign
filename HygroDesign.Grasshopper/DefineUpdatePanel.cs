@@ -10,10 +10,10 @@ using Grasshopper.Kernel.Types;
 namespace HygroDesign.Grasshopper.Components
 {
 
-    public class UpdatePanel : GH_Component
+    public class DefineUpdatePanel : GH_Component
     {
         
-        public UpdatePanel()
+        public DefineUpdatePanel()
           : base("Update Panel", "Update Panel",
             "Update an existing panel with board goalset.",
             "HygroDesign", "Design")

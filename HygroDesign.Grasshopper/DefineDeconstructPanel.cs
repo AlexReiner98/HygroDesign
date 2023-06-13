@@ -10,10 +10,10 @@ using Grasshopper.Kernel.Data;
 namespace HygroDesign.Grasshopper.Components
 {
 
-    public class DeconstructPanel : GH_Component
+    public class DefineDeconstructPanel : GH_Component
     {
         
-        public DeconstructPanel()
+        public DefineDeconstructPanel()
           : base("Deconstruct Panel", "Deconstruct Panel",
             "Deconstructs a bilayer panel.",
             "HygroDesign", "Design")
