@@ -30,12 +30,13 @@ namespace HygroDesign.Grasshopper.Components
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddGenericParameter("Name", "N", "The board name.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Material", "M", "The board material.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Polyline", "P", "The board polyline.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Radius", "R", "The board radius.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Moisture Change", "MC", "The board moisture change.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Error", "R", "The percent difference between desired radius and predicted radius.", GH_ParamAccess.item);
-
-
+            pManager.AddGenericParameter("Blended Radius", "B", "The blended radius which results from the curvature convolution.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Width", "W", "The board width", GH_ParamAccess.item);
         }
 
 
@@ -44,19 +45,22 @@ namespace HygroDesign.Grasshopper.Components
             PanelBoard board = null;
             DA.GetData(0, ref board);
 
+            
             Polyline poly = board.Polyline;
             double radius = board.Radius;
             double moistureChange = board.MoistureChange;
             string name = board.Name;
             double error = board.Error;
-            
+            double blendedRadius = board.BlendedRadius;
 
+            DA.SetData("Material", board.Material.Name);
             DA.SetData("Polyline", poly);
             DA.SetData("Radius", radius);
             DA.SetData("Moisture Change", moistureChange);
             DA.SetData("Name", name);
             DA.SetData("Error", error);
-
+            DA.SetData("Blended Radius", blendedRadius);
+            DA.SetData("Width", board.Width);
         }
 
 

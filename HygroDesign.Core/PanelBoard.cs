@@ -32,10 +32,11 @@ namespace BilayerDesign
         public double MoistureChange { get; set; }
         public double Error { get; set; }
 
-        public List<PanelBoard> BoardsAbove { get; set; }
-        public List<PanelBoard> BoardsBelow { get; set; }
-        public PanelBoard BoardLeft { get; set; }
-        public PanelBoard BoardRight { get; set; }
+        public double LongStiffnessFactor { get; set; }
+        public double RadStiffnessFactor { get; set; }
+        public double RadiusFactor { get; set; }
+        public List<Tuple<double,double>> ConvolutionWeights { get; set; } 
+        public double BlendedRadius { get; set; }
 
         public PanelBoard(Interval rowRange, Interval columnRange, Panel parent)
         {
@@ -72,6 +73,11 @@ namespace BilayerDesign
             newBoard.MoistureChange = source.MoistureChange;
             newBoard.Error = source.Error;
 
+            newBoard.LongStiffnessFactor = source.LongStiffnessFactor;
+            newBoard.RadStiffnessFactor = source.RadStiffnessFactor;
+            newBoard.RadiusFactor = source.RadiusFactor;
+            newBoard.ConvolutionWeights = source.ConvolutionWeights;
+            newBoard.BlendedRadius = source.BlendedRadius;
             
 
             return newBoard;
@@ -100,8 +106,10 @@ namespace BilayerDesign
         {
             StockBoard = stockBoard;
             Name = stockBoard.Name;
+            Material = stockBoard.Material;
             Radius = stockBoard.SelectedRadius;
             MoistureChange = stockBoard.SelectedMoistureChange;
+            Width = stockBoard.Width;
             Error = Math.Abs(Radius - DesiredRadius) / (Radius + DesiredRadius) * 100;
         }
     }

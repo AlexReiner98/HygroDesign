@@ -27,6 +27,7 @@ namespace HygroDesign.Grasshopper.Components
             pManager.AddGenericParameter("Material", "M", "Wood species of the stockpile.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Name", "N", "Name or identifier sting to keep track of the baords.", GH_ParamAccess.list);
             pManager.AddGenericParameter("Length", "L", "The list of lengths for the boards.", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Width", "W", "The list of widths for the boards.", GH_ParamAccess.list);
             pManager.AddGenericParameter("RTAngle", "RT", "The list of RT angles for the boards.", GH_ParamAccess.list);
             pManager.AddGenericParameter("Moisture Changes", "WMCC", "The acceptable moisture change steps during fabrication.", GH_ParamAccess.list);
 
@@ -50,16 +51,19 @@ namespace HygroDesign.Grasshopper.Components
             List<double> lengths = new List<double>();
             DA.GetDataList(2, lengths);
 
+            List<double> widths = new List<double>();
+            DA.GetDataList(3, widths);
+
             List<double> rts = new List<double>();
-            DA.GetDataList(3, rts);
+            DA.GetDataList(4, rts);
 
             List<double> wmccs = new List<double>();
-            DA.GetDataList(4, wmccs);
+            DA.GetDataList(5, wmccs);
 
             List<StockBoard> boards = new List<StockBoard>();
             for(int i = 0; i < lengths.Count; i++)
             {
-                boards.Add(new StockBoard(names[i], material, rts[i], lengths[i]));
+                boards.Add(new StockBoard(names[i], material, rts[i], lengths[i], widths[i]));
             }
 
             StockPile stockpile = new StockPile(material, boards, wmccs);

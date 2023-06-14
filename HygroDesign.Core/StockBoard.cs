@@ -16,12 +16,13 @@ namespace BilayerDesign
         public double SelectedRadius = 0;
         public double SelectedMoistureChange = 0;
 
-        public StockBoard(string name, Material material, double rtAngle, double length)
+        public StockBoard(string name, Material material, double rtAngle, double length, double width)
         {
             Name = name;
             Material = material;
             RTAngle = rtAngle;
             LengthAvailable = Length = length;
+            Width = width;
         }
     }
 }
