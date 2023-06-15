@@ -40,11 +40,23 @@ namespace HygroDesign.Grasshopper.Components
         {
             List<Panel> panels = new List<Panel>();
             DA.GetDataList(0, panels);
+            
+            List<Panel> copyPanels = new List<Panel>();
+            foreach(Panel panel in panels)
+            {
+                copyPanels.Add(Panel.DeepCopy(panel));
+            }
 
             List<StockPile> stockpiles = new List<StockPile>();
             DA.GetDataList(1, stockpiles);
 
-            DesignEnvironment designEnvironment = new DesignEnvironment(panels, stockpiles);
+            List<StockPile> copyStockPiles = new List<StockPile>();
+            foreach(StockPile stockPile in stockpiles)
+            {
+                copyStockPiles.Add(StockPile.DeepCopy(stockPile));
+            }
+
+            DesignEnvironment designEnvironment = new DesignEnvironment(copyPanels, copyStockPiles);
 
             DA.SetDataList(0, designEnvironment.Panels);
             DA.SetDataList(1, designEnvironment.StockPiles);

@@ -24,6 +24,19 @@ namespace BilayerDesign
             EvaluateStockPile();
         }
 
+        public static StockPile DeepCopy(StockPile source)
+        {
+            Material material = source.Material;
+
+            List<StockBoard> boards = new List<StockBoard>();
+            List<double> moistures = new List<double>();
+
+            foreach(StockBoard board in source.Boards) boards.Add(StockBoard.DeepCopy(board));
+            foreach (double moisture in source.MoistureChanges) moistures.Add(moisture);
+
+            return new StockPile(material, boards, moistures);
+        }
+
         private void EvaluateStockPile()
         {
             for(int i = 0; i < Boards.Count; i++)

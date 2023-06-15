@@ -66,6 +66,7 @@ namespace BilayerDesign
             newBoard.PanelNumber = parent.ID;
             newBoard.DesiredRadius = source.DesiredRadius;
             newBoard.RadiusWeight = source.RadiusWeight;
+            newBoard.DesiredMaterial = source.DesiredMaterial;
             newBoard.Material = source.Material;
             newBoard.MaterialWeight = source.MaterialWeight;
             newBoard.StockBoard = source.StockBoard;

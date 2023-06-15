@@ -102,7 +102,7 @@ namespace BilayerDesign
                     
                     //find closest curvature from flat list
                     double closestDifference = double.MaxValue;
-                    StockBoard closestStock = null;
+                    StockBoard closestStock = allStock[0];
 
                     foreach(StockBoard stockBoard in allStock)
                     {

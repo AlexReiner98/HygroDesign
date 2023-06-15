@@ -24,5 +24,16 @@ namespace BilayerDesign
             LengthAvailable = Length = length;
             Width = width;
         }
+
+        public static StockBoard DeepCopy(StockBoard source)
+        {
+            string name = source.Name;
+            Material material = source.Material;
+            double rtAngle = source.RTAngle;
+            double length = source.LengthAvailable;
+            double width = source.Width;
+            StockBoard stockBoard = new StockBoard(name, material, rtAngle, length, width);
+            return stockBoard;
+        }
     }
 }
