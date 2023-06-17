@@ -13,14 +13,16 @@ namespace BilayerDesign
         public Material Material;
         public List<StockBoard> Boards;
         public List<double> MoistureChanges;
+        public List<double> Multipliers;
         public int BoardCount;
 
-        public StockPile(Material material, List<StockBoard> boards, List<double> moistureChanges)
+        public StockPile(Material material, List<StockBoard> boards, List<double> moistureChanges, List<double> multipliers)
         {
             Material = material;
             Boards = boards;
             BoardCount = boards.Count;
             MoistureChanges = moistureChanges;
+            Multipliers = multipliers;
             EvaluateStockPile();
         }
 
@@ -30,11 +32,13 @@ namespace BilayerDesign
 
             List<StockBoard> boards = new List<StockBoard>();
             List<double> moistures = new List<double>();
+            List<double> multipliers = new List<double>();
 
             foreach(StockBoard board in source.Boards) boards.Add(StockBoard.DeepCopy(board));
             foreach (double moisture in source.MoistureChanges) moistures.Add(moisture);
+            foreach (double multiplier in source.Multipliers) multipliers.Add(multiplier);
 
-            return new StockPile(material, boards, moistures);
+            return new StockPile(material, boards, moistures, multipliers);
         }
 
         private void EvaluateStockPile()
@@ -45,7 +49,7 @@ namespace BilayerDesign
                 foreach(double moistureChange in MoistureChanges)
                 {
                     
-                    double curvature = Timoshenko(Boards[i].RTAngle, moistureChange, Material, DesignEnvironment.PassiveMaterial, 20, DesignEnvironment.PassiveThickness, 1.0);
+                    double curvature = Timoshenko(Boards[i].RTAngle, moistureChange, Material, DesignEnvironment.PassiveMaterial, 20, DesignEnvironment.PassiveThickness, Multipliers[i]);
                     Boards[i].PotentialRadii.Add(curvature,moistureChange);
                 }
             }
