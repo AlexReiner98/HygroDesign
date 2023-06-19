@@ -48,6 +48,7 @@ namespace BilayerDesign
         {
             Plane basePlane = new Plane(source.BasePlane);
             Panel panel = new Panel(basePlane, source.BoardWidth, source.BoardLength, source.WidthCount, source.LengthCount);
+            panel.ID = source.ID;
 
             int arrayCount = 0;
             foreach(PanelBoard[] boards in source.Boards) 

@@ -23,7 +23,7 @@ namespace HygroDesign.Grasshopper.Components
         
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("Panel", "P", "Panel to deconstruct.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Panel", "P", "Panel to deconstruct.", GH_ParamAccess.list);
         }
 
 
@@ -35,19 +35,24 @@ namespace HygroDesign.Grasshopper.Components
         
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            Panel panel = null;
-            DA.GetData(0, ref panel);
+            List<Panel> panels = new List<Panel>();
+            DA.GetDataList(0, panels);
 
             DataTree<PanelBoard> output = new DataTree<PanelBoard>();
-            int index = 0;
-            foreach (PanelBoard[] array in panel.Boards)
+            
+            foreach(Panel panel in panels)
             {
-                foreach(PanelBoard board in array)
+                int index = 0;
+                foreach (PanelBoard[] array in panel.Boards)
                 {
-                    output.Add(board, new GH_Path(index));
+                    foreach (PanelBoard board in array)
+                    {
+                        output.Add(board, new GH_Path(panel.ID,index));
+                    }
+                    index++;
                 }
-                index++;
             }
+            
             
 
             DA.SetDataTree(0, output);

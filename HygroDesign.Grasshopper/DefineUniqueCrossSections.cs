@@ -2,6 +2,7 @@ using BilayerDesign;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
+using Rhino;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,7 @@ namespace HygroDesign.Grasshopper.Components
         
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("Panel", "P", "The panel to analyze.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Panel", "P", "The panel to analyze.", GH_ParamAccess.list);
         }
 
 
@@ -35,22 +36,23 @@ namespace HygroDesign.Grasshopper.Components
         
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            Panel panel = null;
-            DA.GetData(0, ref panel);
-
-
-            List<List<PanelBoard>> boards = panel.GetXRangeSets();
+            List<Panel> panels = new List<Panel>();
+            DA.GetDataList(0, panels);
 
             DataTree<PanelBoard> tree = new DataTree<PanelBoard>();
 
-            for(int i = 0; i < boards.Count; i++)
+            foreach (Panel panel in panels)
             {
-                for(int j = 0; j < boards[i].Count; j++)
+                List<List<PanelBoard>> boards = panel.GetXRangeSets();
+
+                for (int i = 0; i < boards.Count; i++)
                 {
-                    tree.Add(boards[i][j],new GH_Path(i));
+                    for (int j = 0; j < boards[i].Count; j++)
+                    {
+                        tree.Add(boards[i][j], new GH_Path(panel.ID,i));
+                    }
                 }
             }
-
             DA.SetDataTree(0, tree);
         }
 
