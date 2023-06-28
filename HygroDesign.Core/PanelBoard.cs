@@ -35,7 +35,8 @@ namespace BilayerDesign
         public double LongStiffnessFactor { get; set; }
         public double RadStiffnessFactor { get; set; }
         public double RadiusFactor { get; set; }
-        public List<Tuple<double,double>> ConvolutionWeights { get; set; } 
+        public List<Tuple<double,double>> ConvolutionWeights { get; set; }
+        public List<List<double>> WeightsNested { get; set; }
         public double BlendedRadius { get; set; }
 
         public PanelBoard(Interval rowRange, Interval columnRange, Panel parent)

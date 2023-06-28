@@ -121,11 +121,13 @@ namespace BilayerDesign
             }
         }
 
-        public void SetConvolutionFactors(double maxRadiusInfluence)
+        public void SetConvolutionFactors(double maxRadiusInfluence, double stiffnessFactor)
         {
             //get stiffness bounds
             double maxLongStiffness = 0;
+            double minLongStiffness = double.MaxValue;
             double maxHorizStiffness = 0;
+            double minHorizStiffness = double.MaxValue;
             double minCurvature = double.MaxValue;
 
             BoardList = new List<PanelBoard>();
@@ -135,7 +137,9 @@ namespace BilayerDesign
                 foreach (PanelBoard board in boards)
                 {
                     if (board.Material.LElasticModulus > maxLongStiffness) maxLongStiffness = board.Material.LElasticModulus;
+                    if (board.Material.LElasticModulus < minLongStiffness) minLongStiffness = board.Material.LElasticModulus;
                     if (board.Material.RElasticModulus > maxHorizStiffness) maxHorizStiffness = board.Material.RElasticModulus;
+                    if (board.Material.RElasticModulus < minHorizStiffness) minHorizStiffness = board.Material.RElasticModulus;
                     if (board.Radius < minCurvature) minCurvature = board.Radius;
                     BoardList.Add(board);
                 }
@@ -146,8 +150,9 @@ namespace BilayerDesign
             {
                 foreach (PanelBoard board in boards)
                 {
-                    board.LongStiffnessFactor = board.Material.LElasticModulus / maxLongStiffness;
-                    board.RadStiffnessFactor = board.Material.RElasticModulus / maxHorizStiffness;
+                    board.LongStiffnessFactor = Remap(board.Material.LElasticModulus, minLongStiffness, maxLongStiffness, 1 - stiffnessFactor,1);
+                    board.RadStiffnessFactor = Remap(board.Material.RElasticModulus, minHorizStiffness, maxHorizStiffness, 1 - stiffnessFactor,1 );
+
                     board.RadiusFactor = Remap(board.Radius, minCurvature, maxRadiusInfluence, 1, 0);
                 }
             }
@@ -158,11 +163,36 @@ namespace BilayerDesign
             foreach (PanelBoard board in BoardList)
             {
                 board.ConvolutionWeights = new List<Tuple<double, double>>();
-                foreach (PanelBoard testBoard in BoardList)
+                board.WeightsNested = new List<List<double>>();
+                var innerWeights = new List<double>();
+
+                foreach (PanelBoard[] testBoards in Boards)
                 {
-                    double LongFactor = testBoard.RadiusFactor / (Math.Pow(Math.Abs(board.Centroid.X - testBoard.Centroid.X)+1, horizontal) * testBoard.LongStiffnessFactor);
-                    double RadFactor = testBoard.RadiusFactor / (Math.Pow(Math.Abs(board.Centroid.Y - testBoard.Centroid.Y)+1, vertical) * testBoard.RadStiffnessFactor);
-                    board.ConvolutionWeights.Add(new Tuple<double,double>(testBoard.Radius, LongFactor * RadFactor));
+                    innerWeights = new List<double>();
+                    foreach (PanelBoard testBoard in testBoards)
+                    {
+                        double closestX = double.MaxValue;
+                        double closestY = double.MaxValue;
+
+                        if (Math.Abs(testBoard.RowRange[0] - board.Centroid.X) < closestX) closestX = Math.Abs(testBoard.RowRange[0] - board.Centroid.X);
+                        if (Math.Abs(testBoard.RowRange[1] - board.Centroid.X) < closestX) closestX = Math.Abs(testBoard.RowRange[1] - board.Centroid.X);
+                        if (testBoard.RowRange[0] <= board.Centroid.X + 10 && testBoard.RowRange[1] >= board.Centroid.X - 10) closestX = 0;
+                        if (Math.Abs(testBoard.Centroid.X - board.Centroid.X) < closestX) closestX = Math.Abs(testBoard.Centroid.X - board.Centroid.X);
+
+                        if (Math.Abs(testBoard.ColumnRange[0] - board.Centroid.Y) < closestY) closestY = Math.Abs(testBoard.ColumnRange[0] - board.Centroid.Y);
+                        if (Math.Abs(testBoard.ColumnRange[1] - board.Centroid.Y) < closestY) closestY = Math.Abs(testBoard.ColumnRange[1] - board.Centroid.Y);
+                        if (testBoard.ColumnRange[0] <= board.Centroid.Y + 10 && testBoard.ColumnRange[1] >= board.Centroid.Y - 10) closestY = board.Width/2;
+                        if (Math.Abs(testBoard.Centroid.Y - board.Centroid.Y) < closestY) closestY = Math.Abs(testBoard.Centroid.Y - board.Centroid.Y);
+
+                        double LongFactor = testBoard.LongStiffnessFactor / Math.Pow(closestX + 1, horizontal);
+                        double RadFactor = testBoard.RadStiffnessFactor / Math.Pow(closestY + 1, vertical);
+                        board.ConvolutionWeights.Add(new Tuple<double, double>(testBoard.Radius, testBoard.RadiusFactor * (LongFactor * RadFactor)));
+
+                        innerWeights.Add(testBoard.RadiusFactor * (LongFactor * RadFactor));
+                    }
+                    board.WeightsNested.Add(innerWeights);
+                      
+
                 }
             }
 
@@ -179,6 +209,12 @@ namespace BilayerDesign
                     board.BlendedRadius /= weightSum;
                 }
             }
+        }
+
+        public List<List<double>> GetNeighborWeights(List<int> indexes)
+        {
+            PanelBoard currentBoard = Boards[indexes[0]][indexes[1]];
+            return currentBoard.WeightsNested;
         }
 
         public List<List<PanelBoard>> GetXRangeSets()
@@ -216,188 +252,9 @@ namespace BilayerDesign
             return output;
         }
 
-
-
-
         public static double Remap(double val, double from1, double to1, double from2, double to2)
         {
             return (val - from1) / (to1 - from1) * (to2 - from2) + from2;
         }
     }
 }
-
-
-/* int rowCount = initialPrediction.BranchCount;
-    int columnCount = initialPrediction.Branch(0).Count;
-    
-    //create 2d arrays
-    double[,] prediction = new double[columnCount, rowCount];
-    double[,] stiffness = new double[columnCount, rowCount];
-
-    //fill arrays and get bounds
-    double minStiffness = double.MaxValue;
-    double minRad = double.MaxValue;
-    double maxRad = 0;
-
-    for(int j = 0; j < initialPrediction.BranchCount; j++)
-    {
-      for(int i = 0; i < initialPrediction.Branch(j).Count; i++)
-      {
-        prediction[i, j] = initialPrediction.Branch(j)[i];
-        stiffness[i, j] = boardStiffness.Branch(j)[i];
-
-        if(stiffness[i, j] < minStiffness)minStiffness = stiffness[i, j];
-        if(prediction[i, j] < minRad)minRad = prediction[i, j];
-        if(prediction[i, j] > maxRad)maxRad = prediction[i, j];
-      }
-    }
-    Tuple<double,double> radBounds = new Tuple<double,double>(minRad, 20000.0);
-
-    //scale min stiffness to 1 and max stiffness proportionally
-    for(int i = 0; i < columnCount; i++)
-    {
-      for(int j = 0; j < rowCount; j++)
-      {
-        stiffness[i, j] /= minStiffness;
-      }
-    }
-
-    //create convolution results array
-    Tuple<double,double>[,] predictionBlend = new Tuple<double,double>[columnCount, rowCount];
-
-    //perform convolution
-    for(int i = 0;  i < columnCount; i++)
-    {
-      for(int j = 0; j < rowCount; j++)
-      {
-        predictionBlend[i, j] = Convolution(i, j, prediction, radBounds, stiffness, tangentialBlend, longitudinalBlend, columnCount, rowCount);
-      }
-    }
-
-    //create output tree
-    DataTree<double> output = new DataTree<double>();
-    for(int i = 0;  i < columnCount; i++)
-    {
-      for(int j = 0; j < rowCount; j++)
-      {
-        output.Add(predictionBlend[i, j].Item1, new GH_Path(j, i));
-        output.Add(predictionBlend[i, j].Item2, new GH_Path(j, i));
-      }
-    }
-    weightedAverages = output;
-
-    //output weights for selected board's convolution
-    selectedWeights = ConvolutionWeights(displayCol, displayRow, prediction, radBounds, stiffness, tangentialBlend, longitudinalBlend, columnCount, rowCount);
-
-    //output display surfaces
-    DataTree<Surface> surfaceOutput = new DataTree<Surface>();
-    for(int i = 0; i < boards.BranchCount; i++)
-    {
-      for(int j = 0; j < boards.Branch(i).Count; j++)
-      {
-        if(i == displayRow)surfaceOutput.Add(boards.Branch(i)[j], new GH_Path(1));
-        if(j == displayCol)surfaceOutput.Add(boards.Branch(i)[j], new GH_Path(0));
-      }
-    }
-    surfaces = surfaceOutput;
-
-public Tuple<double,double> Convolution(int colNum, int rowNum, double[,] array, Tuple<double,double> radBounds, double[,] stiffness, double tanBlend, double longBlend, int cols, int rows)
-  {
-    //calculate column weights
-    double[] colWeights = new double[rows];
-    for(int row = 0; row < rows; row++)
-    {
-      double radiusFactor = Math.Pow(Remap(array[colNum, row], radBounds.Item1, radBounds.Item2, 1, 0), 2);
-      colWeights[row] = radiusFactor / Math.Pow((Math.Abs(row - rowNum) + 1) / stiffness[colNum, row], longBlend);
-    }
-
-    //calculate row weights
-    double[] rowWeights = new double[cols];
-    for(int col = 0; col < cols; col++)
-    {
-      double radiusFactor = Math.Pow(Remap(array[col, rowNum], radBounds.Item1, radBounds.Item2, 1, 0), 2);
-      rowWeights[col] = radiusFactor / Math.Pow((Math.Abs(col - colNum) + 1) / stiffness[col, rowNum], tanBlend);
-    }
-
-    //calculate weighted averages col
-    double totalValuesCol = 0;
-    double totalWeightsCol = 0;
-    for(int row = 0; row < rows; row++)
-    {
-      totalValuesCol += array[colNum, row] * colWeights[row];
-      totalWeightsCol += colWeights[row];
-    }
-    double weightedColVal = totalValuesCol / totalWeightsCol;
-
-    //calculate weighted averages row
-    double totalValuesRow = 0;
-    double totalWeightsRow = 0;
-    for(int col = 0; col < cols; col++)
-    {
-      totalValuesRow += array[col, rowNum] * rowWeights[col];
-      totalWeightsRow += rowWeights[col];
-    }
-    double weightedRowVal = totalValuesRow / totalWeightsRow;
-
-    return new Tuple<double,double>(weightedColVal, weightedRowVal);
-  }
-
-
-
-
-  public DataTree<double> ConvolutionWeights(int colNum, int rowNum, double[,] array, Tuple<double,double> radBounds, double[,] stiffness, double tanBlend, double longBlend, int cols, int rows)
-  {
-    //calculate column weights
-    double[] colWeights = new double[rows];
-    double[] colDistance = new double[rows];
-    double[] colStiffness = new double[rows];
-    double[] colRadFact = new double[rows];
-
-    for(int row = 0; row < rows; row++)
-    {
-      double radiusFactor = Math.Pow(Remap(array[colNum, row], radBounds.Item1, radBounds.Item2, 1, 0), 2);
-      colWeights[row] = radiusFactor / Math.Pow((Math.Abs(row - rowNum) + 1) / stiffness[colNum, row], longBlend);
-
-      //record varius factors
-      colDistance[row] = Math.Abs(row - rowNum) + 1;
-      colStiffness[row] = stiffness[colNum, row];
-      colRadFact[row] = radiusFactor;
-    }
-
-    //calculate row weights
-    double[] rowWeights = new double[cols];
-    double[] rowDistance = new double[cols];
-    double[] rowStiffness = new double[cols];
-    double[] rowRadFact = new double[cols];
-
-    for(int col = 0; col < cols; col++)
-    {
-      double radiusFactor = Math.Pow(Remap(array[col, rowNum], radBounds.Item1, radBounds.Item2, 1, 0), 2);
-      rowWeights[col] = radiusFactor / Math.Pow((Math.Abs(col - colNum) + 1) / stiffness[col, rowNum], tanBlend);
-
-      //record varius factors
-      rowDistance[col] = Math.Abs(col - colNum) + 1;
-      rowStiffness[col] = stiffness[col, rowNum];
-      rowRadFact[col] = radiusFactor;
-    }
-
-    //output weights
-    DataTree<double> output = new DataTree<double>();
-    foreach(double val in colWeights)output.Add(val, new GH_Path(0, 0));
-    foreach(double val in colDistance)output.Add(val, new GH_Path(0, 1));
-    foreach(double val in colStiffness)output.Add(val, new GH_Path(0, 2));
-    foreach(double val in colRadFact)output.Add(val, new GH_Path(0, 3));
-
-    foreach(double val in rowWeights)output.Add(val, new GH_Path(1, 0));
-    foreach(double val in rowDistance)output.Add(val, new GH_Path(1, 1));
-    foreach(double val in rowStiffness)output.Add(val, new GH_Path(1, 2));
-    foreach(double val in rowRadFact)output.Add(val, new GH_Path(1, 3));
-    return output;
-  }
-
-
-
-  public double Remap (double val, double from1, double to1, double from2, double to2) {
-    return (val - from1) / (to1 - from1) * (to2 - from2) + from2;
-  }
-*/
