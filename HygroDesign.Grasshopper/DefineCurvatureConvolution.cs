@@ -27,9 +27,7 @@ namespace HygroDesign.Grasshopper.Components
             pManager.AddGenericParameter("Tengential Blending", "T", "The tangential blending factor.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Longitudinal Blending", "L", "The longitudinal blending factor.", GH_ParamAccess.item);
             pManager.AddNumberParameter("Max Radius Influence", "R", "The maximum radius in for remapping the radius to the radius factor. Lower numbers bias towards lower  blended radii.", GH_ParamAccess.item, 100000);
-            pManager.AddNumberParameter("Stiffness Factor", "S", "The factor used to control the weight variations in stiffness are given to the weighted average", GH_ParamAccess.item, 1.0);
-            pManager.AddGenericParameter("Visualize Board Weights", "V", "The index values of the board whose neighbours weights should be visualized", GH_ParamAccess.list);
-            pManager[5].Optional = true;
+            pManager.AddIntegerParameter("Visualize Board Weights", "V", "The index values of the board whose neighbours weights should be visualized", GH_ParamAccess.item, 0);
         }
 
 
@@ -54,37 +52,43 @@ namespace HygroDesign.Grasshopper.Components
             double maxRad = 0;
             DA.GetData(3, ref maxRad);
 
-            double stiffnessFactor = 0;
-            DA.GetData(4, ref stiffnessFactor);
+            int index = 0;
+            DA.GetData(4, ref index);
 
-            List<int> indexes = new List<int>();
-            DA.GetDataList(5, indexes);
+            var panelsArray = new double[panels.Count][][];
 
-            List<List<List<double>>> weightsArray = new List<List<List<double>>>();
+            for (int i = 0; i < panels.Count; i++)
+            {
+                panels[i] = Panel.DeepCopy(panels[i]);
+                for (int j = 0; j < panels[i].Bilayers.Count; j++)
+                {
+                    panels[i].Bilayers[j].SetConvolutionFactors(maxRad);
+                    panels[i].Bilayers[j].CurvatureConvolution(longitudinal, tangential);
+                }
+                panels[i].ThicknessConvolution();
+            }
 
             for(int i = 0; i < panels.Count; i++)
             {
-                panels[i] = Panel.DeepCopy(panels[i]);
-                panels[i].SetConvolutionFactors(maxRad, stiffnessFactor);
-                panels[i].CurvatureConvolution(longitudinal, tangential);
-
-                //if (indexes.Count != 2 | indexes.Count != 0) { AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "indexes must be two interger values"); return; }
-                if(indexes.Count == 2) weightsArray.Add(panels[i].GetNeighborWeights(indexes));
-
+                var bilayersArray = new double[panels[i].Bilayers.Count][];
+                for (int j = 0; j < panels[i].Bilayers.Count; j++)
+                {
+                    bilayersArray[j] = panels[i].Bilayers[j].GetNeighborWeights(index).ToArray();
+                }
+                panelsArray[i] = bilayersArray;
             }
+
             DA.SetDataList(0, panels);
 
-            if (indexes.Count != 2) return;
             DataTree<double> weights = new DataTree<double>();
-            for(int i = 0; i < weightsArray.Count; i++)
+            for(int i = 0; i < panelsArray.Length; i++)
             {
-                for(int j = 0; j< weightsArray[i].Count; j++)
+                for(int j = 0; j< panelsArray[i].Length; j++)
                 {
-                    for(int v = 0; v < weightsArray[i][j].Count;v++)
+                    for(int v = 0; v < panelsArray[i][j].Length;v++)
                     {
-                        weights.Add(weightsArray[i][j][v], new GH_Path(i,j));
+                        weights.Add(panelsArray[i][j][v], new GH_Path(i,j));
                     }
-                    
                 }
             }
 

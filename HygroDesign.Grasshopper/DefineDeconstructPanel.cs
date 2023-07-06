@@ -15,7 +15,7 @@ namespace HygroDesign.Grasshopper.Components
         
         public DefineDeconstructPanel()
           : base("Deconstruct Panel", "Deconstruct Panel",
-            "Deconstructs a bilayer panel.",
+            "Deconstructs a panel into bilayers.",
             "HygroDesign", "Design")
         {
         }
@@ -29,7 +29,7 @@ namespace HygroDesign.Grasshopper.Components
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("Boards", "B", "The board objects making up the panel.", GH_ParamAccess.tree);
+            pManager.AddGenericParameter("Bilayers", "B", "The bilayer objects making up the panel.", GH_ParamAccess.tree);
         }
 
         
@@ -38,19 +38,14 @@ namespace HygroDesign.Grasshopper.Components
             List<Panel> panels = new List<Panel>();
             DA.GetDataList(0, panels);
 
-            DataTree<PanelBoard> output = new DataTree<PanelBoard>();
+            DataTree<Bilayer> output = new DataTree<Bilayer>();
             
-            foreach(Panel panel in panels)
-            {
-                int index = 0;
-                foreach (PanelBoard[] array in panel.Boards)
+            for(int i = 0; i < panels.Count; i++)
+            { 
+                foreach (Bilayer bilayer in panels[i].Bilayers)
                 {
-                    foreach (PanelBoard board in array)
-                    {
-                        output.Add(board, new GH_Path(panel.ID,index));
-                    }
-                    index++;
-                }
+                    output.Add(bilayer, new GH_Path(i));
+                }  
             }
             
             

@@ -29,14 +29,13 @@ namespace HygroDesign.Grasshopper.Components
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
+            pManager.AddGenericParameter("Polyline", "P", "The board polyline.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Name", "N", "The board name.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Material", "M", "The board material.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Polyline", "P", "The board polyline.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Radius", "R", "The board radius.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Moisture Change", "MC", "The board moisture change.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Error", "E", "The percent difference between desired radius and predicted radius.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Blended Radius", "B", "The blended radius which results from the curvature convolution.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Width", "W", "The board width", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Radius", "R", "The pure timoshenko prediction of the board's radius.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Blended Radius", "BR", "The blended radius which results from the curvature convolution.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Thickness Blended Radius", "TBR", "The blended radius which results from a weighted average of this board and its thickness neighbors, after the curvature convolution.", GH_ParamAccess.item);
         }
 
 
@@ -50,9 +49,8 @@ namespace HygroDesign.Grasshopper.Components
             DA.SetData("Radius", board.Radius);
             DA.SetData("Moisture Change", board.MoistureChange);
             DA.SetData("Name", board.Name);
-            DA.SetData("Error", board.Error);
             DA.SetData("Blended Radius", board.BlendedRadius);
-            DA.SetData("Width", board.Width);
+            DA.SetData("Thickness Blended Radius", board.ThicknessBlendedRadius);
         }
 
 

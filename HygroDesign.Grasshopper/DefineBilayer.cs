@@ -9,12 +9,12 @@ using System.Collections.Generic;
 namespace HygroDesign.Grasshopper.Components
 {
 
-    public class DefineBilayerPanel : GH_Component
+    public class DefineBilayer : GH_Component
     {
         
-        public DefineBilayerPanel()
-          : base("Bilayer Panel", "Panel",
-            "Generate Bilayer Panel",
+        public DefineBilayer()
+          : base("Bilayer", "Bilayer",
+            "Generate Bilayer",
             "HygroDesign", "Design")
         {
         }
@@ -22,10 +22,10 @@ namespace HygroDesign.Grasshopper.Components
         
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("Base Plane", "P", "The base plane for the panel to be generated from", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Base Plane", "P", "The base plane for the bilayer to be generated from", GH_ParamAccess.item);
             pManager[0].Optional = true;
-            pManager.AddGenericParameter("Board Width", "W", "The width of a single board in the panel", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Board Length", "L", "The length of a single board in the panel", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Board Width", "W", "The width of a single board in the bilayer", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Board Length", "L", "The length of a single board in the bilayer", GH_ParamAccess.item);
             pManager.AddGenericParameter("Width Count", "WC", "The number of boards in the width", GH_ParamAccess.item);
             pManager.AddGenericParameter("Length Count", "LC", "The number of boards in the length", GH_ParamAccess.item);
         }
@@ -33,7 +33,7 @@ namespace HygroDesign.Grasshopper.Components
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("Panel", "P", "The bilayer panel object", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Bilayer", "B", "The bilayer object", GH_ParamAccess.item);
         }
 
         
@@ -54,9 +54,9 @@ namespace HygroDesign.Grasshopper.Components
             double lengthCount = 0;
             DA.GetData(4, ref lengthCount);
 
-            Panel panel = new Panel(plane,boardWidth, boardLength, (int)widthCount, (int)lengthCount);
+            Bilayer bilayer = new Bilayer(plane,boardWidth, boardLength, (int)widthCount, (int)lengthCount);
 
-            DA.SetData(0, panel);
+            DA.SetData(0, bilayer);
         }
 
 

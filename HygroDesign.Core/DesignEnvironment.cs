@@ -51,19 +51,16 @@ namespace BilayerDesign
             }
 
             int panelID = 0;
-            int boardID = 0;
             foreach(Panel panel in Panels)
             {
                 panel.ID = panelID;
-                foreach(PanelBoard[] array in panel.Boards)
+                foreach(Bilayer bilayer in panel.Bilayers)
                 {
-                    foreach(PanelBoard board in array)
-                    {
-                        board.PanelNumber = panelID;
+                    bilayer.PanelNumber = panelID;
+                    foreach(PanelBoard board in bilayer.Boards)
+                    { 
                         allBoards.Add(board);
                     }
-                    boardID++;
-                    
                 }
                 panelID++;
             }
@@ -71,15 +68,12 @@ namespace BilayerDesign
 
         public void ApplyStock()
         {
-            
-            //sort by material weight
-            List<PanelBoard> materialWeightOrder = allBoards.OrderByDescending(o => o.MaterialWeight).ToList();
 
             //put into new dicts with lenghts limited by the number of stock boards with each material
             Dictionary<string, Tuple<int, List<PanelBoard>>> boardDicts = new Dictionary<string, Tuple<int, List<PanelBoard>>>();
             foreach(StockPile stockPile in StockPiles) boardDicts.Add(stockPile.Material.Name, new Tuple<int, List<PanelBoard>>(stockPile.BoardCount, new List<PanelBoard>()));
 
-            foreach(PanelBoard board in materialWeightOrder)
+            foreach(PanelBoard board in allBoards)
             {
                 foreach(string material in boardDicts.Keys)
                 {
@@ -93,7 +87,6 @@ namespace BilayerDesign
             //sort material lists by curvature weight
             foreach (string material in boardDicts.Keys)
             {
-                
                 List<PanelBoard> panelBoards = boardDicts[material].Item2;
                 
                 List<PanelBoard> radiusWeightOrder = panelBoards.OrderByDescending(o => o.RadiusWeight).ToList();
@@ -122,9 +115,6 @@ namespace BilayerDesign
                     closestStock.SelectedMoistureChange = closestStock.PotentialRadii[closestStock.SelectedRadius];
                     closestStock.LengthAvailable -= board.Length;
                     board.SetStockBoard(closestStock);
-
-                    //update board in panel
-                    Panels[board.PanelNumber].Boards[board.RowNumber][board.ColumnNumber] = board;
                 }
             }
         }
