@@ -11,10 +11,10 @@ using Rhino;
 namespace HygroDesign.Grasshopper.Components
 {
 
-    public class DefineStockpile : GH_Component
+    public class DefineStockBoards : GH_Component
     {
         
-        public DefineStockpile()
+        public DefineStockBoards()
           : base("Stock Boards", "Stock Boards",
             "Define a set of stock which will be used to create the bilayer design.",
             "HygroDesign", "Design")

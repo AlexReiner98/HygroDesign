@@ -55,10 +55,11 @@ namespace BilayerDesign
 
             Bilayer bilayer = new Bilayer(basePlane, source.BoardWidth, source.BoardLength, source.WidthCount, source.LengthCount, source.ActiveThickness, source.PassiveThickness, source.PassiveSpecies);
             bilayer.ID = source.ID;
+            bilayer.Boards.Clear();
 
-            for(int i = 0; i < bilayer.Boards.Count; i++)
+            for(int i = 0; i < boards.Count; i++)
             {
-                bilayer.Boards[i] = PanelBoard.DeepCopy(boards[i], bilayer);
+                bilayer.Boards.Add(PanelBoard.DeepCopy(boards[i], bilayer));
             }
             return bilayer;
         }

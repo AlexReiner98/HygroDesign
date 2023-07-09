@@ -18,9 +18,10 @@ namespace BilayerDesign
         {
             Bilayers = bilayers;
 
-            foreach(Bilayer bilayer in Bilayers)
+            for(int i = 0; i < Bilayers.Count; i++)
             {
-                bilayer.Parent = this;
+                Bilayers[i].ID = i;
+                Bilayers[i].Parent = this;
             }
         }
 
@@ -138,6 +139,34 @@ namespace BilayerDesign
 
             }
             return output;
+        }
+
+        public void ApplyThicknessGradient(List<double> thicknesses)
+        {
+            List<double> remappedThicknesses = new List<double>();
+            for(int i = 0; i < thicknesses.Count; i++)
+            {
+                remappedThicknesses.Add(Remap(thicknesses[i], 0, 1, 1, Bilayers.Count));
+                
+            }
+            
+            List<PanelBoard> forRemoval = new List<PanelBoard>();
+
+            for(int i = 0; i < Bilayers.Count;i++)
+            {
+                for(int j = 0; j < Bilayers[i].Boards.Count; j++)
+                {
+                    if (remappedThicknesses[j] <= i)
+                    {
+                        forRemoval.Add(Bilayers[i].Boards[j]);
+                    }
+                }
+                foreach (PanelBoard board in forRemoval)
+                {
+                    Bilayers[i].Boards.Remove(board);
+                }
+            }
+
         }
 
         public static double Remap(double val, double from1, double to1, double from2, double to2)

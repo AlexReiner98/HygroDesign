@@ -28,6 +28,12 @@ namespace BilayerDesign
         public DesignEnvironment(List<Panel> panels, List<StockBoard> stockBoards, List<double> moistureChanges)
         {
             Panels = panels;
+
+            for(int i = 0; i < Panels.Count; i++)
+            {
+                Panels[i].ID = i;
+            }
+
             StockBoards = stockBoards;
             MoistureChanges = moistureChanges;
             AnalyzeInputs();
