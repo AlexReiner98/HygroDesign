@@ -24,15 +24,15 @@ namespace HygroDesign.Grasshopper.Components
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter("Panels", "P", "Desired panel designs.", GH_ParamAccess.list);
-            pManager.AddGenericParameter("Stockpiles", "S", "The set of stock boards used in this design.", GH_ParamAccess.list);
-
+            pManager.AddGenericParameter("Stock Boards", "S", "The set of stock boards used in this design.", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Moisture Changes", "M", "The set of moisture changes used in this design", GH_ParamAccess.list);
         }
 
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddGenericParameter("Panels", "P", "The updated panels with stock assigned.", GH_ParamAccess.list);
-            pManager.AddGenericParameter("Stockpiles", "S", "The updated stockpiles with fabrication information.", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Stock Boards", "S", "The updated stock boards with fabrication information.", GH_ParamAccess.list);
         }
 
 
@@ -47,19 +47,22 @@ namespace HygroDesign.Grasshopper.Components
                 copyPanels.Add(Panel.DeepCopy(panel));
             }
 
-            List<StockPile> stockpiles = new List<StockPile>();
-            DA.GetDataList(1, stockpiles);
+            List<StockBoard> stockBoards = new List<StockBoard>();
+            DA.GetDataList(1, stockBoards);
 
-            List<StockPile> copyStockPiles = new List<StockPile>();
-            foreach(StockPile stockPile in stockpiles)
+            List<StockBoard> copyStockBoards = new List<StockBoard>();
+            foreach(StockBoard stockBoard in stockBoards)
             {
-                copyStockPiles.Add(StockPile.DeepCopy(stockPile));
+                copyStockBoards.Add(StockBoard.DeepCopy(stockBoard));
             }
 
-            DesignEnvironment designEnvironment = new DesignEnvironment(copyPanels, copyStockPiles);
+            List<double> moistureChanges = new List<double>();
+            DA.GetDataList(2, moistureChanges);
+
+            DesignEnvironment designEnvironment = new DesignEnvironment(copyPanels, copyStockBoards, moistureChanges);
 
             DA.SetDataList(0, designEnvironment.Panels);
-            DA.SetDataList(1, designEnvironment.StockPiles);
+            DA.SetDataList(1, designEnvironment.StockBoards);
         }
         
         public override GH_Exposure Exposure => GH_Exposure.primary;

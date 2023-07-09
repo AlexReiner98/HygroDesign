@@ -9,7 +9,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace BilayerDesign
 {
-    public class Material
+    public class Species
     {
         public string Name; 
         public double LExpansion;
@@ -19,7 +19,7 @@ namespace BilayerDesign
         public double RElasticModulus;
         public double TElasticModulus;
 
-        public Material(string name, double LExp, double RExp, double TExp, double LElast, double RElast, double TElast)
+        public Species(string name, double LExp, double RExp, double TExp, double LElast, double RElast, double TElast)
         {
             Name = name;
             LExpansion = LExp;
@@ -30,7 +30,7 @@ namespace BilayerDesign
             TElasticModulus = TElast;
         }
 
-        public Material(Material source)
+        public Species(Species source)
         {
             Name = source.Name;
             LExpansion = source.LExpansion;
@@ -41,7 +41,7 @@ namespace BilayerDesign
             TElasticModulus = source.TElasticModulus;
         }
 
-        public Material() 
+        public Species() 
         {
             Name = null;
         }

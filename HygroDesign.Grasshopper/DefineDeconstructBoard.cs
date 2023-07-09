@@ -31,8 +31,9 @@ namespace HygroDesign.Grasshopper.Components
         {
             pManager.AddGenericParameter("Polyline", "P", "The board polyline.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Name", "N", "The board name.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Material", "M", "The board material.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Species", "S", "The board species.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Moisture Change", "MC", "The board moisture change.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Desired Radius", "DR", "The original desired radius of the board.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Radius", "R", "The pure timoshenko prediction of the board's radius.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Blended Radius", "BR", "The blended radius which results from the curvature convolution.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Thickness Blended Radius", "TBR", "The blended radius which results from a weighted average of this board and its thickness neighbors, after the curvature convolution.", GH_ParamAccess.item);
@@ -44,8 +45,9 @@ namespace HygroDesign.Grasshopper.Components
             PanelBoard board = null;
             DA.GetData(0, ref board);
 
-            DA.SetData("Material", board.Material.Name);
+            DA.SetData("Species", board.Species.Name);
             DA.SetData("Polyline", board.Polyline) ;
+            DA.SetData("Desired Radius", board.DesiredRadius);
             DA.SetData("Radius", board.Radius);
             DA.SetData("Moisture Change", board.MoistureChange);
             DA.SetData("Name", board.Name);

@@ -19,7 +19,7 @@ namespace HygroDesign.Grasshopper.Components
         {
         }
 
-        
+
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter("Base Plane", "P", "The base plane for the bilayer to be generated from", GH_ParamAccess.item);
@@ -28,6 +28,9 @@ namespace HygroDesign.Grasshopper.Components
             pManager.AddGenericParameter("Board Length", "L", "The length of a single board in the bilayer", GH_ParamAccess.item);
             pManager.AddGenericParameter("Width Count", "WC", "The number of boards in the width", GH_ParamAccess.item);
             pManager.AddGenericParameter("Length Count", "LC", "The number of boards in the length", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Active Thickness", "AT", "The thickness of the active layer", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Passive Thickness", "PT", "The thickness of the passive layer", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Passive Species", "PS", "The wood species of the passive layer", GH_ParamAccess.item);
         }
 
 
@@ -54,7 +57,16 @@ namespace HygroDesign.Grasshopper.Components
             double lengthCount = 0;
             DA.GetData(4, ref lengthCount);
 
-            Bilayer bilayer = new Bilayer(plane,boardWidth, boardLength, (int)widthCount, (int)lengthCount);
+            double activeThickness = 0;
+            DA.GetData(5, ref activeThickness);
+
+            double passiveThickness = 0;
+            DA.GetData(6, ref passiveThickness);
+
+            Species passiveSpecies = null;
+            DA.GetData(7, ref passiveSpecies);
+
+            Bilayer bilayer = new Bilayer(plane,boardWidth, boardLength, (int)widthCount, (int)lengthCount, activeThickness, passiveThickness, passiveSpecies);
 
             DA.SetData(0, bilayer);
         }

@@ -20,12 +20,15 @@ namespace BilayerDesign
         public int WidthCount { get; set; }
         public double BoardWidth { get; set; }
         public double BoardLength { get; set; }
+        public double ActiveThickness { get; set; }
+        public double PassiveThickness { get; set; }
+        public Species PassiveSpecies { get; set; }
         public int ID { get; set; }
         public int PanelNumber { get; set; }
         public Panel Parent { get; set; }
 
 
-        public Bilayer(Plane basePlane, double boardWidth, double boardLength, int widthCount, int lengthCount)
+        public Bilayer(Plane basePlane, double boardWidth, double boardLength, int widthCount, int lengthCount, double activeThickness, double passiveThickness, Species passiveSpecies)
         {
             BasePlane = basePlane;
             LengthCount = lengthCount;
@@ -34,6 +37,9 @@ namespace BilayerDesign
             BoardLength = boardLength; 
             Length = boardLength * lengthCount;
             Width = boardWidth * widthCount;
+            ActiveThickness = activeThickness;
+            PassiveThickness = passiveThickness;
+            PassiveSpecies = passiveSpecies;
 
             //create surface
             InitialSurface = Brep.CreatePlanarBreps(new Rectangle3d(BasePlane, Length, Width).ToNurbsCurve(), RhinoDoc.ActiveDoc.ModelAbsoluteTolerance)[0].Faces[0];
@@ -47,7 +53,7 @@ namespace BilayerDesign
             Plane basePlane = new Plane(source.BasePlane);
             List<PanelBoard> boards = source.Boards;
 
-            Bilayer bilayer = new Bilayer(basePlane, source.BoardWidth, source.BoardLength, source.WidthCount, source.LengthCount);
+            Bilayer bilayer = new Bilayer(basePlane, source.BoardWidth, source.BoardLength, source.WidthCount, source.LengthCount, source.ActiveThickness, source.PassiveThickness, source.PassiveSpecies);
             bilayer.ID = source.ID;
 
             for(int i = 0; i < bilayer.Boards.Count; i++)
@@ -112,7 +118,7 @@ namespace BilayerDesign
             }
         }
 
-        public void SetConvolutionFactors(double maxRadiusInfluence)
+        public void SetConvolutionFactors(double maxRadiusInfluence, double stiffnessFactor)
         {
             //get stiffness bounds
             double maxLongStiffness = 0;
@@ -123,10 +129,10 @@ namespace BilayerDesign
 
             foreach (PanelBoard board in Boards)
             {
-                if (board.Material.LElasticModulus > maxLongStiffness) maxLongStiffness = board.Material.LElasticModulus;
-                if (board.Material.LElasticModulus < minLongStiffness) minLongStiffness = board.Material.LElasticModulus;
-                if (board.Material.RElasticModulus > maxHorizStiffness) maxHorizStiffness = board.Material.RElasticModulus;
-                if (board.Material.RElasticModulus < minHorizStiffness) minHorizStiffness = board.Material.RElasticModulus;
+                if (board.Species.LElasticModulus > maxLongStiffness) maxLongStiffness = board.Species.LElasticModulus;
+                if (board.Species.LElasticModulus < minLongStiffness) minLongStiffness = board.Species.LElasticModulus;
+                if (board.Species.RElasticModulus > maxHorizStiffness) maxHorizStiffness = board.Species.RElasticModulus;
+                if (board.Species.RElasticModulus < minHorizStiffness) minHorizStiffness = board.Species.RElasticModulus;
                 if (board.Radius < minCurvature) minCurvature = board.Radius;
                 
             }
@@ -134,8 +140,8 @@ namespace BilayerDesign
             //set factors
             foreach (PanelBoard board in Boards)
             {
-                board.LongStiffnessFactor = Remap(board.Material.LElasticModulus, minLongStiffness, maxLongStiffness, 0, 1);
-                board.RadStiffnessFactor = Remap(board.Material.RElasticModulus, minHorizStiffness, maxHorizStiffness, 0, 1);
+                board.LongStiffnessFactor = Remap(board.Species.LElasticModulus, minLongStiffness, maxLongStiffness, 1-stiffnessFactor, 1);
+                board.RadStiffnessFactor = Remap(board.Species.RElasticModulus, minHorizStiffness, maxHorizStiffness, 1-stiffnessFactor, 1);
 
                 board.RadiusFactor = Remap(board.Radius, minCurvature, maxRadiusInfluence, 1, 0);
             }
@@ -149,7 +155,6 @@ namespace BilayerDesign
 
                 foreach (PanelBoard testBoard in Boards)
                 {
-                    
                     double closestX = double.MaxValue;
                     double closestY = double.MaxValue;
 

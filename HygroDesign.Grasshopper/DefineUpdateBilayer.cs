@@ -47,16 +47,16 @@ namespace HygroDesign.Grasshopper.Components
             var radiusWeight = new List<double>();
             DA.GetDataList(2, radiusWeight);
 
-            var material = new List<Material>();
-            DA.GetDataList(3, material);
+            var species = new List<Species>();
+            DA.GetDataList(3, species);
 
             Bilayer bilayerCopy = Bilayer.DeepCopy(bilayer);
 
             for(int i = 0; i < bilayerCopy.Boards.Count; i++)
             {
-                bilayerCopy.Boards[i].DesiredRadius = radius[i];
+                bilayerCopy.Boards[i].RadiusParameter = radius[i];
                 bilayerCopy.Boards[i].RadiusWeight = radiusWeight[i];
-                bilayerCopy.Boards[i].DesiredMaterial = material[i];
+                bilayerCopy.Boards[i].Species = species[i];
             }
 
             DA.SetData(0, bilayerCopy);

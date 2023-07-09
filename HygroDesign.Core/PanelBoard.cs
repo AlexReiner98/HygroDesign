@@ -11,7 +11,7 @@ namespace BilayerDesign
 {
     public class PanelBoard : BoardBase
     {
-        private Bilayer Parent { get; set; }
+        public Bilayer Parent { get; set; }
         public Interval RowRange { get; set; }
         public Interval ColumnRange { get; set; }
         public int RowNumber { get; set; }
@@ -19,9 +19,9 @@ namespace BilayerDesign
         public int PanelNumber { get; set; }
         public Polyline Polyline { get; set; }
         public Point3d Centroid { get; set; }
+        public double RadiusParameter { get; set; }
         public double DesiredRadius { get; set; }
         public double RadiusWeight { get; set; }
-        public Material DesiredMaterial { get; set; }
         public StockBoard StockBoard { get; set; }
         public double Radius { get; set; }
         public double MoistureChange { get; set; }
@@ -60,10 +60,10 @@ namespace BilayerDesign
             newBoard.RowNumber = source.RowNumber;
             newBoard.ColumnNumber = source.ColumnNumber;
             newBoard.PanelNumber = parent.ID;
+            newBoard.RadiusParameter = source.RadiusParameter;
             newBoard.DesiredRadius = source.DesiredRadius;
             newBoard.RadiusWeight = source.RadiusWeight;
-            newBoard.DesiredMaterial = source.DesiredMaterial;
-            newBoard.Material = source.Material;
+            newBoard.Species = source.Species;
             newBoard.StockBoard = source.StockBoard;
             newBoard.Radius = source.Radius;
             newBoard.MoistureChange = source.MoistureChange;
@@ -96,16 +96,6 @@ namespace BilayerDesign
             Centroid += Parent.InitialSurface.PointAt(RowRange[1], ColumnRange[1]);
             Centroid += Parent.InitialSurface.PointAt(RowRange[0], ColumnRange[1]);
             Centroid /= 4;
-        }
-
-        public void SetStockBoard(StockBoard stockBoard)
-        {
-            StockBoard = stockBoard;
-            Name = stockBoard.Name;
-            Material = stockBoard.Material;
-            Radius = stockBoard.SelectedRadius;
-            MoistureChange = stockBoard.SelectedMoistureChange;
-            Width = stockBoard.Width;
         }
     }
 }
