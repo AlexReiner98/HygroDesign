@@ -33,12 +33,12 @@ namespace BilayerDesign
         public double BlendedRadius { get; set; }
         public List<PanelBoard> ThicknessNeighbors { get; set; }
         public double ThicknessBlendedRadius { get; set; }
+        public double ThicknessParameter { get; set; }
 
         public PanelBoard(Interval rowRange, Interval columnRange, Bilayer parent)
         {
             Parent = parent;
             RowRange = rowRange;
-            Length = rowRange.Length;
             ColumnRange = columnRange;
             EvaluateBoard();
         }
@@ -96,6 +96,11 @@ namespace BilayerDesign
             Centroid += Parent.InitialSurface.PointAt(RowRange[1], ColumnRange[1]);
             Centroid += Parent.InitialSurface.PointAt(RowRange[0], ColumnRange[1]);
             Centroid /= 4;
+
+            Length = RowRange.Length;
+            Width = ColumnRange.Length;
         }
+
+
     }
 }

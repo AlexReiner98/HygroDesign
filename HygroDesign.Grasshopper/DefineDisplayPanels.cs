@@ -59,8 +59,8 @@ namespace HygroDesign.Grasshopper.Components
                 foreach (Bilayer bilayer in panel.Bilayers)
                 {
                     //create passive layer
-                    BoundingBox surfaceBox = bilayer.InitialSurface.GetBoundingBox(true);
-                    Brep passiveLayer = new Box(bilayer.BasePlane, new Interval(surfaceBox.Min.X, surfaceBox.Max.X), new Interval(surfaceBox.Min.Y, surfaceBox.Max.Y), new Interval(bilayerStartZ, bilayerStartZ + bilayer.PassiveThickness)).ToBrep();
+                    
+                    Brep passiveLayer = new Box(bilayer.BasePlane,bilayer.PassiveLayerX,bilayer.PassiveLayerY, new Interval(bilayerStartZ, bilayerStartZ + bilayer.PassiveThickness)).ToBrep();
 
                     passive.Add(passiveLayer, new GH_Path(panel.ID, bilayer.ID));
 
@@ -69,7 +69,9 @@ namespace HygroDesign.Grasshopper.Components
                     
                     foreach(PanelBoard board in bilayer.Boards)
                     {
-                        Brep boardBrep = new Box(bilayer.BasePlane, board.RowRange,new Interval(board.ColumnRange[1], board.ColumnRange[0]), new Interval(bilayerStartZ, bilayerStartZ + bilayer.ActiveThickness)).ToBrep();
+                        
+                        Brep boardBrep = new Box(bilayer.BasePlane, board.RowRange, board.ColumnRange, new Interval(bilayerStartZ, bilayerStartZ + bilayer.ActiveThickness)).ToBrep();
+                        if(boardBrep == null) { RhinoApp.WriteLine(board.ColumnRange.ToString());}
                         active.Add(boardBrep, new GH_Path(panel.ID, bilayer.ID));
                     }
                     bilayerStartZ += bilayer.ActiveThickness;

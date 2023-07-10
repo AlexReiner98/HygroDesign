@@ -26,6 +26,8 @@ namespace BilayerDesign
         public int ID { get; set; }
         public int PanelNumber { get; set; }
         public Panel Parent { get; set; }
+        public Interval PassiveLayerX { get; set; }
+        public Interval PassiveLayerY { get; set; }
 
 
         public Bilayer(Plane basePlane, double boardWidth, double boardLength, int widthCount, int lengthCount, double activeThickness, double passiveThickness, Species passiveSpecies)
@@ -56,6 +58,8 @@ namespace BilayerDesign
             Bilayer bilayer = new Bilayer(basePlane, source.BoardWidth, source.BoardLength, source.WidthCount, source.LengthCount, source.ActiveThickness, source.PassiveThickness, source.PassiveSpecies);
             bilayer.ID = source.ID;
             bilayer.Boards.Clear();
+            bilayer.PassiveLayerX = source.PassiveLayerX;
+            bilayer.PassiveLayerY = source.PassiveLayerY;
 
             for(int i = 0; i < boards.Count; i++)
             {
@@ -78,7 +82,7 @@ namespace BilayerDesign
                     for(int j = 0; j < LengthCount; j++)
                     {
                         Interval rowRange = new Interval(j* BoardLength, (j+1)* BoardLength);
-                        Interval colRange = new Interval(Width - (i*BoardWidth), Width - ((i+1)* BoardWidth));
+                        Interval colRange = new Interval(Width - ((i+1)* BoardWidth), Width - (i * BoardWidth));
                         PanelBoard board = new PanelBoard(rowRange, colRange,this);
                         board.RowNumber = i;
                         board.ColumnNumber = j;
@@ -93,7 +97,7 @@ namespace BilayerDesign
 
                     for (int j = 0; j < LengthCount+1; j++)
                     {
-                        Interval colRange = new Interval(Width - (i * BoardWidth), Width - ((i + 1) * BoardWidth));
+                        Interval colRange = new Interval(Width - ((i + 1) * BoardWidth),Width - (i * BoardWidth));
                         Interval rowRange;
 
                         //first half board
@@ -190,6 +194,27 @@ namespace BilayerDesign
             }
         }
 
+        public List<PanelBoard> GetNeighbors(int index)
+        {
+            List<PanelBoard> neighbors = new List<PanelBoard>();
+
+            PanelBoard currentBoard = Boards[index];
+
+            foreach(PanelBoard testBoard in Boards)
+            {
+                if (testBoard == currentBoard) continue;
+                if ((testBoard.ColumnRange[0] <= currentBoard.ColumnRange[0] && testBoard.ColumnRange[0] <= currentBoard.ColumnRange[1]) || (testBoard.ColumnRange[1] <= currentBoard.ColumnRange[1] && testBoard.ColumnRange[1] >= currentBoard.ColumnRange[0]))
+                {
+                    if ((testBoard.RowRange[0] > currentBoard.RowRange[0] && testBoard.RowRange[0] < currentBoard.RowRange[1]) || (testBoard.RowRange[1] < currentBoard.RowRange[1] && testBoard.RowRange[1] > currentBoard.RowRange[0]))
+                    {
+                        neighbors.Add(testBoard);
+                    }
+                }
+                
+            }
+            return neighbors;
+        }
+
         public List<double> GetNeighborWeights(int index)
         {
             PanelBoard currentBoard = Boards[index];
@@ -198,6 +223,30 @@ namespace BilayerDesign
             foreach(Tuple<double,double> pair in currentBoard.ConvolutionWeights) output.Add(pair.Item2);
             
             return output;
+        }
+
+        public void UpdatePassiveLayer()
+        {
+            double minX = double.MaxValue;
+            double maxX = 0;
+            double minY = double.MaxValue;
+            double maxY = 0;
+
+            foreach(PanelBoard board in Boards)
+            {
+                if (board.RowRange[0] < minX) minX = board.RowRange[0];
+                if (board.RowRange[1] > maxX) maxX = board.RowRange[1];
+                if (board.ColumnRange[0] < minY) minY = board.ColumnRange[0];
+                if (board.ColumnRange[1] > maxY) maxY = board.ColumnRange[1];
+            }
+            minX = minX - BasePlane.Origin.X;
+            maxX = maxX - BasePlane.Origin.X;
+            minY = minY - BasePlane.Origin.Y;
+            maxY = maxY - BasePlane.Origin.Y;
+
+            PassiveLayerX = new Interval(minX, maxX);
+            PassiveLayerY = new Interval(minY, maxY);
+            RhinoApp.WriteLine(PassiveLayerX.ToString() + PassiveLayerY.ToString());
         }
 
         public static double Remap(double val, double from1, double to1, double from2, double to2)

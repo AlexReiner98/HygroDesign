@@ -45,14 +45,18 @@ namespace HygroDesign.Grasshopper.Components
             PanelBoard board = null;
             DA.GetData(0, ref board);
 
-            DA.SetData("Species", board.Species.Name);
-            DA.SetData("Polyline", board.Polyline) ;
-            DA.SetData("Desired Radius", board.DesiredRadius);
-            DA.SetData("Radius", board.Radius);
-            DA.SetData("Moisture Change", board.MoistureChange);
-            DA.SetData("Name", board.Name);
-            DA.SetData("Blended Radius", board.BlendedRadius);
-            DA.SetData("Thickness Blended Radius", board.ThicknessBlendedRadius);
+            if(board != null )
+            {
+                DA.SetData("Species", board.Species.Name);
+                DA.SetData("Polyline", board.Polyline);
+                DA.SetData("Desired Radius", board.DesiredRadius);
+                DA.SetData("Radius", board.Radius);
+                DA.SetData("Moisture Change", board.MoistureChange);
+                DA.SetData("Name", board.Name);
+                DA.SetData("Blended Radius", board.BlendedRadius);
+                DA.SetData("Thickness Blended Radius", board.ThicknessBlendedRadius);
+            }
+            
         }
 
 
