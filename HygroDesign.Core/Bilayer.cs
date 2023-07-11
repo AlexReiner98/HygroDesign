@@ -246,7 +246,6 @@ namespace BilayerDesign
 
             PassiveLayerX = new Interval(minX, maxX);
             PassiveLayerY = new Interval(minY, maxY);
-            RhinoApp.WriteLine(PassiveLayerX.ToString() + PassiveLayerY.ToString());
         }
 
         public static double Remap(double val, double from1, double to1, double from2, double to2)

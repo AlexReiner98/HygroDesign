@@ -71,7 +71,7 @@ namespace HygroDesign.Grasshopper.Components
                     {
                         
                         Brep boardBrep = new Box(bilayer.BasePlane, board.RowRange, board.ColumnRange, new Interval(bilayerStartZ, bilayerStartZ + bilayer.ActiveThickness)).ToBrep();
-                        if(boardBrep == null) { RhinoApp.WriteLine(board.ColumnRange.ToString());}
+
                         active.Add(boardBrep, new GH_Path(panel.ID, bilayer.ID));
                     }
                     bilayerStartZ += bilayer.ActiveThickness;

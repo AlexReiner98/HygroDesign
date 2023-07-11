@@ -74,7 +74,7 @@ namespace BilayerDesign
             newBoard.RadiusFactor = source.RadiusFactor;
             newBoard.ConvolutionWeights = source.ConvolutionWeights;
             newBoard.BlendedRadius = source.BlendedRadius;
-            
+            newBoard.ThicknessNeighbors = source.ThicknessNeighbors;
 
             return newBoard;
         }

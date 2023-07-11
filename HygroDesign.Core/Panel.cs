@@ -51,7 +51,7 @@ namespace BilayerDesign
                         foreach(PanelBoard otherBoard in otherBilayer.Boards)
                         {
                             //if ((otherBoard.ColumnRange == board.ColumnRange && otherBoard.RowRange == board.RowRange) || (otherBoard.ColumnRange == board.ColumnRange && otherBoard.RowRange[0] > board.RowRange[0]+1 && otherBoard.RowRange[0] < board.RowRange[1]-1) || (otherBoard.ColumnRange == board.ColumnRange && otherBoard.RowRange[1] > board.RowRange[0]+1 && otherBoard.RowRange[1] < board.RowRange[1]-1))
-                            if(otherBoard.ColumnRange == board.ColumnRange && otherBoard.RowRange[0] <= board.RowRange[1] && otherBoard.RowRange[1] >= board.RowRange[0])
+                            if(otherBoard.ColumnRange == board.ColumnRange && ((otherBoard.RowRange == board.RowRange)||(otherBoard.RowRange[0] < board.RowRange[1] && otherBoard.RowRange[1] > board.RowRange[0])))
                             {
                                 board.ThicknessNeighbors.Add(otherBoard);
                             }
@@ -72,8 +72,8 @@ namespace BilayerDesign
                 if (thickness > maxThickness) maxThickness = thickness;
             }
 
-
             FindThicknessNeighbors();
+
             foreach(Bilayer bilayer in Bilayers)
             {
                 double bilayerThicknessFactor = 1;
