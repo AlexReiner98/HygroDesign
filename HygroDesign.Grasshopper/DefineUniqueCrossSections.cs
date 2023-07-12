@@ -39,11 +39,11 @@ namespace HygroDesign.Grasshopper.Components
             List<Panel> panels = new List<Panel>();
             DA.GetDataList(0, panels);
 
-            DataTree<PanelBoard> tree = new DataTree<PanelBoard>();
+            DataTree<BoardRegion> tree = new DataTree<BoardRegion>();
 
             foreach (Panel panel in panels)
             {
-                List<List<PanelBoard>> boards = panel.GetXRangeSets();
+                List<List<BoardRegion>> boards = panel.GetXRangeSets();
 
                 for (int i = 0; i < boards.Count; i++)
                 {

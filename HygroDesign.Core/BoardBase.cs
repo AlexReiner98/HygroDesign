@@ -10,8 +10,8 @@ namespace BilayerDesign
 {
     public abstract class BoardBase
     {
-        public string Name = null;
-        public Material Material = new Material();
+        public string Name;
+        public Species Species = new Species();
         public double Length;
         public double Width;
         public double Height;

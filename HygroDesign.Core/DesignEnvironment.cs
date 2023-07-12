@@ -8,125 +8,173 @@ namespace BilayerDesign
 {
     public class DesignEnvironment
     {
-        public List<StockPile> StockPiles { get; set; }
         public List<Panel> Panels { get; set; }
 
-        List<StockBoard> allStock = new List<StockBoard>();
-        List<PanelBoard> allBoards = new List<PanelBoard>();
-        List<Tuple<int, double, double>> allCurvatures = new List<Tuple<int, double, double>>();
+        public List<StockBoard> StockBoards = new List<StockBoard>();
+        private List<PanelBoard> PanelBoards = new List<PanelBoard>();
 
-        public static Material BeechMaterial = new Material("beech",0.0001, 0.0020, 0.0041, 14000, 2280, 1160);
-        public static Material SpruceMaterial = new Material("spruce",0.0001, 0.0019, 0.0036, 10000, 800, 450);
+        private Dictionary<Species, List<StockBoard>> StockDictionary = new Dictionary<Species, List<StockBoard>>();
 
-        public static Material PassiveMaterial = SpruceMaterial;
-        public static double PassiveThickness = 4;
+        private List<double> ActiveThicknesses = new List<double>();
+        private List<Species> ActiveSpecies = new List<Species>();
+        private List<double> PassiveThicknesses = new List<double>();
+        private List<Species> PassiveSpecies = new List<Species>();
+        private List<double> MoistureChanges = new List<double>();
 
-        public DesignEnvironment(List<Panel> panels, List<StockPile> stockPiles)
+        private double MaxRadius = 0;
+        private double MinRadius = double.MaxValue;
+
+        public DesignEnvironment(List<Panel> panels, List<StockBoard> stockBoards, List<double> moistureChanges)
         {
             Panels = panels;
-            StockPiles = stockPiles;
-            FlattenLists();
+
+            for(int i = 0; i < Panels.Count; i++)
+            {
+                Panels[i].ID = i;
+            }
+
+            StockBoards = stockBoards;
+            MoistureChanges = moistureChanges;
+            AnalyzeInputs();
+            CalculateDesiredRadius();
             ApplyStock();
         }
 
-        public void FlattenLists()
+        public void AnalyzeInputs()
         {
-            allStock.Clear();
-            allBoards.Clear();
-            allCurvatures.Clear(); 
-            int index = 0;
-            foreach(StockPile stockpile in StockPiles)
-            {
-                foreach(StockBoard board in stockpile.Boards)
-                {
-                    allStock.Add(board);
-                    int moistureIndex = 0;
-                    foreach(double curvature in board.PotentialRadii.Keys)
-                    {
-                        allCurvatures.Add(new Tuple<int,double,double>(index, curvature, stockpile.MoistureChanges[moistureIndex]));
-                        moistureIndex++;
-                    }
-                    index++;
-                }
-            }
+            PanelBoards.Clear();
 
-            int panelID = 0;
-            int boardID = 0;
             foreach(Panel panel in Panels)
             {
-                panel.ID = panelID;
-                foreach(PanelBoard[] array in panel.Boards)
+                foreach(Bilayer bilayer in panel.Bilayers)
                 {
-                    foreach(PanelBoard board in array)
+                    foreach(PanelBoard board in bilayer.Boards)
                     {
-                        board.PanelNumber = panelID;
-                        allBoards.Add(board);
+                        PanelBoards.Add(board);
+
+                        if (!ActiveSpecies.Contains(board.Species)) ActiveSpecies.Add(board.Species);
                     }
-                    boardID++;
-                    
-                }
-                panelID++;
-            }
-        }
 
-        public void ApplyStock()
-        {
-            
-            //sort by material weight
-            List<PanelBoard> materialWeightOrder = allBoards.OrderByDescending(o => o.MaterialWeight).ToList();
-
-            //put into new dicts with lenghts limited by the number of stock boards with each material
-            Dictionary<string, Tuple<int, List<PanelBoard>>> boardDicts = new Dictionary<string, Tuple<int, List<PanelBoard>>>();
-            foreach(StockPile stockPile in StockPiles) boardDicts.Add(stockPile.Material.Name, new Tuple<int, List<PanelBoard>>(stockPile.BoardCount, new List<PanelBoard>()));
-
-            foreach(PanelBoard board in materialWeightOrder)
-            {
-                foreach(string material in boardDicts.Keys)
-                {
-                    if (board.DesiredMaterial.Name == material & boardDicts[material].Item2.Count < boardDicts[material].Item1)
-                    {
-                        boardDicts[material].Item2.Add(board);
-                    }
+                    if (!ActiveThicknesses.Contains(bilayer.ActiveThickness)) ActiveThicknesses.Add(bilayer.ActiveThickness);
+                    if (!PassiveThicknesses.Contains(bilayer.PassiveThickness)) PassiveThicknesses.Add(bilayer.PassiveThickness);
+                    if (!PassiveSpecies.Contains(bilayer.PassiveSpecies)) PassiveSpecies.Add(bilayer.PassiveSpecies);
                 }
             }
 
-            //sort material lists by curvature weight
-            foreach (string material in boardDicts.Keys)
+            foreach(StockBoard stockBoard in StockBoards)
             {
-                
-                List<PanelBoard> panelBoards = boardDicts[material].Item2;
-                
-                List<PanelBoard> radiusWeightOrder = panelBoards.OrderByDescending(o => o.RadiusWeight).ToList();
-                foreach (PanelBoard board in radiusWeightOrder)
+
+                //fill in stockboard possible radii
+                foreach(double activeThickness in  ActiveThicknesses)
                 {
+                    if (activeThickness > stockBoard.Thickness) continue;
+                    stockBoard.PotentialRadii.Add(activeThickness, new Dictionary<double, Dictionary<Species, Dictionary<double, double>>>());
                     
-                    //find closest curvature from flat list
-                    double closestDifference = double.MaxValue;
-                    StockBoard closestStock = allStock[0];
-
-                    foreach(StockBoard stockBoard in allStock)
+                    foreach(double passiveThickness in PassiveThicknesses)
                     {
-                        if (stockBoard.Material.Name != material | stockBoard.LengthAvailable < board.Length) continue;
-
-                        foreach(double potentialRadius in stockBoard.PotentialRadii.Keys)
+                        stockBoard.PotentialRadii[activeThickness].Add(passiveThickness, new Dictionary<Species, Dictionary<double, double>>());
+                        foreach (Species passiveSpecies in PassiveSpecies)
                         {
-                            double currentDifference = Math.Abs(potentialRadius - board.DesiredRadius);
-                            if(currentDifference < closestDifference)
+                            stockBoard.PotentialRadii[activeThickness][passiveThickness].Add(passiveSpecies, new Dictionary<double, double>());
+                            foreach (double moistureChange in MoistureChanges)
                             {
-                                closestDifference = currentDifference;
-                                closestStock = stockBoard;
-                                closestStock.SelectedRadius = potentialRadius;
+                                double potentialRadius = Timoshenko(stockBoard.RTAngle, moistureChange, stockBoard.Species, passiveSpecies, activeThickness, passiveThickness, stockBoard.Multiplier);
+                                stockBoard.PotentialRadii[activeThickness][passiveThickness][passiveSpecies].Add(moistureChange, potentialRadius);
+
+                                //update radius range
+                                if(potentialRadius > MaxRadius) MaxRadius = potentialRadius;
+                                if(potentialRadius < MinRadius) MinRadius = potentialRadius;
                             }
                         }
                     }
-                    closestStock.SelectedMoistureChange = closestStock.PotentialRadii[closestStock.SelectedRadius];
-                    closestStock.LengthAvailable -= board.Length;
-                    board.SetStockBoard(closestStock);
-
-                    //update board in panel
-                    Panels[board.PanelNumber].Boards[board.RowNumber][board.ColumnNumber] = board;
                 }
+                if (!StockDictionary.ContainsKey(stockBoard.Species)) StockDictionary.Add(stockBoard.Species,new List<StockBoard>());
+                StockDictionary[stockBoard.Species].Add(stockBoard);
             }
         }
+
+        public void CalculateDesiredRadius()
+        {
+            
+            foreach(PanelBoard panelBoard in PanelBoards)
+            {
+                panelBoard.DesiredRadius = Remap(panelBoard.RadiusParameter, 0, 1, MinRadius, MaxRadius);
+            }
+        }
+
+
+        public void ApplyStock()
+        {
+            PanelBoards.OrderByDescending(o => o.RadiusWeight).ToList();
+
+            foreach(PanelBoard board in PanelBoards)
+            {
+                Species activeSpecies = board.Species;
+                double activeThickness = board.Parent.ActiveThickness;
+                double passiveThickness = board.Parent.PassiveThickness;
+                Species passiveSpecies = board.Parent.PassiveSpecies;
+
+                StockBoard closestStock = null;
+                double smallestRadDiff = double.MaxValue;
+                double selectedMCChange = 0;
+                double selectedRadius = 0;
+                foreach(StockBoard stockBoard in StockDictionary[activeSpecies])
+                {
+                    if (stockBoard.LengthAvailable < board.Length) continue;
+                    if (stockBoard.PotentialRadii[activeThickness][passiveThickness][passiveSpecies] == null) continue;
+
+                    foreach(double moistureChange in MoistureChanges)
+                    {
+                        double prediction = stockBoard.PotentialRadii[activeThickness][passiveThickness][passiveSpecies][moistureChange];
+                        double difference = Math.Abs(prediction - board.DesiredRadius);
+                        if(difference < smallestRadDiff)
+                        {
+                            smallestRadDiff = difference;
+                            closestStock = stockBoard;
+                            selectedMCChange = moistureChange;
+                            selectedRadius = prediction;
+                        }
+                    }
+                }
+                board.StockBoard = closestStock;
+                board.Radius = selectedRadius;
+                board.MoistureChange = selectedMCChange;
+                board.RTAngle = closestStock.RTAngle;
+                closestStock.LengthAvailable -= board.Length;
+                closestStock.DesignBoards.Add(board);
+            }
+        }
+
+        public static double Timoshenko(double rtAngle, double wmcc, Species activeMaterial, Species passiveMaterial, double activeThickness, double passiveThickness, double timError)
+        {
+            double h1 = passiveThickness;
+            double h2 = activeThickness;
+            double h = h1 + h2;
+            double m = h1 / h2;
+            double e1 = passiveMaterial.LElasticModulus;
+            double e2 = GrainAngleInterpolation(rtAngle, activeMaterial.RElasticModulus, activeMaterial.TElasticModulus);
+            double n = e1 / e2;
+            double a1 = passiveMaterial.LExpansion;
+            double a2 = GrainAngleInterpolation(rtAngle, activeMaterial.RExpansion, activeMaterial.TExpansion);
+            double deltaAlpha = a2 - a1;
+            double kValue = 6 * Math.Pow(1.0 + m, 2) / (3 * Math.Pow(1 + m, 2) + (1 + m * n) * Math.Pow(m, 2) + (1 / (m * n)));
+            double curvature = kValue * ((wmcc * deltaAlpha) / h);
+            return 1 / (curvature * timError);
+        }
+
+        public static double GrainAngleInterpolation(double rtAngle, double eR, double eT)
+        {
+            double angleConv = RhinoMath.ToRadians(rtAngle);
+            double angleT = Math.Cos(angleConv);
+            double angleR = Math.Sin(angleConv);
+            double eActive = eT * Math.Pow(angleT, 2) + eR * Math.Pow(angleR, 2);
+            return eActive;
+        }
+
+        public static double Remap(double val, double from1, double to1, double from2, double to2)
+        {
+            return (val - from1) / (to1 - from1) * (to2 - from2) + from2;
+        }
+
     }
 }

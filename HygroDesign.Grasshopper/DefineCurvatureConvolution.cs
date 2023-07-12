@@ -27,9 +27,9 @@ namespace HygroDesign.Grasshopper.Components
             pManager.AddGenericParameter("Tengential Blending", "T", "The tangential blending factor.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Longitudinal Blending", "L", "The longitudinal blending factor.", GH_ParamAccess.item);
             pManager.AddNumberParameter("Max Radius Influence", "R", "The maximum radius in for remapping the radius to the radius factor. Lower numbers bias towards lower  blended radii.", GH_ParamAccess.item, 100000);
-            pManager.AddNumberParameter("Stiffness Factor", "S", "The factor used to control the weight variations in stiffness are given to the weighted average", GH_ParamAccess.item, 1.0);
-            pManager.AddGenericParameter("Visualize Board Weights", "V", "The index values of the board whose neighbours weights should be visualized", GH_ParamAccess.list);
-            pManager[5].Optional = true;
+            pManager.AddNumberParameter("Stiffness Factor", "SF", "The factor for controlling the effect of stiffness differences on the radius blending.", GH_ParamAccess.item,0.1);
+            pManager.AddNumberParameter("Thickness Factor", "TF", "The factor for controlling the effect of thickness differences on the radius blending", GH_ParamAccess.item, 0.1);
+            pManager.AddIntegerParameter("Visualize Board Weights", "V", "The index values of the board whose neighbours weights should be visualized", GH_ParamAccess.item, 0);
         }
 
 
@@ -54,37 +54,55 @@ namespace HygroDesign.Grasshopper.Components
             double maxRad = 0;
             DA.GetData(3, ref maxRad);
 
-            double stiffnessFactor = 0;
-            DA.GetData(4, ref stiffnessFactor);
+            double stiffness = 0;
+            DA.GetData(4, ref stiffness);
 
-            List<int> indexes = new List<int>();
-            DA.GetDataList(5, indexes);
+            double thickness = 0;
+            DA.GetData(5, ref thickness);
 
-            List<List<List<double>>> weightsArray = new List<List<List<double>>>();
+            int index = 0;
+            DA.GetData(6, ref index);
 
-            for(int i = 0; i < panels.Count; i++)
+            List<Panel> panelCopies = new List<Panel>();
+            foreach(Panel panel in panels)
             {
-                panels[i] = Panel.DeepCopy(panels[i]);
-                panels[i].SetConvolutionFactors(maxRad, stiffnessFactor);
-                panels[i].CurvatureConvolution(longitudinal, tangential);
-
-                //if (indexes.Count != 2 | indexes.Count != 0) { AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "indexes must be two interger values"); return; }
-                if(indexes.Count == 2) weightsArray.Add(panels[i].GetNeighborWeights(indexes));
-
+                panelCopies.Add(Panel.DeepCopy(panel));
             }
-            DA.SetDataList(0, panels);
 
-            if (indexes.Count != 2) return;
-            DataTree<double> weights = new DataTree<double>();
-            for(int i = 0; i < weightsArray.Count; i++)
+            var panelsArray = new double[panelCopies.Count][][];
+
+            for (int i = 0; i < panelCopies.Count; i++)
             {
-                for(int j = 0; j< weightsArray[i].Count; j++)
+                panelCopies[i] = Panel.DeepCopy(panelCopies[i]);
+                for (int j = 0; j < panelCopies[i].Bilayers.Count; j++)
                 {
-                    for(int v = 0; v < weightsArray[i][j].Count;v++)
+                    panelCopies[i].Bilayers[j].SetConvolutionFactors(maxRad, stiffness);
+                    panelCopies[i].Bilayers[j].CurvatureConvolution(longitudinal, tangential);
+                }
+                panelCopies[i].ThicknessConvolution(thickness);
+            }
+
+            for(int i = 0; i < panelCopies.Count; i++)
+            {
+                var bilayersArray = new double[panelCopies[i].Bilayers.Count][];
+                for (int j = 0; j < panelCopies[i].Bilayers.Count; j++)
+                {
+                    bilayersArray[j] = panelCopies[i].Bilayers[j].GetNeighborWeights(index).ToArray();
+                }
+                panelsArray[i] = bilayersArray;
+            }
+
+            DA.SetDataList(0, panelCopies);
+
+            DataTree<double> weights = new DataTree<double>();
+            for(int i = 0; i < panelsArray.Length; i++)
+            {
+                for(int j = 0; j< panelsArray[i].Length; j++)
+                {
+                    for(int v = 0; v < panelsArray[i][j].Length;v++)
                     {
-                        weights.Add(weightsArray[i][j][v], new GH_Path(i,j));
+                        weights.Add(panelsArray[i][j][v], new GH_Path(i,j));
                     }
-                    
                 }
             }
 

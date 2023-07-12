@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rhino;
+using Rhino.DocObjects;
 using Rhino.Geometry;
 
 
@@ -10,50 +11,45 @@ namespace BilayerDesign
 {
     public class PanelBoard : BoardBase
     {
-        private Panel Parent { get; set; }
-
+        public Bilayer Parent { get; set; }
         public Interval RowRange { get; set; }
         public Interval ColumnRange { get; set; }
-
         public int RowNumber { get; set; }
         public int ColumnNumber { get; set; }
         public int PanelNumber { get; set; }
-
         public Polyline Polyline { get; set; }
         public Point3d Centroid { get; set; }
-
+        public double RadiusParameter { get; set; }
         public double DesiredRadius { get; set; }
         public double RadiusWeight { get; set; }
-        public Material DesiredMaterial { get; set; }
-        public double MaterialWeight { get; set; }
-
         public StockBoard StockBoard { get; set; }
         public double Radius { get; set; }
         public double MoistureChange { get; set; }
         public double Error { get; set; }
-
         public double LongStiffnessFactor { get; set; }
         public double RadStiffnessFactor { get; set; }
         public double RadiusFactor { get; set; }
         public List<Tuple<double,double>> ConvolutionWeights { get; set; }
-        public List<List<double>> WeightsNested { get; set; }
         public double BlendedRadius { get; set; }
+        private int Regions { get; set; }
+        public List<BoardRegion> BoardRegions { get; set; }
 
-        public PanelBoard(Interval rowRange, Interval columnRange, Panel parent)
+        public PanelBoard(Interval rowRange, Interval columnRange, Bilayer parent, int regions)
         {
             Parent = parent;
             RowRange = rowRange;
-            Length = rowRange.Length;
             ColumnRange = columnRange;
+            Regions = regions;
             EvaluateBoard();
+            CreateBoardRegions();
         }
 
-        public static PanelBoard DeepCopy(PanelBoard source, Panel parent)
+        public static PanelBoard DeepCopy(PanelBoard source, Bilayer parent)
         {
             Interval rowRange = new Interval(source.RowRange[0], source.RowRange[1]);
             Interval columnRange = new Interval(source.ColumnRange[0], source.ColumnRange[1]);
 
-            PanelBoard newBoard = new PanelBoard(rowRange, columnRange, parent);
+            PanelBoard newBoard = new PanelBoard(rowRange, columnRange, parent, source.Regions);
 
             newBoard.Name = source.Name;
             newBoard.Length = source.Length;
@@ -65,11 +61,10 @@ namespace BilayerDesign
             newBoard.RowNumber = source.RowNumber;
             newBoard.ColumnNumber = source.ColumnNumber;
             newBoard.PanelNumber = parent.ID;
+            newBoard.RadiusParameter = source.RadiusParameter;
             newBoard.DesiredRadius = source.DesiredRadius;
             newBoard.RadiusWeight = source.RadiusWeight;
-            newBoard.DesiredMaterial = source.DesiredMaterial;
-            newBoard.Material = source.Material;
-            newBoard.MaterialWeight = source.MaterialWeight;
+            newBoard.Species = source.Species;
             newBoard.StockBoard = source.StockBoard;
             newBoard.Radius = source.Radius;
             newBoard.MoistureChange = source.MoistureChange;
@@ -80,8 +75,12 @@ namespace BilayerDesign
             newBoard.RadiusFactor = source.RadiusFactor;
             newBoard.ConvolutionWeights = source.ConvolutionWeights;
             newBoard.BlendedRadius = source.BlendedRadius;
-            
 
+            newBoard.BoardRegions = new List<BoardRegion>();
+            foreach(BoardRegion region in source.BoardRegions)
+            {
+                newBoard.BoardRegions.Add(BoardRegion.DeepCopy(region, newBoard));
+            }
             return newBoard;
         }
     
@@ -89,30 +88,36 @@ namespace BilayerDesign
         {
             List<Point3d> points = new List<Point3d>
             {
-                Parent.Surface.PointAt(RowRange[0], ColumnRange[0]),
-                Parent.Surface.PointAt(RowRange[1], ColumnRange[0]),
-                Parent.Surface.PointAt(RowRange[1], ColumnRange[1]),
-                Parent.Surface.PointAt(RowRange[0], ColumnRange[1]),
-                Parent.Surface.PointAt(RowRange[0], ColumnRange[0])
+                Parent.InitialSurface.PointAt(RowRange[0], ColumnRange[0]),
+                Parent.InitialSurface.PointAt(RowRange[1], ColumnRange[0]),
+                Parent.InitialSurface.PointAt(RowRange[1], ColumnRange[1]),
+                Parent.InitialSurface.PointAt(RowRange[0], ColumnRange[1]),
+                Parent.InitialSurface.PointAt(RowRange[0], ColumnRange[0])
             };
             Polyline = new Polyline(points);
 
-            Centroid += Parent.Surface.PointAt(RowRange[0], ColumnRange[0]);
-            Centroid += Parent.Surface.PointAt(RowRange[1], ColumnRange[0]);
-            Centroid += Parent.Surface.PointAt(RowRange[1], ColumnRange[1]);
-            Centroid += Parent.Surface.PointAt(RowRange[0], ColumnRange[1]);
+            Centroid += Parent.InitialSurface.PointAt(RowRange[0], ColumnRange[0]);
+            Centroid += Parent.InitialSurface.PointAt(RowRange[1], ColumnRange[0]);
+            Centroid += Parent.InitialSurface.PointAt(RowRange[1], ColumnRange[1]);
+            Centroid += Parent.InitialSurface.PointAt(RowRange[0], ColumnRange[1]);
             Centroid /= 4;
+
+            Length = RowRange.Length;
+            Width = ColumnRange.Length;
         }
 
-        public void SetStockBoard(StockBoard stockBoard)
+        private void CreateBoardRegions()
         {
-            StockBoard = stockBoard;
-            Name = stockBoard.Name;
-            Material = stockBoard.Material;
-            Radius = stockBoard.SelectedRadius;
-            MoistureChange = stockBoard.SelectedMoistureChange;
-            Width = stockBoard.Width;
-            Error = Math.Abs(Radius - DesiredRadius) / (Radius + DesiredRadius) * 100;
+            BoardRegions = new List<BoardRegion>();
+            double regionLength = 1 / (double)Regions;
+            for(int i = 0; i < Regions; i++)
+            {
+                BoardRegion region = new BoardRegion(new Interval(i * regionLength, (i + 1) * regionLength),this);
+                region.ID = i; 
+                BoardRegions.Add(region);
+            }
         }
+
+
     }
 }

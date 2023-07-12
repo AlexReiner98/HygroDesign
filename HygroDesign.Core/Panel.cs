@@ -4,257 +4,326 @@ using System.Linq;
 
 using Rhino;
 using Rhino.Geometry;
-using static Rhino.UI.Controls.CollapsibleSectionImpl;
-
 
 namespace BilayerDesign
 {
     public class Panel
     {
-        public PanelBoard[][] Boards { get; set; }
-        public List<PanelBoard> BoardList { get; set; }
-
-        public Plane BasePlane { get; set; }
-        public Surface Surface { get; set; }
-        public double Length { get; set; }
-        public double Width { get; set; }
-
-        public int LengthCount { get; set; }
-        public int WidthCount { get; set; }
-        public double BoardWidth { get; set; }
-        public double BoardLength { get; set; }
+        public List<Bilayer> Bilayers { get; set; }
         public int ID { get; set; }
 
+        
 
-        public Panel(Plane basePlane, double boardWidth, double boardLength, int widthCount, int lengthCount)
+        public Panel(List<Bilayer> bilayers)
         {
-            BasePlane = basePlane;
-            LengthCount = lengthCount;
-            WidthCount = widthCount;
-            BoardWidth = boardWidth;
-            BoardLength = boardLength; 
-            Length = boardLength * lengthCount;
-            Width = boardWidth * widthCount;
-            Boards = new PanelBoard[WidthCount][];
+            Bilayers = bilayers;
 
-            //create surface
-            Surface = Brep.CreatePlanarBreps(new Rectangle3d(BasePlane, Length, Width).ToNurbsCurve(), RhinoDoc.ActiveDoc.ModelAbsoluteTolerance)[0].Faces[0];
-
-            //generate boards
-            GenerateBoards();
+            for(int i = 0; i < Bilayers.Count; i++)
+            {
+                Bilayers[i].ID = i;
+                Bilayers[i].Parent = this;
+            }
         }
 
         public static Panel DeepCopy(Panel source)
         {
-            Plane basePlane = new Plane(source.BasePlane);
-            Panel panel = new Panel(basePlane, source.BoardWidth, source.BoardLength, source.WidthCount, source.LengthCount);
-            panel.ID = source.ID;
-
-            int arrayCount = 0;
-            foreach(PanelBoard[] boards in source.Boards) 
+            List<Bilayer> copies = new List<Bilayer>();
+            foreach(Bilayer bilayer in source.Bilayers)
             {
-                PanelBoard[] copyBoards = new PanelBoard[boards.Length];
-                int boardCount = 0;
-                foreach(PanelBoard board in boards)
-                {
-                    panel.Boards[arrayCount][boardCount] = PanelBoard.DeepCopy(board, panel);
-                    boardCount++;
-                }
-                arrayCount++;
+                copies.Add(Bilayer.DeepCopy(bilayer));
             }
+            var panel = new Panel(copies);
+            panel.ID = source.ID;
             return panel;
         }
-        
 
-        private void GenerateBoards()
+        public void FindThicknessNeighbors()
         {
-            for(int i = 0; i < WidthCount; i++)
+            
+            foreach(Bilayer bilayer in Bilayers)
             {
-                //even value rows
-                if(i % 2 == 0)
+                foreach(PanelBoard board in bilayer.Boards)
                 {
-                    PanelBoard[] row = new PanelBoard[LengthCount];
-
-                    for(int j = 0; j < LengthCount; j++)
+                    foreach(BoardRegion region in board.BoardRegions)
                     {
-                        Interval rowRange = new Interval(j* BoardLength, (j+1)* BoardLength);
-                        Interval colRange = new Interval(Width - (i*BoardWidth), Width - ((i+1)* BoardWidth));
-                        PanelBoard board = new PanelBoard(rowRange, colRange,this);
-                        board.RowNumber = i;
-                        board.ColumnNumber = j;
-                        row[j] = board;
-                    }
-                    Boards[i] = row;
-                }
-
-                //odd value rows
-                else
-                {
-                    PanelBoard[] row = new PanelBoard[LengthCount+1];
-
-                    for (int j = 0; j < LengthCount+1; j++)
-                    {
-                        Interval colRange = new Interval(Width - (i * BoardWidth), Width - ((i + 1) * BoardWidth));
-                        Interval rowRange;
-
-                        //first half board
-                        if (j == 0)
+                        region.RegionStack = new List<BoardRegion>();
+                        foreach (Bilayer otherBilayer in Bilayers)
                         {
-                            rowRange = new Interval(0, BoardLength / 2);
+                            if (otherBilayer == bilayer) continue;
+                            foreach (PanelBoard otherBoard in otherBilayer.Boards)
+                            {
+                                foreach(BoardRegion otherRegion in otherBoard.BoardRegions)
+                                {
+                                    
+                                    //if (otherRegion.ColumnRange == region.ColumnRange && ((otherRegion.RowRange == region.RowRange) || (otherRegion.RowRange[0] < region.RowRange[1] && otherRegion.RowRange[1] > region.RowRange[0])))
+                                    if(otherRegion.ColumnRange == region.ColumnRange && otherRegion.RowRange == region.RowRange)
+                                    {
+                                        region.RegionStack.Add(otherRegion);
+                                    }
+                                }
+                            }
                         }
-                        else if (j == LengthCount)
-                        {
-                            rowRange = new Interval(j * BoardLength - BoardLength/2, (j * BoardLength));
-                        }
-                        else 
-                        {
-                        rowRange = new Interval( (j * BoardLength)- (BoardLength / 2),((j+1) * BoardLength) - (BoardLength / 2));
-                        }
-
-                        PanelBoard board = new PanelBoard( rowRange, colRange,this);
-                        board.RowNumber = i;
-                        board.ColumnNumber = j;
-                        row[j] = board;
                     }
-                    Boards[i] = row;
                 }
             }
         }
 
-        public void SetConvolutionFactors(double maxRadiusInfluence, double stiffnessFactor)
+        public void ThicknessConvolution(double thicknessFactor)
         {
-            //get stiffness bounds
-            double maxLongStiffness = 0;
-            double minLongStiffness = double.MaxValue;
-            double maxHorizStiffness = 0;
-            double minHorizStiffness = double.MaxValue;
-            double minCurvature = double.MaxValue;
-
-            BoardList = new List<PanelBoard>();
-
-            foreach (PanelBoard[] boards in Boards)
+            double minThickness = double.MaxValue;
+            double maxThickness = 0;
+            foreach(Bilayer bilayer in Bilayers)
             {
-                foreach (PanelBoard board in boards)
-                {
-                    if (board.Material.LElasticModulus > maxLongStiffness) maxLongStiffness = board.Material.LElasticModulus;
-                    if (board.Material.LElasticModulus < minLongStiffness) minLongStiffness = board.Material.LElasticModulus;
-                    if (board.Material.RElasticModulus > maxHorizStiffness) maxHorizStiffness = board.Material.RElasticModulus;
-                    if (board.Material.RElasticModulus < minHorizStiffness) minHorizStiffness = board.Material.RElasticModulus;
-                    if (board.Radius < minCurvature) minCurvature = board.Radius;
-                    BoardList.Add(board);
-                }
+                double thickness = bilayer.ActiveThickness + bilayer.PassiveThickness;
+                if (thickness < minThickness) minThickness = thickness;
+                if (thickness > maxThickness) maxThickness = thickness;
             }
 
-            //set factors
-            foreach (PanelBoard[] boards in Boards)
+            FindThicknessNeighbors();
+
+            foreach(Bilayer bilayer in Bilayers)
             {
-                foreach (PanelBoard board in boards)
+                double bilayerThicknessFactor = 1;
+                if (minThickness != maxThickness) bilayerThicknessFactor = Remap(bilayer.ActiveThickness + bilayer.PassiveThickness, minThickness, maxThickness, 1 - thicknessFactor, 1);
+                
+                foreach(PanelBoard board in bilayer.Boards)
                 {
-                    board.LongStiffnessFactor = Remap(board.Material.LElasticModulus, minLongStiffness, maxLongStiffness, 1 - stiffnessFactor,1);
-                    board.RadStiffnessFactor = Remap(board.Material.RElasticModulus, minHorizStiffness, maxHorizStiffness, 1 - stiffnessFactor,1 );
+                    double weights = board.RadStiffnessFactor + bilayerThicknessFactor;
+                    double weightedTotal = board.BlendedRadius * weights;
 
-                    board.RadiusFactor = Remap(board.Radius, minCurvature, maxRadiusInfluence, 1, 0);
-                }
-            }
-        }
-
-        public void CurvatureConvolution(double horizontal, double vertical)
-        {
-            foreach (PanelBoard board in BoardList)
-            {
-                board.ConvolutionWeights = new List<Tuple<double, double>>();
-                board.WeightsNested = new List<List<double>>();
-                var innerWeights = new List<double>();
-
-                foreach (PanelBoard[] testBoards in Boards)
-                {
-                    innerWeights = new List<double>();
-                    foreach (PanelBoard testBoard in testBoards)
+                    foreach(BoardRegion region in board.BoardRegions)
                     {
-                        double closestX = double.MaxValue;
-                        double closestY = double.MaxValue;
+                        foreach (BoardRegion regionNeighbor in region.RegionStack)
+                        {
+                            double neighborThicknessFactor = 1;
+                            if (minThickness != maxThickness) neighborThicknessFactor = Remap(regionNeighbor.Parent.Parent.ActiveThickness + regionNeighbor.Parent.Parent.PassiveThickness, minThickness, maxThickness, 1 - thicknessFactor, 1);
 
-                        if (Math.Abs(testBoard.RowRange[0] - board.Centroid.X) < closestX) closestX = Math.Abs(testBoard.RowRange[0] - board.Centroid.X);
-                        if (Math.Abs(testBoard.RowRange[1] - board.Centroid.X) < closestX) closestX = Math.Abs(testBoard.RowRange[1] - board.Centroid.X);
-                        if (testBoard.RowRange[0] <= board.Centroid.X + 10 && testBoard.RowRange[1] >= board.Centroid.X - 10) closestX = 0;
-                        if (Math.Abs(testBoard.Centroid.X - board.Centroid.X) < closestX) closestX = Math.Abs(testBoard.Centroid.X - board.Centroid.X);
-
-                        if (Math.Abs(testBoard.ColumnRange[0] - board.Centroid.Y) < closestY) closestY = Math.Abs(testBoard.ColumnRange[0] - board.Centroid.Y);
-                        if (Math.Abs(testBoard.ColumnRange[1] - board.Centroid.Y) < closestY) closestY = Math.Abs(testBoard.ColumnRange[1] - board.Centroid.Y);
-                        if (testBoard.ColumnRange[0] <= board.Centroid.Y + 10 && testBoard.ColumnRange[1] >= board.Centroid.Y - 10) closestY = board.Width/2;
-                        if (Math.Abs(testBoard.Centroid.Y - board.Centroid.Y) < closestY) closestY = Math.Abs(testBoard.Centroid.Y - board.Centroid.Y);
-
-                        double LongFactor = testBoard.LongStiffnessFactor / Math.Pow(closestX + 1, horizontal);
-                        double RadFactor = testBoard.RadStiffnessFactor / Math.Pow(closestY + 1, vertical);
-                        board.ConvolutionWeights.Add(new Tuple<double, double>(testBoard.Radius, testBoard.RadiusFactor * (LongFactor * RadFactor)));
-
-                        innerWeights.Add(testBoard.RadiusFactor * (LongFactor * RadFactor));
+                            weights += regionNeighbor.Parent.RadStiffnessFactor + neighborThicknessFactor;
+                            weightedTotal += regionNeighbor.Parent.BlendedRadius * (regionNeighbor.Parent.RadStiffnessFactor + neighborThicknessFactor);
+                        }
+                       
+                        region.ThicknessBlendedRadius = weightedTotal / weights;
                     }
-                    board.WeightsNested.Add(innerWeights);
-                      
-
-                }
-            }
-
-            foreach (PanelBoard[] boards in Boards)
-            {
-                foreach (PanelBoard board in boards)
-                {
-                    double weightSum = 0;
-                    foreach(Tuple<double,double> valueWeight in board.ConvolutionWeights)
-                    {
-                        board.BlendedRadius += valueWeight.Item1 * valueWeight.Item2;
-                        weightSum += valueWeight.Item2;
-                    }
-                    board.BlendedRadius /= weightSum;
                 }
             }
         }
 
-        public List<List<double>> GetNeighborWeights(List<int> indexes)
-        {
-            PanelBoard currentBoard = Boards[indexes[0]][indexes[1]];
-            return currentBoard.WeightsNested;
-        }
-
-        public List<List<PanelBoard>> GetXRangeSets()
+        public List<List<BoardRegion>> GetXRangeSets()
         {
             List<double> uniqueStartPoints = new List<double>();
             List<double> uniqueEndPoints = new List<double>();
 
             //find unique start points and endpoints
-            foreach (PanelBoard panelBoard in BoardList)
+            foreach (Bilayer bilayer in Bilayers)
             {
-                if (!uniqueStartPoints.Contains(panelBoard.RowRange[0])) uniqueStartPoints.Add(panelBoard.RowRange[0]);
-                if (!uniqueEndPoints.Contains(panelBoard.RowRange[1])) uniqueEndPoints.Add(panelBoard.RowRange[1]);
+                foreach(PanelBoard board in bilayer.Boards)
+                {
+                    foreach(BoardRegion region in board.BoardRegions)
+                    {
+                        if (!uniqueStartPoints.Contains(region.RowRange[0])) uniqueStartPoints.Add(region.RowRange[0]);
+                        if (!uniqueEndPoints.Contains(region.RowRange[1])) uniqueEndPoints.Add(region.RowRange[1]);
+                    }
+                }
             }
 
             //sort startpoints and endpoints
             List<double> sortedStartPoints = uniqueStartPoints.OrderBy(o => o).ToList();
             List<double> sortedEndPoints = uniqueEndPoints.OrderBy(o => o).ToList();
 
-            List<List<PanelBoard>> output = new List<List<PanelBoard>>();
+            List<List<BoardRegion>> output = new List<List<BoardRegion>>();
 
             //find which boards have that startpoint in thier range (startpoint <= , endpoint >)
             for (int i = 0; i < sortedStartPoints.Count; i++)
             {
-                List<PanelBoard> column = new List<PanelBoard>();
-                foreach (PanelBoard panelBoard in BoardList)
+                List<BoardRegion> column = new List<BoardRegion>();
+                foreach(Bilayer bilayer in Bilayers)
                 {
-                    if (panelBoard.RowRange[0] >= sortedStartPoints[i] & panelBoard.RowRange[0] < sortedEndPoints[i] | panelBoard.RowRange[1] > sortedStartPoints[i] & panelBoard.RowRange[1] <= sortedEndPoints[i])
+                    foreach (PanelBoard board in bilayer.Boards)
                     {
-                        column.Add(panelBoard);
+                        foreach(BoardRegion region in board.BoardRegions)
+                        {
+                            //if ((region.RowRange[0] >= sortedStartPoints[i] & region.RowRange[0] < sortedEndPoints[i] | region.RowRange[1] > sortedStartPoints[i] & region.RowRange[1] <= sortedEndPoints[i]))
+                            if (region.RowRange[0] == sortedStartPoints[i])
+                            {
+                                bool alreadyIncluded = false;
+                                foreach (BoardRegion thicknessNeighbor in region.RegionStack)
+                                {
+                                    if (column.Contains(thicknessNeighbor)) alreadyIncluded = true;
+                                }
+                                if (!alreadyIncluded) column.Add(region);
+                            }
+                        }
                     }
                 }
-                List<PanelBoard> sortedColumn = column.OrderBy(o => o.Centroid.Y).ToList();
+                List<BoardRegion> sortedColumn = column.OrderBy(o => o.Centroid.Y).ToList();
                 output.Add(sortedColumn);
+
             }
             return output;
+        }
+
+        public void ApplyThicknessGradient(List<List<double>> thicknesses)
+        {
+
+            //apply thicknesses to boards thickness paramter
+            foreach(Bilayer bilayer in Bilayers)
+            {
+                for(int i = 0; i<  bilayer.Boards.Count; i++)
+                {
+                    for(int j = 0; j < bilayer.Boards[i].BoardRegions.Count; j++)
+                    {
+                        bilayer.Boards[i].BoardRegions[j].ThicknessParameter = thicknesses[i][j];
+                    }
+                }
+            }
+
+            //remap bilayer thickness values
+            List<double> bilayerThicknesses = new List<double>();
+            for (int i = 0; i < Bilayers.Count; i++)
+            {
+                bilayerThicknesses.Add(Remap(i, 0, Bilayers.Count - 1, 0, 1));
+            }
+
+            List<Bilayer> bilayersForRemoval = new List<Bilayer>();
+            //find regions below theshold and add them to delete list
+            for(int i = 0; i < Bilayers.Count; i++)
+            {
+                List<PanelBoard> boardsForRemoval = new List<PanelBoard>();
+                foreach(PanelBoard board in Bilayers[i].Boards)
+                {
+                    List<BoardRegion> regionsForRemoval = new List<BoardRegion>();
+                    foreach(BoardRegion region in board.BoardRegions)
+                    {
+                        if(region.ThicknessParameter < bilayerThicknesses[i])
+                        {
+                           regionsForRemoval.Add(region);
+                        }
+                    }
+                    foreach(BoardRegion region in regionsForRemoval)
+                    {
+                        board.BoardRegions.Remove(region);
+                    }
+                    if(board.BoardRegions.Count == 0)
+                    {
+                        boardsForRemoval.Add(board);
+                    }
+                }
+                foreach(PanelBoard board in boardsForRemoval)
+                {
+                    Bilayers[i].Boards.Remove(board);
+                }
+                if (Bilayers[i].Boards.Count == 0)
+                {
+                    bilayersForRemoval.Add(Bilayers[i]);
+                }
+                Bilayers[i].UpdatePassiveLayer();
+            }
+            foreach(Bilayer bilayer in bilayersForRemoval)
+            {
+                Bilayers.Remove(bilayer);
+            }
+            
+            /*
+            List<PanelBoard> boardsForRemoval = new List<PanelBoard>();
+            List<Bilayer> bilayersForRemoval = new List<Bilayer>();
+            List<double> largestSmallerThicknesses = new List<double>();
+
+            for (int i = 0; i < Bilayers.Count; i++)
+            {
+                //find the closest difference in thickness that is below the threshold
+                double largestSmallerThickness = 0;
+                double largestThickness = 0;
+                for (int j = 0; j < Bilayers[i].Boards.Count; j++)
+                {
+                    if (Bilayers[i].Boards[j].ThicknessParameter > largestThickness) largestThickness = Bilayers[i].Boards[j].ThicknessParameter;
+                    if (Bilayers[i].Boards[j].ThicknessParameter < bilayerThicknesses[i] && Bilayers[i].Boards[j].ThicknessParameter > largestSmallerThickness)
+                    {
+                        largestSmallerThickness = Bilayers[i].Boards[j].ThicknessParameter;
+                    }
+                }
+                if (largestThickness < bilayerThicknesses[i])
+                {
+                    bilayersForRemoval.Add(Bilayers[i]);
+                }
+                else largestSmallerThicknesses.Add(largestSmallerThickness);
+            }
+
+
+            foreach(Bilayer bilayer in  bilayersForRemoval)
+            {
+                Bilayers.Remove(bilayer);
+            }
+
+
+            for(int i = 0; i < Bilayers.Count; i++)
+            { 
+                //find average board length
+                double averageLength = 0;
+                foreach(PanelBoard board in Bilayers[i].Boards)
+                {
+                    averageLength += board.Length;
+                }
+                averageLength /= Bilayers[i].Boards.Count;
+
+                //shorten transition boards by half but don't remove them
+                for (int j = 0; j < Bilayers[i].Boards.Count; j++)
+                {
+                    if (Math.Abs(largestSmallerThicknesses[i] - Bilayers[i].Boards[j].ThicknessParameter) <= RhinoDoc.ActiveDoc.ModelAbsoluteTolerance)
+                    {
+                        PanelBoard currentBoard = Bilayers[i].Boards[j];
+                        List<PanelBoard> neighbors = Bilayers[i].GetNeighbors(j);
+
+                        if (Bilayers[i].Boards[j].Length < averageLength) continue;
+
+                        double lowerX = 0;
+                        double higherX = 0;
+                        foreach (PanelBoard neighbor in neighbors)
+                        {
+                            if (neighbor.Centroid.X < currentBoard.Centroid.X)
+                            {
+                                lowerX += neighbor.ThicknessParameter;
+                            }
+                            else if (neighbor.Centroid.X > currentBoard.Centroid.X)
+                            {
+                                higherX += neighbor.ThicknessParameter;
+                            }
+                        }
+
+                        double start = Bilayers[i].Boards[j].RowRange[0];
+                        double end = Bilayers[i].Boards[j].RowRange[1];
+
+                        if (lowerX >= higherX)
+                        {
+                            //shorten towards lower x
+
+                            Bilayers[i].Boards[j].RowRange = new Interval(start, start + ((end - start) / 2));
+                        }
+                        else
+                        {
+                            //shorten towards higher x
+                            Bilayers[i].Boards[j].RowRange = new Interval(start + ((end - start) / 2), end);
+                        }
+                        Bilayers[i].Boards[j].EvaluateBoard();
+                    }
+                    else if (Bilayers[i].Boards[j].ThicknessParameter < bilayerThicknesses[i])
+                    {
+                        boardsForRemoval.Add(Bilayers[i].Boards[j]);
+                    }
+                }
+                foreach (PanelBoard board in boardsForRemoval)
+                {
+                    Bilayers[i].Boards.Remove(board);
+                }
+
+                Bilayers[i].UpdatePassiveLayer();
+            }
+            */
         }
 
         public static double Remap(double val, double from1, double to1, double from2, double to2)
         {
             return (val - from1) / (to1 - from1) * (to2 - from2) + from2;
         }
+
     }
 }
