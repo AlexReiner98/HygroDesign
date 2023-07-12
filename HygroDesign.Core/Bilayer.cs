@@ -83,7 +83,7 @@ namespace BilayerDesign
                     {
                         Interval rowRange = new Interval(j* BoardLength, (j+1)* BoardLength);
                         Interval colRange = new Interval(Width - ((i+1)* BoardWidth), Width - (i * BoardWidth));
-                        PanelBoard board = new PanelBoard(rowRange, colRange,this);
+                        PanelBoard board = new PanelBoard(rowRange, colRange,this,2);
                         board.RowNumber = i;
                         board.ColumnNumber = j;
                         Boards.Add(board);
@@ -99,22 +99,26 @@ namespace BilayerDesign
                     {
                         Interval colRange = new Interval(Width - ((i + 1) * BoardWidth),Width - (i * BoardWidth));
                         Interval rowRange;
+                        int regionCount = 0;
 
                         //first half board
                         if (j == 0)
                         {
                             rowRange = new Interval(0, BoardLength / 2);
+                            regionCount = 1; ;
                         }
                         else if (j == LengthCount)
                         {
                             rowRange = new Interval(j * BoardLength - BoardLength/2, (j * BoardLength));
+                            regionCount = 1;
                         }
                         else 
                         {
                         rowRange = new Interval( (j * BoardLength)- (BoardLength / 2),((j+1) * BoardLength) - (BoardLength / 2));
+                            regionCount = 2;
                         }
 
-                        PanelBoard board = new PanelBoard( rowRange, colRange,this);
+                        PanelBoard board = new PanelBoard( rowRange, colRange,this, regionCount);
                         board.RowNumber = i;
                         board.ColumnNumber = j;
                         Boards.Add(board);
@@ -234,10 +238,14 @@ namespace BilayerDesign
 
             foreach(PanelBoard board in Boards)
             {
-                if (board.RowRange[0] < minX) minX = board.RowRange[0];
-                if (board.RowRange[1] > maxX) maxX = board.RowRange[1];
-                if (board.ColumnRange[0] < minY) minY = board.ColumnRange[0];
-                if (board.ColumnRange[1] > maxY) maxY = board.ColumnRange[1];
+                foreach(BoardRegion region in board.BoardRegions)
+                {
+                    if (region.RowRange[0] < minX) minX = region.RowRange[0];
+                    if (region.RowRange[1] > maxX) maxX = region.RowRange[1];
+                    if (region.ColumnRange[0] < minY) minY = region.ColumnRange[0];
+                    if (region.ColumnRange[1] > maxY) maxY = region.ColumnRange[1];
+                }
+                
             }
             minX = minX - BasePlane.Origin.X;
             maxX = maxX - BasePlane.Origin.X;

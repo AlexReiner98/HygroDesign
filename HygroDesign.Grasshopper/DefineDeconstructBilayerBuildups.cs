@@ -52,20 +52,23 @@ namespace HygroDesign.Grasshopper.Components
                 int boardID = 0;
                 foreach (PanelBoard board in panel.Bilayers[0].Boards)
                 {
-                    var path = new GH_Path(panel.ID, boardID);
-                    species.Add(panel.Bilayers[0].PassiveSpecies, path);
-                    species.Add(board.Species, path);
-                    thicknesses.Add(panel.Bilayers[0].PassiveThickness, path);
-                    thicknesses.Add(panel.Bilayers[0].ActiveThickness, path);
-                    
-                    if(board.ThicknessNeighbors != null)
+                    foreach(BoardRegion region in board.BoardRegions)
                     {
-                        foreach (PanelBoard thicknessNeighbor in board.ThicknessNeighbors)
+                        var path = new GH_Path(panel.ID, boardID, region.ID);
+                        species.Add(panel.Bilayers[0].PassiveSpecies, path);
+                        species.Add(board.Species, path);
+                        thicknesses.Add(panel.Bilayers[0].PassiveThickness, path);
+                        thicknesses.Add(panel.Bilayers[0].ActiveThickness, path);
+
+                        if (region.RegionStack != null)
                         {
-                            species.Add(thicknessNeighbor.Parent.PassiveSpecies, path);
-                            species.Add(thicknessNeighbor.Species, path);
-                            thicknesses.Add(thicknessNeighbor.Parent.PassiveThickness, path);
-                            thicknesses.Add(thicknessNeighbor.Parent.ActiveThickness, path);
+                            foreach (BoardRegion thicknessNeighbor in region.RegionStack)
+                            {
+                                species.Add(thicknessNeighbor.Parent.Parent.PassiveSpecies, path);
+                                species.Add(thicknessNeighbor.Species, path);
+                                thicknesses.Add(thicknessNeighbor.Parent.Parent.PassiveThickness, path);
+                                thicknesses.Add(thicknessNeighbor.Parent.Parent.ActiveThickness, path);
+                            }
                         }
                     }
                     boardID++;

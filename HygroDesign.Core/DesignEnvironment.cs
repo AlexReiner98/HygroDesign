@@ -14,7 +14,6 @@ namespace BilayerDesign
         private List<PanelBoard> PanelBoards = new List<PanelBoard>();
 
         private Dictionary<Species, List<StockBoard>> StockDictionary = new Dictionary<Species, List<StockBoard>>();
-        private Dictionary<Species, List<StockBoard>> PanelDictionary = new Dictionary<Species, List<StockBoard>>();
 
         private List<double> ActiveThicknesses = new List<double>();
         private List<Species> ActiveSpecies = new List<Species>();
@@ -140,6 +139,7 @@ namespace BilayerDesign
                 board.StockBoard = closestStock;
                 board.Radius = selectedRadius;
                 board.MoistureChange = selectedMCChange;
+                board.RTAngle = closestStock.RTAngle;
                 closestStock.LengthAvailable -= board.Length;
                 closestStock.DesignBoards.Add(board);
             }

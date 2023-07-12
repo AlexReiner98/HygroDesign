@@ -31,16 +31,17 @@ namespace BilayerDesign
         public double RadiusFactor { get; set; }
         public List<Tuple<double,double>> ConvolutionWeights { get; set; }
         public double BlendedRadius { get; set; }
-        public List<PanelBoard> ThicknessNeighbors { get; set; }
-        public double ThicknessBlendedRadius { get; set; }
-        public double ThicknessParameter { get; set; }
+        private int Regions { get; set; }
+        public List<BoardRegion> BoardRegions { get; set; }
 
-        public PanelBoard(Interval rowRange, Interval columnRange, Bilayer parent)
+        public PanelBoard(Interval rowRange, Interval columnRange, Bilayer parent, int regions)
         {
             Parent = parent;
             RowRange = rowRange;
             ColumnRange = columnRange;
+            Regions = regions;
             EvaluateBoard();
+            CreateBoardRegions();
         }
 
         public static PanelBoard DeepCopy(PanelBoard source, Bilayer parent)
@@ -48,7 +49,7 @@ namespace BilayerDesign
             Interval rowRange = new Interval(source.RowRange[0], source.RowRange[1]);
             Interval columnRange = new Interval(source.ColumnRange[0], source.ColumnRange[1]);
 
-            PanelBoard newBoard = new PanelBoard(rowRange, columnRange, parent);
+            PanelBoard newBoard = new PanelBoard(rowRange, columnRange, parent, source.Regions);
 
             newBoard.Name = source.Name;
             newBoard.Length = source.Length;
@@ -74,8 +75,12 @@ namespace BilayerDesign
             newBoard.RadiusFactor = source.RadiusFactor;
             newBoard.ConvolutionWeights = source.ConvolutionWeights;
             newBoard.BlendedRadius = source.BlendedRadius;
-            newBoard.ThicknessNeighbors = source.ThicknessNeighbors;
 
+            newBoard.BoardRegions = new List<BoardRegion>();
+            foreach(BoardRegion region in source.BoardRegions)
+            {
+                newBoard.BoardRegions.Add(BoardRegion.DeepCopy(region, newBoard));
+            }
             return newBoard;
         }
     
@@ -99,6 +104,18 @@ namespace BilayerDesign
 
             Length = RowRange.Length;
             Width = ColumnRange.Length;
+        }
+
+        private void CreateBoardRegions()
+        {
+            BoardRegions = new List<BoardRegion>();
+            double regionLength = 1 / (double)Regions;
+            for(int i = 0; i < Regions; i++)
+            {
+                BoardRegion region = new BoardRegion(new Interval(i * regionLength, (i + 1) * regionLength),this);
+                region.ID = i; 
+                BoardRegions.Add(region);
+            }
         }
 
 

@@ -1,9 +1,12 @@
 using BilayerDesign;
 using Grasshopper;
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
+using Rhino;
 
 
 namespace HygroDesign.Grasshopper.Components
@@ -23,7 +26,7 @@ namespace HygroDesign.Grasshopper.Components
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter("Panel", "P", "The panel to adjust cross section of", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Thicknesses", "T", "Parameters describing how thick each board-area within the panels should be.", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Thicknesses", "T", "Parameters describing how thick each board-area within the panels should be.", GH_ParamAccess.tree);
         }
 
 
@@ -38,11 +41,24 @@ namespace HygroDesign.Grasshopper.Components
             Panel panel = null;
             DA.GetData(0, ref panel);
 
-            List<double> thicknesses = new List<double>();
-            DA.GetDataList(1, thicknesses);
+            GH_Structure<IGH_Goo> thicknesses = new GH_Structure<IGH_Goo>();
+            DA.GetDataTree(1, out thicknesses);
+
+            List<List<double>> thickness = new List<List<double>>();
+            for(int i = 0; i < thicknesses.Branches.Count; i++)
+            {
+                List<double> innerBranch = new List<double>();
+                for(int j = 0; j < thicknesses.Branches[i].Count ; j++)
+                {
+                    double thisThickness = 0;
+                    thicknesses.Branches[i][j].CastTo<double>(out thisThickness);
+                    innerBranch.Add(thisThickness);
+                }
+                thickness.Add(innerBranch);
+            }
             
             Panel newPanel = Panel.DeepCopy(panel);
-            newPanel.ApplyThicknessGradient(thicknesses);
+            newPanel.ApplyThicknessGradient(thickness);
             
             DA.SetData(0, newPanel);
         }

@@ -5,7 +5,8 @@ using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using Grasshopper.Kernel.Data;
-
+using Grasshopper.Kernel.Types;
+using System.IO;
 
 namespace HygroDesign.Grasshopper.Components
 {
@@ -23,40 +24,70 @@ namespace HygroDesign.Grasshopper.Components
         
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("Board", "B", "Board to deconstruct.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Board", "B", "Board to deconstruct.", GH_ParamAccess.tree);
         }
 
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("Polyline", "P", "The board polyline.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Name", "N", "The board name.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Species", "S", "The board species.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Moisture Change", "MC", "The board moisture change.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Desired Radius", "DR", "The original desired radius of the board.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Radius", "R", "The pure timoshenko prediction of the board's radius.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Blended Radius", "BR", "The blended radius which results from the curvature convolution.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Thickness Blended Radius", "TBR", "The blended radius which results from a weighted average of this board and its thickness neighbors, after the curvature convolution.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Polyline", "P", "The board polyline.", GH_ParamAccess.tree);
+            pManager.AddGenericParameter("Name", "N", "The board name.", GH_ParamAccess.tree);
+            pManager.AddGenericParameter("Species", "S", "The board species.", GH_ParamAccess.tree);
+            pManager.AddGenericParameter("RT Angle", "RT", "The board's RT angle", GH_ParamAccess.tree) ;
+            pManager.AddGenericParameter("Moisture Change", "MC", "The board moisture change.", GH_ParamAccess.tree);
+            pManager.AddGenericParameter("Desired Radius", "DR", "The original desired radius of the board.", GH_ParamAccess.tree);
+            pManager.AddGenericParameter("Radius", "R", "The pure timoshenko prediction of the board's radius.", GH_ParamAccess.tree);
+            pManager.AddGenericParameter("Blended Radius", "BR", "The blended radius which results from the curvature convolution.", GH_ParamAccess.tree);
+            pManager.AddGenericParameter("Board Regions", "RE", "The BoardRegion objects contained by this board.", GH_ParamAccess.tree);
         }
 
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            PanelBoard board = null;
-            DA.GetData(0, ref board);
+            GH_Structure<IGH_Goo> boardStruct = new GH_Structure<IGH_Goo>();
+            DA.GetDataTree(0, out boardStruct);
 
-            if(board != null )
-            {
-                DA.SetData("Species", board.Species.Name);
-                DA.SetData("Polyline", board.Polyline);
-                DA.SetData("Desired Radius", board.DesiredRadius);
-                DA.SetData("Radius", board.Radius);
-                DA.SetData("Moisture Change", board.MoistureChange);
-                DA.SetData("Name", board.Name);
-                DA.SetData("Blended Radius", board.BlendedRadius);
-                DA.SetData("Thickness Blended Radius", board.ThicknessBlendedRadius);
-            }
             
+            DataTree<string> names = new DataTree<string>();
+            DataTree<Polyline> polylines = new DataTree<Polyline>();
+            DataTree<double> desiredRadii = new DataTree<double>();
+            DataTree<double> RTAngle = new DataTree<double>();
+            DataTree<double> radii = new DataTree<double>();
+            DataTree<double> mcs = new DataTree<double>();
+            DataTree<double> blendedRadii = new DataTree<double>();
+            DataTree<BoardRegion> regions = new DataTree<BoardRegion>();
+            DataTree<Species> species = new DataTree<Species>();
+
+            for(int i = 0; i < boardStruct.Branches.Count; i++)
+            {
+                for(int j = 0; j < boardStruct.Branches[i].Count; j++)
+                {
+                    GH_Path path = boardStruct.Paths[i];
+                    PanelBoard board;
+                    boardStruct[i][j].CastTo<PanelBoard>(out board);
+
+                    if (board == null) continue;
+
+                    names.Add(board.Name, path);
+                    polylines.Add(board.Polyline, path);
+                    desiredRadii.Add(board.DesiredRadius, path);
+                    RTAngle.Add(board.RTAngle, path);
+                    radii.Add(board.Radius, path);
+                    mcs.Add(board.MoistureChange, path);
+                    blendedRadii.Add(board.BlendedRadius, path);
+                    species.Add(board.Species, path);
+                    regions.AddRange(board.BoardRegions, path.AppendElement(j));                }
+            }
+
+            DA.SetDataTree(0, polylines);
+            DA.SetDataTree(1, names);
+            DA.SetDataTree(2, species);
+            DA.SetDataTree(3, RTAngle);
+            DA.SetDataTree(4, mcs);
+            DA.SetDataTree(5, desiredRadii);
+            DA.SetDataTree(6, radii);
+            DA.SetDataTree(7, blendedRadii);
+            DA.SetDataTree(8, regions);
         }
 
 
