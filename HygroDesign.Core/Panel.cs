@@ -37,6 +37,89 @@ namespace BilayerDesign
             return panel;
         }
 
+        public void SetConvolutionFactors(double maxRadiusInfluence, double stiffnessFactor)
+        {
+            //get stiffness bounds
+            double maxLongStiffness = 0;
+            double minLongStiffness = double.MaxValue;
+            double maxHorizStiffness = 0;
+            double minHorizStiffness = double.MaxValue;
+            double minCurvature = double.MaxValue;
+
+            foreach(Bilayer bilayer in Bilayers)
+            {
+                foreach (PanelBoard board in bilayer.Boards)
+                {
+                    if (board.Species.LElasticModulus > maxLongStiffness) maxLongStiffness = board.Species.LElasticModulus;
+                    if (board.Species.LElasticModulus < minLongStiffness) minLongStiffness = board.Species.LElasticModulus;
+                    if (board.Species.RElasticModulus > maxHorizStiffness) maxHorizStiffness = board.Species.RElasticModulus;
+                    if (board.Species.RElasticModulus < minHorizStiffness) minHorizStiffness = board.Species.RElasticModulus;
+                    if (board.Radius < minCurvature) minCurvature = board.Radius;
+                }
+            }
+            
+            foreach(Bilayer bilayer in Bilayers)
+            {
+                //set factors
+                foreach (PanelBoard board in bilayer.Boards)
+                {
+                    board.LongStiffnessFactor = Remap(board.Species.LElasticModulus, minLongStiffness, maxLongStiffness, 1 - stiffnessFactor, 1);
+
+                    RhinoApp.WriteLine(minLongStiffness.ToString() + " " + maxLongStiffness.ToString() + " " + (1 - stiffnessFactor).ToString() + " " + 1.ToString());
+                    board.RadStiffnessFactor = Remap(board.Species.RElasticModulus, minHorizStiffness, maxHorizStiffness, 1 - stiffnessFactor, 1);
+
+                    board.RadiusFactor = Remap(board.Radius, minCurvature, maxRadiusInfluence, 1, 0);
+                }
+            }
+            
+        }
+
+        public void CurvatureConvolution(double horizontal, double vertical)
+        {
+            foreach (Bilayer bilayer in Bilayers)
+            {
+                foreach (PanelBoard board in bilayer.Boards)
+                {
+                    board.ConvolutionWeights = new List<Tuple<double, double>>();
+
+                    foreach (PanelBoard testBoard in bilayer.Boards)
+                    {
+                        double closestX = double.MaxValue;
+                        double closestY = double.MaxValue;
+
+                        if (Math.Abs(testBoard.RowRange[0] - board.Centroid.X) < closestX) closestX = Math.Abs(testBoard.RowRange[0] - board.Centroid.X);
+                        if (Math.Abs(testBoard.RowRange[1] - board.Centroid.X) < closestX) closestX = Math.Abs(testBoard.RowRange[1] - board.Centroid.X);
+                        if (testBoard.RowRange[0] <= board.Centroid.X + 10 && testBoard.RowRange[1] >= board.Centroid.X - 10) closestX = 0;
+                        if (Math.Abs(testBoard.Centroid.X - board.Centroid.X) < closestX) closestX = Math.Abs(testBoard.Centroid.X - board.Centroid.X);
+
+                        if (Math.Abs(testBoard.ColumnRange[0] - board.Centroid.Y) < closestY) closestY = Math.Abs(testBoard.ColumnRange[0] - board.Centroid.Y);
+                        if (Math.Abs(testBoard.ColumnRange[1] - board.Centroid.Y) < closestY) closestY = Math.Abs(testBoard.ColumnRange[1] - board.Centroid.Y);
+                        if (testBoard.ColumnRange[0] <= board.Centroid.Y + 10 && testBoard.ColumnRange[1] >= board.Centroid.Y - 10) closestY = board.Width / 2;
+                        if (Math.Abs(testBoard.Centroid.Y - board.Centroid.Y) < closestY) closestY = Math.Abs(testBoard.Centroid.Y - board.Centroid.Y);
+
+                        double LongFactor = testBoard.LongStiffnessFactor / Math.Pow(closestX + 1, horizontal);
+                        double RadFactor = testBoard.RadStiffnessFactor / Math.Pow(closestY + 1, vertical);
+
+                        board.ConvolutionWeights.Add(new Tuple<double, double>(testBoard.Radius, testBoard.RadiusFactor * (LongFactor * RadFactor)));
+                    }
+                }
+
+                foreach (PanelBoard board in bilayer.Boards)
+                {
+
+                    double weightSum = 0;
+                    foreach (Tuple<double, double> valueWeight in board.ConvolutionWeights)
+                    {
+                        board.BlendedRadius += valueWeight.Item1 * valueWeight.Item2;
+                        weightSum += valueWeight.Item2;
+
+                    }
+                    board.BlendedRadius /= weightSum;
+
+                }
+            }
+        }
+
         public void FindThicknessNeighbors()
         {
             
@@ -91,7 +174,7 @@ namespace BilayerDesign
                     double weights = board.RadStiffnessFactor + bilayerThicknessFactor;
                     double weightedTotal = board.BlendedRadius * weights;
 
-                    foreach(BoardRegion region in board.BoardRegions)
+                    foreach (BoardRegion region in board.BoardRegions)
                     {
                         foreach (BoardRegion regionNeighbor in region.RegionStack)
                         {
@@ -99,6 +182,7 @@ namespace BilayerDesign
                             if (minThickness != maxThickness) neighborThicknessFactor = Remap(regionNeighbor.Parent.Parent.ActiveThickness + regionNeighbor.Parent.Parent.PassiveThickness, minThickness, maxThickness, 1 - thicknessFactor, 1);
 
                             weights += regionNeighbor.Parent.RadStiffnessFactor + neighborThicknessFactor;
+
                             weightedTotal += regionNeighbor.Parent.BlendedRadius * (regionNeighbor.Parent.RadStiffnessFactor + neighborThicknessFactor);
                         }
                        
