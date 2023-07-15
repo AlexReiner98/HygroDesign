@@ -64,8 +64,6 @@ namespace BilayerDesign
                 foreach (PanelBoard board in bilayer.Boards)
                 {
                     board.LongStiffnessFactor = Remap(board.Species.LElasticModulus, minLongStiffness, maxLongStiffness, 1 - stiffnessFactor, 1);
-
-                    RhinoApp.WriteLine(minLongStiffness.ToString() + " " + maxLongStiffness.ToString() + " " + (1 - stiffnessFactor).ToString() + " " + 1.ToString());
                     board.RadStiffnessFactor = Remap(board.Species.RElasticModulus, minHorizStiffness, maxHorizStiffness, 1 - stiffnessFactor, 1);
 
                     board.RadiusFactor = Remap(board.Radius, minCurvature, maxRadiusInfluence, 1, 0);
