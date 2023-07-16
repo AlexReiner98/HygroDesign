@@ -193,7 +193,6 @@ namespace BilayerDesign
         public List<List<BoardRegion>> GetXRangeSets()
         {
             List<double> uniqueStartPoints = new List<double>();
-            List<double> uniqueEndPoints = new List<double>();
 
             //find unique start points and endpoints
             foreach (Bilayer bilayer in Bilayers)
@@ -202,15 +201,14 @@ namespace BilayerDesign
                 {
                     foreach(BoardRegion region in board.BoardRegions)
                     {
-                        if (!uniqueStartPoints.Contains(region.RowRange[0])) uniqueStartPoints.Add(region.RowRange[0]);
-                        if (!uniqueEndPoints.Contains(region.RowRange[1])) uniqueEndPoints.Add(region.RowRange[1]);
+                        double start = Math.Round(region.RowRange[0]);
+                        if (!uniqueStartPoints.Contains(start)) uniqueStartPoints.Add(start);
                     }
                 }
             }
 
             //sort startpoints and endpoints
             List<double> sortedStartPoints = uniqueStartPoints.OrderBy(o => o).ToList();
-            List<double> sortedEndPoints = uniqueEndPoints.OrderBy(o => o).ToList();
 
             List<List<BoardRegion>> output = new List<List<BoardRegion>>();
 
@@ -224,15 +222,16 @@ namespace BilayerDesign
                     {
                         foreach(BoardRegion region in board.BoardRegions)
                         {
+                            double start = Math.Round(region.RowRange[0]);
                             //if ((region.RowRange[0] >= sortedStartPoints[i] & region.RowRange[0] < sortedEndPoints[i] | region.RowRange[1] > sortedStartPoints[i] & region.RowRange[1] <= sortedEndPoints[i]))
-                            if (region.RowRange[0] == sortedStartPoints[i])
+                            if (start == sortedStartPoints[i])
                             {
                                 bool alreadyIncluded = false;
                                 foreach (BoardRegion thicknessNeighbor in region.RegionStack)
                                 {
                                     if (column.Contains(thicknessNeighbor)) alreadyIncluded = true;
                                 }
-                                if (!alreadyIncluded) column.Add(region);
+                                if (!alreadyIncluded) { column.Add(region); }
                             }
                         }
                     }
