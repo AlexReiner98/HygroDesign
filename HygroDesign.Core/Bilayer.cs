@@ -28,9 +28,10 @@ namespace BilayerDesign
         public Panel Parent { get; set; }
         public Interval PassiveLayerX { get; set; }
         public Interval PassiveLayerY { get; set; }
+        public int BoardRegionCount { get; set; }
 
 
-        public Bilayer(Plane basePlane, double boardWidth, double boardLength, int widthCount, int lengthCount, double activeThickness, double passiveThickness, Species passiveSpecies)
+        public Bilayer(Plane basePlane, double boardWidth, double boardLength, int widthCount, int lengthCount, double activeThickness, double passiveThickness, Species passiveSpecies, int boardRegionCount)
         {
             BasePlane = basePlane;
             LengthCount = lengthCount;
@@ -42,6 +43,7 @@ namespace BilayerDesign
             ActiveThickness = activeThickness;
             PassiveThickness = passiveThickness;
             PassiveSpecies = passiveSpecies;
+            BoardRegionCount = boardRegionCount;
 
             //create surface
             InitialSurface = Brep.CreatePlanarBreps(new Rectangle3d(BasePlane, Length, Width).ToNurbsCurve(), RhinoDoc.ActiveDoc.ModelAbsoluteTolerance)[0].Faces[0];
@@ -55,7 +57,7 @@ namespace BilayerDesign
             Plane basePlane = new Plane(source.BasePlane);
             List<PanelBoard> boards = source.Boards;
 
-            Bilayer bilayer = new Bilayer(basePlane, source.BoardWidth, source.BoardLength, source.WidthCount, source.LengthCount, source.ActiveThickness, source.PassiveThickness, source.PassiveSpecies);
+            Bilayer bilayer = new Bilayer(basePlane, source.BoardWidth, source.BoardLength, source.WidthCount, source.LengthCount, source.ActiveThickness, source.PassiveThickness, source.PassiveSpecies, source.BoardRegionCount);
             bilayer.ID = source.ID;
             bilayer.Boards.Clear();
             bilayer.PassiveLayerX = source.PassiveLayerX;
@@ -83,7 +85,7 @@ namespace BilayerDesign
                     {
                         Interval rowRange = new Interval(j* BoardLength, (j+1)* BoardLength);
                         Interval colRange = new Interval(Width - ((i+1)* BoardWidth), Width - (i * BoardWidth));
-                        PanelBoard board = new PanelBoard(rowRange, colRange,this,2);
+                        PanelBoard board = new PanelBoard(rowRange, colRange,this,BoardRegionCount);
                         board.RowNumber = i;
                         board.ColumnNumber = j;
                         Boards.Add(board);
@@ -105,17 +107,17 @@ namespace BilayerDesign
                         if (j == 0)
                         {
                             rowRange = new Interval(0, BoardLength / 2);
-                            regionCount = 1; ;
+                            regionCount = BoardRegionCount / 2 ;
                         }
                         else if (j == LengthCount)
                         {
                             rowRange = new Interval(j * BoardLength - BoardLength/2, (j * BoardLength));
-                            regionCount = 1;
+                            regionCount = BoardRegionCount / 2;
                         }
                         else 
                         {
                         rowRange = new Interval( (j * BoardLength)- (BoardLength / 2),((j+1) * BoardLength) - (BoardLength / 2));
-                            regionCount = 2;
+                            regionCount = BoardRegionCount;
                         }
 
                         PanelBoard board = new PanelBoard( rowRange, colRange,this, regionCount);
