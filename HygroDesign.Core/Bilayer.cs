@@ -28,9 +28,10 @@ namespace BilayerDesign
         public Panel Parent { get; set; }
         public Interval PassiveLayerX { get; set; }
         public Interval PassiveLayerY { get; set; }
+        public int BoardRegionCount { get; set; }
 
 
-        public Bilayer(Plane basePlane, double boardWidth, double boardLength, int widthCount, int lengthCount, double activeThickness, double passiveThickness, Species passiveSpecies)
+        public Bilayer(Plane basePlane, double boardWidth, double boardLength, int widthCount, int lengthCount, double activeThickness, double passiveThickness, Species passiveSpecies, int boardRegionCount)
         {
             BasePlane = basePlane;
             LengthCount = lengthCount;
@@ -42,6 +43,7 @@ namespace BilayerDesign
             ActiveThickness = activeThickness;
             PassiveThickness = passiveThickness;
             PassiveSpecies = passiveSpecies;
+            BoardRegionCount = boardRegionCount;
 
             //create surface
             InitialSurface = Brep.CreatePlanarBreps(new Rectangle3d(BasePlane, Length, Width).ToNurbsCurve(), RhinoDoc.ActiveDoc.ModelAbsoluteTolerance)[0].Faces[0];
@@ -55,7 +57,7 @@ namespace BilayerDesign
             Plane basePlane = new Plane(source.BasePlane);
             List<PanelBoard> boards = source.Boards;
 
-            Bilayer bilayer = new Bilayer(basePlane, source.BoardWidth, source.BoardLength, source.WidthCount, source.LengthCount, source.ActiveThickness, source.PassiveThickness, source.PassiveSpecies);
+            Bilayer bilayer = new Bilayer(basePlane, source.BoardWidth, source.BoardLength, source.WidthCount, source.LengthCount, source.ActiveThickness, source.PassiveThickness, source.PassiveSpecies, source.BoardRegionCount);
             bilayer.ID = source.ID;
             bilayer.Boards.Clear();
             bilayer.PassiveLayerX = source.PassiveLayerX;
@@ -83,7 +85,7 @@ namespace BilayerDesign
                     {
                         Interval rowRange = new Interval(j* BoardLength, (j+1)* BoardLength);
                         Interval colRange = new Interval(Width - ((i+1)* BoardWidth), Width - (i * BoardWidth));
-                        PanelBoard board = new PanelBoard(rowRange, colRange,this,2);
+                        PanelBoard board = new PanelBoard(rowRange, colRange,this,BoardRegionCount);
                         board.RowNumber = i;
                         board.ColumnNumber = j;
                         Boards.Add(board);
@@ -105,17 +107,17 @@ namespace BilayerDesign
                         if (j == 0)
                         {
                             rowRange = new Interval(0, BoardLength / 2);
-                            regionCount = 1; ;
+                            regionCount = BoardRegionCount / 2 ;
                         }
                         else if (j == LengthCount)
                         {
                             rowRange = new Interval(j * BoardLength - BoardLength/2, (j * BoardLength));
-                            regionCount = 1;
+                            regionCount = BoardRegionCount / 2;
                         }
                         else 
                         {
                         rowRange = new Interval( (j * BoardLength)- (BoardLength / 2),((j+1) * BoardLength) - (BoardLength / 2));
-                            regionCount = 2;
+                            regionCount = BoardRegionCount;
                         }
 
                         PanelBoard board = new PanelBoard( rowRange, colRange,this, regionCount);
@@ -127,76 +129,7 @@ namespace BilayerDesign
             }
         }
 
-        public void SetConvolutionFactors(double maxRadiusInfluence, double stiffnessFactor)
-        {
-            //get stiffness bounds
-            double maxLongStiffness = 0;
-            double minLongStiffness = double.MaxValue;
-            double maxHorizStiffness = 0;
-            double minHorizStiffness = double.MaxValue;
-            double minCurvature = double.MaxValue;
-
-            foreach (PanelBoard board in Boards)
-            {
-                if (board.Species.LElasticModulus > maxLongStiffness) maxLongStiffness = board.Species.LElasticModulus;
-                if (board.Species.LElasticModulus < minLongStiffness) minLongStiffness = board.Species.LElasticModulus;
-                if (board.Species.RElasticModulus > maxHorizStiffness) maxHorizStiffness = board.Species.RElasticModulus;
-                if (board.Species.RElasticModulus < minHorizStiffness) minHorizStiffness = board.Species.RElasticModulus;
-                if (board.Radius < minCurvature) minCurvature = board.Radius;
-                
-            }
-
-            //set factors
-            foreach (PanelBoard board in Boards)
-            {
-                board.LongStiffnessFactor = Remap(board.Species.LElasticModulus, minLongStiffness, maxLongStiffness, 1-stiffnessFactor, 1);
-                board.RadStiffnessFactor = Remap(board.Species.RElasticModulus, minHorizStiffness, maxHorizStiffness, 1-stiffnessFactor, 1);
-
-                board.RadiusFactor = Remap(board.Radius, minCurvature, maxRadiusInfluence, 1, 0);
-            }
-        }
-
-        public void CurvatureConvolution(double horizontal, double vertical)
-        {
-            foreach (PanelBoard board in Boards)
-            {
-                board.ConvolutionWeights = new List<Tuple<double, double>>();
-
-                foreach (PanelBoard testBoard in Boards)
-                {
-                    double closestX = double.MaxValue;
-                    double closestY = double.MaxValue;
-
-                    if (Math.Abs(testBoard.RowRange[0] - board.Centroid.X) < closestX) closestX = Math.Abs(testBoard.RowRange[0] - board.Centroid.X);
-                    if (Math.Abs(testBoard.RowRange[1] - board.Centroid.X) < closestX) closestX = Math.Abs(testBoard.RowRange[1] - board.Centroid.X);
-                    if (testBoard.RowRange[0] <= board.Centroid.X + 10 && testBoard.RowRange[1] >= board.Centroid.X - 10) closestX = 0;
-                    if (Math.Abs(testBoard.Centroid.X - board.Centroid.X) < closestX) closestX = Math.Abs(testBoard.Centroid.X - board.Centroid.X);
-
-                    if (Math.Abs(testBoard.ColumnRange[0] - board.Centroid.Y) < closestY) closestY = Math.Abs(testBoard.ColumnRange[0] - board.Centroid.Y);
-                    if (Math.Abs(testBoard.ColumnRange[1] - board.Centroid.Y) < closestY) closestY = Math.Abs(testBoard.ColumnRange[1] - board.Centroid.Y);
-                    if (testBoard.ColumnRange[0] <= board.Centroid.Y + 10 && testBoard.ColumnRange[1] >= board.Centroid.Y - 10) closestY = board.Width/2;
-                    if (Math.Abs(testBoard.Centroid.Y - board.Centroid.Y) < closestY) closestY = Math.Abs(testBoard.Centroid.Y - board.Centroid.Y);
-
-                    double LongFactor = testBoard.LongStiffnessFactor / Math.Pow(closestX + 1, horizontal);
-                    double RadFactor = testBoard.RadStiffnessFactor / Math.Pow(closestY + 1, vertical);
-
-                    board.ConvolutionWeights.Add(new Tuple<double, double>(testBoard.Radius, testBoard.RadiusFactor * (LongFactor * RadFactor)));
-                }
-            }
-
-            foreach (PanelBoard board in Boards)
-            {
-               
-                double weightSum = 0;
-                foreach(Tuple<double, double> valueWeight in board.ConvolutionWeights)
-                {
-                    board.BlendedRadius += valueWeight.Item1 * valueWeight.Item2;
-                    weightSum += valueWeight.Item2;
-                }
-                board.BlendedRadius /= weightSum;
-                
-            }
-        }
+        
 
         public List<PanelBoard> GetNeighbors(int index)
         {

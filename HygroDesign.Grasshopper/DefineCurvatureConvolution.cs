@@ -74,11 +74,10 @@ namespace HygroDesign.Grasshopper.Components
             for (int i = 0; i < panelCopies.Count; i++)
             {
                 panelCopies[i] = Panel.DeepCopy(panelCopies[i]);
-                for (int j = 0; j < panelCopies[i].Bilayers.Count; j++)
-                {
-                    panelCopies[i].Bilayers[j].SetConvolutionFactors(maxRad, stiffness);
-                    panelCopies[i].Bilayers[j].CurvatureConvolution(longitudinal, tangential);
-                }
+                
+                panelCopies[i].SetConvolutionFactors(maxRad, stiffness);
+                panelCopies[i].CurvatureConvolution(longitudinal, tangential);
+                
                 panelCopies[i].ThicknessConvolution(thickness);
             }
 

@@ -31,6 +31,8 @@ namespace HygroDesign.Grasshopper.Components
             pManager.AddGenericParameter("Active Thickness", "AT", "The thickness of the active layer", GH_ParamAccess.item);
             pManager.AddGenericParameter("Passive Thickness", "PT", "The thickness of the passive layer", GH_ParamAccess.item);
             pManager.AddGenericParameter("Passive Species", "PS", "The wood species of the passive layer", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Region Count", "RC", "The number of regions per board.", GH_ParamAccess.item);
+
         }
 
 
@@ -66,7 +68,11 @@ namespace HygroDesign.Grasshopper.Components
             Species passiveSpecies = null;
             DA.GetData(7, ref passiveSpecies);
 
-            Bilayer bilayer = new Bilayer(plane,boardWidth, boardLength, (int)widthCount, (int)lengthCount, activeThickness, passiveThickness, passiveSpecies);
+            int boardRegionCount = 0;
+            DA.GetData(8, ref boardRegionCount);
+
+
+            Bilayer bilayer = new Bilayer(plane,boardWidth, boardLength, (int)widthCount, (int)lengthCount, activeThickness, passiveThickness, passiveSpecies, boardRegionCount);
 
             DA.SetData(0, bilayer);
         }
