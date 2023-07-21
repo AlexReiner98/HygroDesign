@@ -76,7 +76,7 @@ namespace HygroDesign.Grasshopper.Components
                     mcs.Add(board.MoistureChange, path);
                     blendedRadii.Add(board.BlendedRadius, path);
                     species.Add(board.Species, path);
-                    regions.AddRange(board.BoardRegions, path.AppendElement(j));                }
+                    regions.AddRange(board.Regions, path.AppendElement(j));                }
             }
 
             DA.SetDataTree(0, polylines);

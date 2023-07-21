@@ -12,8 +12,6 @@ namespace BilayerDesign
     {
         public string Name;
         public Species Species = new Species();
-        public double Length;
-        public double Width;
         public double Height;
         public double RTAngle;
     }

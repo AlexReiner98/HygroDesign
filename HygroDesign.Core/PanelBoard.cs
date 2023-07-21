@@ -12,11 +12,10 @@ namespace BilayerDesign
     public class PanelBoard : BoardBase
     {
         public Bilayer Parent { get; set; }
-        public Interval RowRange { get; set; }
-        public Interval ColumnRange { get; set; }
+        public Interval InitialRowRange { get; set; }
+        public Interval InitialColumnRange { get; set; }
         public int RowNumber { get; set; }
         public int ColumnNumber { get; set; }
-        public int PanelNumber { get; set; }
         public Polyline Polyline { get; set; }
         public Point3d Centroid { get; set; }
         public double RadiusParameter { get; set; }
@@ -31,36 +30,34 @@ namespace BilayerDesign
         public double RadiusFactor { get; set; }
         public List<Tuple<double,double>> ConvolutionWeights { get; set; }
         public double BlendedRadius { get; set; }
-        private int Regions { get; set; }
-        public List<BoardRegion> BoardRegions { get; set; }
+        private int RegionCount { get; set; }
+        public List<BoardRegion> Regions { get; set; }
 
-        public PanelBoard(Interval rowRange, Interval columnRange, Bilayer parent, int regions)
+        public PanelBoard(Interval initialRowRange, Interval initialColumnRange, Bilayer parent, int regions)
         {
             Parent = parent;
-            RowRange = rowRange;
-            ColumnRange = columnRange;
-            Regions = regions;
-            EvaluateBoard();
+            InitialRowRange = initialRowRange;
+            InitialColumnRange = initialColumnRange;
+            RegionCount = regions;
             CreateBoardRegions();
+            EvaluateBoard();
+
         }
 
         public static PanelBoard DeepCopy(PanelBoard source, Bilayer parent)
         {
-            Interval rowRange = new Interval(source.RowRange[0], source.RowRange[1]);
-            Interval columnRange = new Interval(source.ColumnRange[0], source.ColumnRange[1]);
+            Interval initialRowRange = new Interval(source.RowRange[0], source.RowRange[1]);
+            Interval initialColumnRange = new Interval(source.ColumnRange[0], source.ColumnRange[1]);
 
-            PanelBoard newBoard = new PanelBoard(rowRange, columnRange, parent, source.Regions);
+            PanelBoard newBoard = new PanelBoard(initialRowRange, initialColumnRange, parent, source.RegionCount);
 
             newBoard.Name = source.Name;
-            newBoard.Length = source.Length;
-            newBoard.Width = source.Width;
             newBoard.Height = source.Height;
             newBoard.MoistureChange = source.MoistureChange;
             newBoard.RTAngle = source.RTAngle;
 
             newBoard.RowNumber = source.RowNumber;
             newBoard.ColumnNumber = source.ColumnNumber;
-            newBoard.PanelNumber = parent.ID;
             newBoard.RadiusParameter = source.RadiusParameter;
             newBoard.DesiredRadius = source.DesiredRadius;
             newBoard.RadiusWeight = source.RadiusWeight;
@@ -76,10 +73,10 @@ namespace BilayerDesign
             newBoard.ConvolutionWeights = source.ConvolutionWeights;
             newBoard.BlendedRadius = source.BlendedRadius;
 
-            newBoard.BoardRegions = new List<BoardRegion>();
-            foreach(BoardRegion region in source.BoardRegions)
+            newBoard.Regions = new List<BoardRegion>();
+            foreach(BoardRegion region in source.Regions)
             {
-                newBoard.BoardRegions.Add(BoardRegion.DeepCopy(region, newBoard));
+                newBoard.Regions.Add(BoardRegion.DeepCopy(region, newBoard));
             }
             return newBoard;
         }
@@ -88,36 +85,107 @@ namespace BilayerDesign
         {
             List<Point3d> points = new List<Point3d>
             {
-                Parent.InitialSurface.PointAt(RowRange[0], ColumnRange[0]),
-                Parent.InitialSurface.PointAt(RowRange[1], ColumnRange[0]),
-                Parent.InitialSurface.PointAt(RowRange[1], ColumnRange[1]),
-                Parent.InitialSurface.PointAt(RowRange[0], ColumnRange[1]),
-                Parent.InitialSurface.PointAt(RowRange[0], ColumnRange[0])
+                Parent.InitialSurface.PointAt(InitialRowRange[0], InitialColumnRange[0]),
+                Parent.InitialSurface.PointAt(InitialRowRange[1], InitialColumnRange[0]),
+                Parent.InitialSurface.PointAt(InitialRowRange[1], InitialColumnRange[1]),
+                Parent.InitialSurface.PointAt(InitialRowRange[0], InitialColumnRange[1]),
+                Parent.InitialSurface.PointAt(InitialRowRange[0], InitialColumnRange[0])
             };
             Polyline = new Polyline(points);
 
-            Centroid += Parent.InitialSurface.PointAt(RowRange[0], ColumnRange[0]);
-            Centroid += Parent.InitialSurface.PointAt(RowRange[1], ColumnRange[0]);
-            Centroid += Parent.InitialSurface.PointAt(RowRange[1], ColumnRange[1]);
-            Centroid += Parent.InitialSurface.PointAt(RowRange[0], ColumnRange[1]);
+            Centroid += Parent.InitialSurface.PointAt(InitialRowRange[0], InitialColumnRange[0]);
+            Centroid += Parent.InitialSurface.PointAt(InitialRowRange[1], InitialColumnRange[0]);
+            Centroid += Parent.InitialSurface.PointAt(InitialRowRange[1], InitialColumnRange[1]);
+            Centroid += Parent.InitialSurface.PointAt(InitialRowRange[0], InitialColumnRange[1]);
             Centroid /= 4;
-
-            Length = RowRange.Length;
-            Width = ColumnRange.Length;
         }
 
         private void CreateBoardRegions()
         {
-            BoardRegions = new List<BoardRegion>();
-            double regionLength = 1 / (double)Regions;
-            for(int i = 0; i < Regions; i++)
+            Regions = new List<BoardRegion>();
+            double regionLength = 1 / (double)RegionCount;
+            for(int i = 0; i < RegionCount; i++)
             {
                 BoardRegion region = new BoardRegion(new Interval(i * regionLength, (i + 1) * regionLength),this);
                 region.ID = i; 
-                BoardRegions.Add(region);
+                Regions.Add(region);
             }
         }
 
+        public Interval RowRange { get
+            {
+                double start = double.MaxValue;
+                double end = double.MinValue;
+                for(int i = 0; i < Regions.Count; i++)
+                {
+                    if (Regions[i].RowRange[0] < start) start = Regions[i].RowRange[0];
+                    if (Regions[i].RowRange[1] > end) end = Regions[i].RowRange[1];
+                }
+                return new Interval(start, end);
+            } 
+        }
 
+        public Interval ColumnRange { get
+            {
+                double start = double.MaxValue;
+                double end = double.MinValue;
+                for (int i = 0; i < Regions.Count; i++)
+                {
+                    if (Regions[i].ColumnRange[0] < start) start = Regions[i].ColumnRange[0];
+                    if (Regions[i].ColumnRange[1] > end) end = Regions[i].ColumnRange[1];
+                }
+                return new Interval(start, end);
+            } 
+        }
+
+        public double Length { get
+            {
+                return RowRange.Length;
+            }
+        }
+
+        public double Width
+        {
+            get
+            {
+                return ColumnRange.Length;
+            }
+        }
+
+        public Point3d ShapedCentroid { get
+            {
+                if (Parent.Parent.Surface == null) throw new Exception("The parent panel's shaped surface must be set before the shaped centroid can be calculated.");
+
+                double xCoord = RowRange[0] + (Length / 2);
+                double yCoord = ColumnRange[0] + (Width / 2);
+
+                return Parent.Parent.Surface.PointAt(xCoord, yCoord);
+            } 
+        }
+
+        public double Area { get
+            {
+                return Width * Length;
+            }
+        }
+
+        public double Volume { get
+            {
+                return Area * Parent.ActiveThickness;
+            }
+        }
+
+        public double Mass { get
+            {
+                //get rhinodoc units and convert volume to m3
+                double volume = 0;
+                if (RhinoDoc.ActiveDoc.ModelUnitSystem == UnitSystem.Millimeters) volume = Volume * 1e-9;
+                if (RhinoDoc.ActiveDoc.ModelUnitSystem == UnitSystem.Centimeters) volume = Volume * 1e-6;
+                if (RhinoDoc.ActiveDoc.ModelUnitSystem == UnitSystem.Meters) volume = Volume;
+
+                //calculate mass in kg
+                return volume * Species.Density;
+            }
+        }
     }
 }

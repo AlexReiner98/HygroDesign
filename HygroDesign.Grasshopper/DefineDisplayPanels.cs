@@ -60,17 +60,17 @@ namespace HygroDesign.Grasshopper.Components
                 {
                     //create passive layer
                     
-                    Brep passiveLayer = new Box(bilayer.BasePlane,bilayer.PassiveLayerX,bilayer.PassiveLayerY, new Interval(bilayerStartZ, bilayerStartZ + bilayer.PassiveThickness)).ToBrep();
+                    Brep passiveLayer = new Box(bilayer.BasePlane,bilayer.PassiveLayer.XDomain,bilayer.PassiveLayer.YDomain, new Interval(bilayerStartZ, bilayerStartZ + bilayer.PassiveLayer.Thickness)).ToBrep();
 
                     passive.Add(passiveLayer, new GH_Path(panel.ID, bilayer.ID));
 
                     //create active layer
-                    bilayerStartZ += bilayer.PassiveThickness;
+                    bilayerStartZ += bilayer.PassiveLayer.Thickness;
 
                     int boardID = 0;
                     foreach(PanelBoard board in bilayer.Boards)
                     {
-                        foreach(BoardRegion region in board.BoardRegions)
+                        foreach(BoardRegion region in board.Regions)
                         {
                             Brep boardBrep = new Box(bilayer.BasePlane, region.RowRange, region.ColumnRange, new Interval(bilayerStartZ, bilayerStartZ + bilayer.ActiveThickness)).ToBrep();
 

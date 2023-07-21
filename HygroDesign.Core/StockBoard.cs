@@ -11,6 +11,8 @@ namespace BilayerDesign
         public double Thickness = 0;
         public double Multiplier = 0;
         public List<PanelBoard> DesignBoards = new List<PanelBoard>();
+        public double Length = 0;
+        public double Width = 0;
 
         //first key is active thickness, second is passive thickness, third is passive material, fourth is moisture change
         public Dictionary<double, Dictionary<double, Dictionary<Species, Dictionary<double, double>>>> PotentialRadii = new Dictionary<double, Dictionary<double, Dictionary<Species, Dictionary<double, double>>>>();

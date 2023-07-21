@@ -25,6 +25,7 @@ namespace HygroDesign.Grasshopper.Components
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter("Name", "N", "Name of the wood species.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Density", "D", "Density of the species in kg/m3", GH_ParamAccess.item);
             pManager.AddGenericParameter("LExpansion", "LX", "Expansion coefficient in the L grain direction.", GH_ParamAccess.item);
             pManager.AddGenericParameter("RExpansion", "RX", "Expansion coefficient in the R grain direction.", GH_ParamAccess.item);
             pManager.AddGenericParameter("TExpansion", "TX", "Expansion coefficient in the T grain direction.", GH_ParamAccess.item);
@@ -45,6 +46,7 @@ namespace HygroDesign.Grasshopper.Components
             string name = null;
             DA.GetData(0, ref name);
 
+            double Density = 0;
             double LExpansion = 0;
             double RExpansion = 0;
             double TExpansion = 0;
@@ -52,14 +54,15 @@ namespace HygroDesign.Grasshopper.Components
             double RElasticModulus = 0;
             double TElasticModulus = 0;
 
-            DA.GetData(1, ref LExpansion);
-            DA.GetData(2, ref RExpansion);
-            DA.GetData(3, ref TExpansion);
-            DA.GetData(4, ref LElasticModulus);
-            DA.GetData(5, ref RElasticModulus);
-            DA.GetData(6, ref TElasticModulus);
+            DA.GetData(1, ref Density);
+            DA.GetData(2, ref LExpansion);
+            DA.GetData(3, ref RExpansion);
+            DA.GetData(4, ref TExpansion);
+            DA.GetData(5, ref LElasticModulus);
+            DA.GetData(6, ref RElasticModulus);
+            DA.GetData(7, ref TElasticModulus);
 
-            DA.SetData(0, new Species(name, LExpansion, RExpansion, TExpansion, LElasticModulus, RElasticModulus, TElasticModulus));
+            DA.SetData(0, new Species(name, Density, LExpansion, RExpansion, TExpansion, LElasticModulus, RElasticModulus, TElasticModulus));
         }
 
 

@@ -11,7 +11,8 @@ namespace BilayerDesign
 {
     public class Species
     {
-        public string Name; 
+        public string Name;
+        public double Density;
         public double LExpansion;
         public double RExpansion;
         public double TExpansion;
@@ -19,9 +20,10 @@ namespace BilayerDesign
         public double RElasticModulus;
         public double TElasticModulus;
 
-        public Species(string name, double LExp, double RExp, double TExp, double LElast, double RElast, double TElast)
+        public Species(string name, double density, double LExp, double RExp, double TExp, double LElast, double RElast, double TElast)
         {
             Name = name;
+            Density = density;
             LExpansion = LExp;
             RExpansion = RExp;
             TExpansion = TExp;
@@ -33,6 +35,7 @@ namespace BilayerDesign
         public Species(Species source)
         {
             Name = source.Name;
+            Density = source.Density;
             LExpansion = source.LExpansion;
             RExpansion = source.RExpansion;
             TExpansion = source.TExpansion;

@@ -52,21 +52,21 @@ namespace HygroDesign.Grasshopper.Components
                 int boardID = 0;
                 foreach (PanelBoard board in panel.Bilayers[0].Boards)
                 {
-                    foreach(BoardRegion region in board.BoardRegions)
+                    foreach(BoardRegion region in board.Regions)
                     {
                         var path = new GH_Path(panel.ID, boardID, region.ID);
-                        species.Add(panel.Bilayers[0].PassiveSpecies, path);
+                        species.Add(panel.Bilayers[0].PassiveLayer.Species, path);
                         species.Add(board.Species, path);
-                        thicknesses.Add(panel.Bilayers[0].PassiveThickness, path);
+                        thicknesses.Add(panel.Bilayers[0].PassiveLayer.Thickness, path);
                         thicknesses.Add(panel.Bilayers[0].ActiveThickness, path);
 
                         if (region.RegionStack != null)
                         {
                             foreach (BoardRegion thicknessNeighbor in region.RegionStack)
                             {
-                                species.Add(thicknessNeighbor.Parent.Parent.PassiveSpecies, path);
+                                species.Add(thicknessNeighbor.Parent.Parent.PassiveLayer.Species, path);
                                 species.Add(thicknessNeighbor.Species, path);
-                                thicknesses.Add(thicknessNeighbor.Parent.Parent.PassiveThickness, path);
+                                thicknesses.Add(thicknessNeighbor.Parent.Parent.PassiveLayer.Thickness, path);
                                 thicknesses.Add(thicknessNeighbor.Parent.Parent.ActiveThickness, path);
                             }
                         }

@@ -56,8 +56,8 @@ namespace BilayerDesign
                     }
 
                     if (!ActiveThicknesses.Contains(bilayer.ActiveThickness)) ActiveThicknesses.Add(bilayer.ActiveThickness);
-                    if (!PassiveThicknesses.Contains(bilayer.PassiveThickness)) PassiveThicknesses.Add(bilayer.PassiveThickness);
-                    if (!PassiveSpecies.Contains(bilayer.PassiveSpecies)) PassiveSpecies.Add(bilayer.PassiveSpecies);
+                    if (!PassiveThicknesses.Contains(bilayer.PassiveLayer.Thickness)) PassiveThicknesses.Add(bilayer.PassiveLayer.Thickness);
+                    if (!PassiveSpecies.Contains(bilayer.PassiveLayer.Species)) PassiveSpecies.Add(bilayer.PassiveLayer.Species);
                 }
             }
 
@@ -111,8 +111,8 @@ namespace BilayerDesign
             {
                 Species activeSpecies = board.Species;
                 double activeThickness = board.Parent.ActiveThickness;
-                double passiveThickness = board.Parent.PassiveThickness;
-                Species passiveSpecies = board.Parent.PassiveSpecies;
+                double passiveThickness = board.Parent.PassiveLayer.Thickness;
+                Species passiveSpecies = board.Parent.PassiveLayer.Species;
 
                 StockBoard closestStock = null;
                 double smallestRadDiff = double.MaxValue;

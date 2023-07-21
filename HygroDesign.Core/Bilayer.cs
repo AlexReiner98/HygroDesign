@@ -10,25 +10,19 @@ namespace BilayerDesign
     public class Bilayer
     {
         public List<PanelBoard> Boards { get; set; }
-
         public Plane BasePlane { get; set; }
         public Surface InitialSurface { get; set; }
         public double Length { get; set; }
         public double Width { get; set; }
-
         public int LengthCount { get; set; }
         public int WidthCount { get; set; }
         public double BoardWidth { get; set; }
         public double BoardLength { get; set; }
         public double ActiveThickness { get; set; }
-        public double PassiveThickness { get; set; }
-        public Species PassiveSpecies { get; set; }
         public int ID { get; set; }
-        public int PanelNumber { get; set; }
         public Panel Parent { get; set; }
-        public Interval PassiveLayerX { get; set; }
-        public Interval PassiveLayerY { get; set; }
         public int BoardRegionCount { get; set; }
+        public PassiveLayer PassiveLayer { get; set; }
 
 
         public Bilayer(Plane basePlane, double boardWidth, double boardLength, int widthCount, int lengthCount, double activeThickness, double passiveThickness, Species passiveSpecies, int boardRegionCount)
@@ -41,8 +35,6 @@ namespace BilayerDesign
             Length = boardLength * lengthCount;
             Width = boardWidth * widthCount;
             ActiveThickness = activeThickness;
-            PassiveThickness = passiveThickness;
-            PassiveSpecies = passiveSpecies;
             BoardRegionCount = boardRegionCount;
 
             //create surface
@@ -50,6 +42,9 @@ namespace BilayerDesign
 
             //generate boards
             GenerateBoards();
+
+            //generate passive layer
+            PassiveLayer = new PassiveLayer(passiveThickness, passiveSpecies, this);
         }
 
         public static Bilayer DeepCopy(Bilayer source)
@@ -57,16 +52,18 @@ namespace BilayerDesign
             Plane basePlane = new Plane(source.BasePlane);
             List<PanelBoard> boards = source.Boards;
 
-            Bilayer bilayer = new Bilayer(basePlane, source.BoardWidth, source.BoardLength, source.WidthCount, source.LengthCount, source.ActiveThickness, source.PassiveThickness, source.PassiveSpecies, source.BoardRegionCount);
+            Bilayer bilayer = new Bilayer(basePlane, source.BoardWidth, source.BoardLength, source.WidthCount, source.LengthCount, source.ActiveThickness, source.PassiveLayer.Thickness, source.PassiveLayer.Species, source.BoardRegionCount);
             bilayer.ID = source.ID;
             bilayer.Boards.Clear();
-            bilayer.PassiveLayerX = source.PassiveLayerX;
-            bilayer.PassiveLayerY = source.PassiveLayerY;
+            
 
             for(int i = 0; i < boards.Count; i++)
             {
                 bilayer.Boards.Add(PanelBoard.DeepCopy(boards[i], bilayer));
             }
+
+            bilayer.PassiveLayer = PassiveLayer.DeepCopy(source.PassiveLayer, bilayer);
+
             return bilayer;
         }
         
@@ -162,36 +159,10 @@ namespace BilayerDesign
             return output;
         }
 
-        public void UpdatePassiveLayer()
-        {
-            double minX = double.MaxValue;
-            double maxX = 0;
-            double minY = double.MaxValue;
-            double maxY = 0;
-
-            foreach(PanelBoard board in Boards)
-            {
-                foreach(BoardRegion region in board.BoardRegions)
-                {
-                    if (region.RowRange[0] < minX) minX = region.RowRange[0];
-                    if (region.RowRange[1] > maxX) maxX = region.RowRange[1];
-                    if (region.ColumnRange[0] < minY) minY = region.ColumnRange[0];
-                    if (region.ColumnRange[1] > maxY) maxY = region.ColumnRange[1];
-                }
-                
-            }
-            minX = minX - BasePlane.Origin.X;
-            maxX = maxX - BasePlane.Origin.X;
-            minY = minY - BasePlane.Origin.Y;
-            maxY = maxY - BasePlane.Origin.Y;
-
-            PassiveLayerX = new Interval(minX, maxX);
-            PassiveLayerY = new Interval(minY, maxY);
-        }
-
         public static double Remap(double val, double from1, double to1, double from2, double to2)
         {
             return (val - from1) / (to1 - from1) * (to2 - from2) + from2;
         }
+
     }
 }

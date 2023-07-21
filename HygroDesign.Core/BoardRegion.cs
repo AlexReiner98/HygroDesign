@@ -20,23 +20,25 @@ namespace BilayerDesign
         public double ThicknessBlendedRadius { get; set; }
         public double ThicknessParameter { get; set; }
         public int ID { get; set; }
+        private double Width { get; set; }
+        private double Length { get; set; }
 
         public BoardRegion(Interval rowRange, PanelBoard parent)
         {
             Parent = parent;
 
-            double start = Remap(rowRange[0], 0, 1, parent.RowRange[0], parent.RowRange[1]);
-            double end = Remap(rowRange[1], 0, 1, parent.RowRange[0], parent.RowRange[1]);
+            double start = Remap(rowRange[0], 0, 1, parent.InitialRowRange[0], parent.InitialRowRange[1]);
+            double end = Remap(rowRange[1], 0, 1, parent.InitialRowRange[0], parent.InitialRowRange[1]);
             RowRange = new Interval(start, end);
 
-            ColumnRange = parent.ColumnRange;
+            ColumnRange = parent.InitialColumnRange;
             EvaluateBoardRegion();
         }
 
         public static BoardRegion DeepCopy(BoardRegion source, PanelBoard parent)
         {
            
-            Interval rowRange = new Interval(Remap(source.RowRange[0], parent.RowRange[0], parent.RowRange[1],0,1), Remap(source.RowRange[1], parent.RowRange[0], parent.RowRange[1], 0, 1));
+            Interval rowRange = new Interval(Remap(source.RowRange[0], parent.InitialRowRange[0], parent.InitialRowRange[1],0,1), Remap(source.RowRange[1], parent.InitialRowRange[0], parent.InitialRowRange[1], 0, 1));
             BoardRegion newBoard = new BoardRegion(rowRange, parent);
 
             newBoard.Length = source.Length;
