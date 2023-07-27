@@ -23,6 +23,8 @@ namespace BilayerDesign
         private double Width { get; set; }
         private double Length { get; set; }
 
+        public bool Remove { get; set; }
+
         public BoardRegion(Interval rowRange, PanelBoard parent)
         {
             Parent = parent;
@@ -33,6 +35,7 @@ namespace BilayerDesign
 
             ColumnRange = parent.InitialColumnRange;
             EvaluateBoardRegion();
+            Remove = false;
         }
 
         public static BoardRegion DeepCopy(BoardRegion source, PanelBoard parent)
@@ -48,6 +51,7 @@ namespace BilayerDesign
             newBoard.ThicknessParameter = source.ThicknessParameter;
             newBoard.ThicknessBlendedRadius = source.ThicknessBlendedRadius;
             newBoard.ID = source.ID;
+            newBoard.Remove = source.Remove;
 
             newBoard.EvaluateBoardRegion();
 
@@ -113,6 +117,22 @@ namespace BilayerDesign
             get
             {
                 return Parent.Radius;
+            }
+        }
+
+        public Surface ShapedRegion
+        {
+            get
+            {
+                if (Parent.Parent.Parent.Surface == null) throw new Exception("Shaped panel surface must be set before region surfaces can be retreived.");
+                return Parent.Parent.Parent.Surface.Trim(RowRange, ColumnRange);
+            }
+        }
+
+        public Point3d ShapedCentroid { get
+            {
+                if (Parent.Parent.Parent.Surface == null) throw new Exception("Shaped panel surface must be set before region centroid can be retreived.");
+                return Parent.Parent.Parent.Surface.PointAt(RowRange[0] + (Length/2), ColumnRange[0] + (Width/2));
             }
         }
     }

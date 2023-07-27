@@ -4,6 +4,7 @@ using System.Linq;
 
 using Rhino;
 using Rhino.Geometry;
+using Rhino.Geometry.Collections;
 
 namespace BilayerDesign
 {
@@ -66,6 +67,7 @@ namespace BilayerDesign
 
             return bilayer;
         }
+
         
 
         private void GenerateBoards()
@@ -125,8 +127,6 @@ namespace BilayerDesign
                 }
             }
         }
-
-        
 
         public List<PanelBoard> GetNeighbors(int index)
         {

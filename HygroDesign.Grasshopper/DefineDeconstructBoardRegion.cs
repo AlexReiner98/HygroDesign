@@ -37,6 +37,9 @@ namespace HygroDesign.Grasshopper.Components
             pManager.AddGenericParameter("Radius", "R", "The pure timoshenko prediction of the region's parent's radius.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Blended Radius", "BR", "The region's parent's blended radius which results from the curvature convolution.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Thickness Blended Radius", "TBR", "The parent board's radius blended with the other board regions parent board radii in the board stack.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Shaped Region", "SR", "The 3d surface representing the board region after shaping.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Shaped Centroid", "SC", "The point3d representing the board's centroid after shaping.", GH_ParamAccess.item);
+
         }
 
 
@@ -56,6 +59,12 @@ namespace HygroDesign.Grasshopper.Components
                 DA.SetData("Radius", region.Radius);
                 DA.SetData("Blended Radius", region.BlendedRadius);
                 DA.SetData("Thickness Blended Radius", region.ThicknessBlendedRadius);
+
+                if(region.Parent.Parent.Parent != null && region.Parent.Parent.Parent.Surface != null )
+                {
+                    DA.SetData("Shaped Region", region.ShapedRegion);
+                    DA.SetData("Shaped Centroid", region.ShapedCentroid);
+                }
             }
         }
 

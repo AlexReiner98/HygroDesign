@@ -38,7 +38,10 @@ namespace HygroDesign.Grasshopper.Components
             pManager.AddGenericParameter("Desired Radius", "DR", "The original desired radius of the board.", GH_ParamAccess.tree);
             pManager.AddGenericParameter("Radius", "R", "The pure timoshenko prediction of the board's radius.", GH_ParamAccess.tree);
             pManager.AddGenericParameter("Blended Radius", "BR", "The blended radius which results from the curvature convolution.", GH_ParamAccess.tree);
-            pManager.AddGenericParameter("Board Regions", "RE", "The BoardRegion objects contained by this board.", GH_ParamAccess.tree);
+            pManager.AddGenericParameter("Shaped Board", "SB", "The 3d surface representing the board after shaping.", GH_ParamAccess.tree);
+            pManager.AddGenericParameter("Shaped Centroid", "SC", "The point3d representing the board's centroid after shaping.", GH_ParamAccess.tree);
+            pManager.AddGenericParameter("Board Regions", "BR", "The BoardRegion objects contained by this board.", GH_ParamAccess.tree);
+
         }
 
 
@@ -57,8 +60,10 @@ namespace HygroDesign.Grasshopper.Components
             DataTree<double> blendedRadii = new DataTree<double>();
             DataTree<BoardRegion> regions = new DataTree<BoardRegion>();
             DataTree<Species> species = new DataTree<Species>();
+            DataTree<Surface> surfaces = new DataTree<Surface>();
+            DataTree<Point3d> centroids = new DataTree<Point3d>();
 
-            for(int i = 0; i < boardStruct.Branches.Count; i++)
+            for (int i = 0; i < boardStruct.Branches.Count; i++)
             {
                 for(int j = 0; j < boardStruct.Branches[i].Count; j++)
                 {
@@ -76,7 +81,15 @@ namespace HygroDesign.Grasshopper.Components
                     mcs.Add(board.MoistureChange, path);
                     blendedRadii.Add(board.BlendedRadius, path);
                     species.Add(board.Species, path);
-                    regions.AddRange(board.Regions, path.AppendElement(j));                }
+
+                    if(board.Parent.Parent != null && board.Parent.Parent.Surface != null)
+                    {
+                        surfaces.Add(board.ShapedBoard, path);
+                        centroids.Add(board.ShapedCentroid, path);
+                    }
+
+                    regions.AddRange(board.Regions, path.AppendElement(j));
+                }
             }
 
             DA.SetDataTree(0, polylines);
@@ -87,7 +100,9 @@ namespace HygroDesign.Grasshopper.Components
             DA.SetDataTree(5, desiredRadii);
             DA.SetDataTree(6, radii);
             DA.SetDataTree(7, blendedRadii);
-            DA.SetDataTree(8, regions);
+            DA.SetDataTree(8, surfaces);
+            DA.SetDataTree(9, centroids);
+            DA.SetDataTree(10, regions);
         }
 
 

@@ -187,5 +187,12 @@ namespace BilayerDesign
                 return volume * Species.Density;
             }
         }
+
+        public Surface ShapedBoard { get
+            {
+                if (Parent.Parent.Surface == null) throw new Exception("Shaped panel surface must be set before shaped board surface cane be retrieved.");
+                return Parent.Parent.Surface.Trim(RowRange, ColumnRange);
+            }
+        }
     }
 }

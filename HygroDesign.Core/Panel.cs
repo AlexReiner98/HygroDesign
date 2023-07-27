@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using Grasshopper;
+using Grasshopper.Kernel.Data;
 using Rhino;
 using Rhino.Geometry;
+using Rhino.Geometry.Collections;
 
 namespace BilayerDesign
 {
@@ -36,7 +38,104 @@ namespace BilayerDesign
             }
             var panel = new Panel(copies);
             panel.ID = source.ID;
+            panel.CenterOfGravity = new Point3d(source.CenterOfGravity);
+            if(source.Surface != null) panel.Surface = (Surface)source.Surface.Duplicate();
+
             return panel;
+        }
+
+        public DataTree<BoardRegion> MatchBrep(Brep brep, double tolerance)
+        {
+            DataTree<BoardRegion> boardRegions = new DataTree<BoardRegion>();
+
+            foreach(Bilayer bilayer in Bilayers)
+            {
+                foreach(PanelBoard board in bilayer.Boards)
+                {
+                    foreach(BoardRegion boardRegion in board.Regions)
+                    {
+                        boardRegion.Remove = true;
+                    }
+                }
+            }
+
+            for(int b = 0; b < Bilayers.Count; b++)
+            {
+                GH_Path path = new GH_Path(b);
+
+                BoardRegion[] regions = new BoardRegion[brep.Faces.Count];
+
+                BrepFaceList faces = brep.Faces;
+
+                for (int v = 0; v < brep.Faces.Count; v++)
+                {
+                    int boardID = int.MaxValue;
+                    int regionID = int.MaxValue;
+
+                    double closestDist = double.MaxValue;
+
+                    //check regions against brep faces
+                    for (int i = 0; i < Bilayers[b].Boards.Count; i++)
+                    {
+                        for (int j = 0; j < Bilayers[b].Boards[i].Regions.Count; j++)
+                        {
+                            BoardRegion region = Bilayers[b].Boards[i].Regions[j];
+
+                            Point3d centroid = region.ShapedCentroid;
+
+                            faces[v].ClosestPoint(centroid, out double U, out double V);
+                            Point3d closestPoint = faces[v].PointAt(U, V);
+                            double currentDist = closestPoint.DistanceToSquared(centroid);
+                            if (currentDist < tolerance && currentDist < closestDist)
+                            {
+                                closestDist = currentDist;
+                                boardID = i;
+                                regionID = j;
+                            }
+                        }
+                    }
+                    if(boardID != int.MaxValue && regionID != int.MaxValue)
+                    {
+                        regions[v] = Bilayers[b].Boards[boardID].Regions[regionID];
+                        Bilayers[b].Boards[boardID].Regions[regionID].Remove = false;
+                    }
+                    
+                }
+                boardRegions.AddRange(regions, path);
+            }
+            CleanPanel();
+            return boardRegions;
+        }
+
+        public void CleanPanel()
+        {
+            List<Bilayer> bilayersForRemoval = new List<Bilayer>();
+            for(int i = 0; i < Bilayers.Count; i++)
+            {
+                List<PanelBoard> boardsForRemoval = new List<PanelBoard>();
+                for(int j = 0; j < Bilayers[i].Boards.Count; j++)
+                {
+                    List<BoardRegion> regionsForRemoval = new List<BoardRegion>();
+                    for(int v = 0; v < Bilayers[i].Boards[j].Regions.Count; v++)
+                    {
+                        if (Bilayers[i].Boards[j].Regions[v].Remove) regionsForRemoval.Add(Bilayers[i].Boards[j].Regions[v]);
+                    }
+                    for(int v = 0; v< regionsForRemoval.Count; v++)
+                    {
+                        Bilayers[i].Boards[j].Regions.Remove(regionsForRemoval[v]);
+                    }
+                    if (Bilayers[i].Boards[j].Regions.Count == 0) boardsForRemoval.Add(Bilayers[i].Boards[j]);
+                }
+                for(int j = 0; j < boardsForRemoval.Count; j++)
+                {
+                    Bilayers[i].Boards.Remove(boardsForRemoval[j]);
+                }
+                if (Bilayers[i].Boards.Count == 0) bilayersForRemoval.Add(Bilayers[i]);
+            }
+            for(int i = 0; i < bilayersForRemoval.Count; i++)
+            {
+                Bilayers.Remove(bilayersForRemoval[i]);
+            }
         }
 
         public void CalculateCenterOfGravity()
@@ -291,11 +390,11 @@ namespace BilayerDesign
         {
 
             //apply thicknesses to boards thickness paramter
-            foreach(Bilayer bilayer in Bilayers)
+            foreach (Bilayer bilayer in Bilayers)
             {
-                for(int i = 0; i<  bilayer.Boards.Count; i++)
+                for (int i = 0; i < bilayer.Boards.Count; i++)
                 {
-                    for(int j = 0; j < bilayer.Boards[i].Regions.Count; j++)
+                    for (int j = 0; j < bilayer.Boards[i].Regions.Count; j++)
                     {
                         bilayer.Boards[i].Regions[j].ThicknessParameter = thicknesses[i][j];
                     }
@@ -309,44 +408,21 @@ namespace BilayerDesign
                 bilayerThicknesses.Add(Remap(i, 0, Bilayers.Count - 1, 0, 1));
             }
 
-            List<Bilayer> bilayersForRemoval = new List<Bilayer>();
             //find regions below theshold and add them to delete list
-            for(int i = 0; i < Bilayers.Count; i++)
+            for (int i = 0; i < Bilayers.Count; i++)
             {
-                List<PanelBoard> boardsForRemoval = new List<PanelBoard>();
-                foreach(PanelBoard board in Bilayers[i].Boards)
+                foreach (PanelBoard board in Bilayers[i].Boards)
                 {
-                    List<BoardRegion> regionsForRemoval = new List<BoardRegion>();
-                    foreach(BoardRegion region in board.Regions)
+                    foreach (BoardRegion region in board.Regions)
                     {
-                        if(region.ThicknessParameter < bilayerThicknesses[i])
+                        if (region.ThicknessParameter < bilayerThicknesses[i])
                         {
-                           regionsForRemoval.Add(region);
+                            region.Remove = true;
                         }
                     }
-                    foreach(BoardRegion region in regionsForRemoval)
-                    {
-                        board.Regions.Remove(region);
-                    }
-                    if(board.Regions.Count == 0)
-                    {
-                        boardsForRemoval.Add(board);
-                    }
                 }
-                foreach(PanelBoard board in boardsForRemoval)
-                {
-                    Bilayers[i].Boards.Remove(board);
-                }
-                if (Bilayers[i].Boards.Count == 0)
-                {
-                    bilayersForRemoval.Add(Bilayers[i]);
-                }
-                Bilayers[i].PassiveLayer.Update();
             }
-            foreach(Bilayer bilayer in bilayersForRemoval)
-            {
-                Bilayers.Remove(bilayer);
-            }
+            CleanPanel();
         }
 
         public static double Remap(double val, double from1, double to1, double from2, double to2)
