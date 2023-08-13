@@ -6,16 +6,18 @@ namespace BilayerDesign
 {
     public class StockBoard : BoardBase
     {
-        public double LengthAvailable = 0;
-        public double SelectedRadius = 0;
-        public double Thickness = 0;
-        public double Multiplier = 0;
-        public List<PanelBoard> DesignBoards = new List<PanelBoard>();
-        public double Length = 0;
-        public double Width = 0;
+        public double LengthAvailable { get; set; }
+        public double SelectedRadius { get; set; }
+        public double Thickness { get; set; }
+        public double Multiplier { get; set; }
+        public List<PanelBoard> DesignBoards { get; set; }
+        public double Length { get; set; }
+        public double Width { get; set; }
 
         //first key is active thickness, second is passive thickness, third is passive material, fourth is moisture change
         public Dictionary<double, Dictionary<double, Dictionary<Species, Dictionary<double, double>>>> PotentialRadii = new Dictionary<double, Dictionary<double, Dictionary<Species, Dictionary<double, double>>>>();
+        
+        
         public StockBoard(string name, Species species, double rtAngle, double thickness, double length, double width, double multiplier)
         {
             Name = name;
@@ -25,6 +27,7 @@ namespace BilayerDesign
             Thickness = thickness;
             Width = width;
             Multiplier = multiplier;
+            DesignBoards = new List<PanelBoard>();
         }
 
         public static StockBoard DeepCopy(StockBoard source)

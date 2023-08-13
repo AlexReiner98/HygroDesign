@@ -10,12 +10,12 @@ using Grasshopper.Kernel.Types;
 namespace HygroDesign.Grasshopper.Components
 {
 
-    public class DefineDesignEnvironment : GH_Component
+    public class DefineTimoshenkoPrediction : GH_Component
     {
         
-        public DefineDesignEnvironment()
-          : base("Design Environment", "Design Env",
-            "Environment for combining stockpile and panel goals in order to generate final panel layouts.",
+        public DefineTimoshenkoPrediction()
+          : base("Timoshenko Prediction", "Timo Pred",
+            "Predicts radii for each stock board in all possible bilayer permutations.(Updates StockBoard.PotentialRadii dictionary)",
             "HygroDesign", "Design")
         {
         }
@@ -31,8 +31,7 @@ namespace HygroDesign.Grasshopper.Components
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("Panels", "P", "The updated panels with stock assigned.", GH_ParamAccess.list);
-            pManager.AddGenericParameter("Stock Boards", "S", "The updated stock boards with fabrication information.", GH_ParamAccess.list);
+            pManager.AddGenericParameter("StockPile", "SP", "The stockpile complete with self shaping radius predictions", GH_ParamAccess.item);
         }
 
 
@@ -59,10 +58,9 @@ namespace HygroDesign.Grasshopper.Components
             List<double> moistureChanges = new List<double>();
             DA.GetDataList(2, moistureChanges);
 
-            DesignEnvironment designEnvironment = new DesignEnvironment(copyPanels, copyStockBoards, moistureChanges);
+            StockPile stockPile = new StockPile(copyPanels, copyStockBoards, moistureChanges);
 
-            DA.SetDataList(0, designEnvironment.Panels);
-            DA.SetDataList(1, designEnvironment.StockBoards);
+            DA.SetData(0, stockPile);
         }
         
         public override GH_Exposure Exposure => GH_Exposure.primary;
