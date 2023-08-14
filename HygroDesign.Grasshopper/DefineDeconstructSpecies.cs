@@ -47,12 +47,14 @@ namespace HygroDesign.Grasshopper.Components
             DA.GetData(0, ref species);
 
             DA.SetData(0, species.Name);
+            /*
             DA.SetData(1, species.LExpansion);
             DA.SetData(2, species.RExpansion);
             DA.SetData(3, species.TExpansion);
             DA.SetData(4, species.LElasticModulus);
             DA.SetData(5, species.RElasticModulus);
             DA.SetData(6, species.TElasticModulus);
+            */
         }
 
 

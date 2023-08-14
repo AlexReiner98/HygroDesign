@@ -73,7 +73,8 @@ namespace BilayerDesign
         private void GenerateBoards()
         {
             Boards = new List<PanelBoard>();
-            for(int i = 0; i < WidthCount; i++)
+            int count = 0;
+            for (int i = 0; i < WidthCount; i++)
             {
                 //even value rows
                 if(i % 2 == 0)
@@ -87,7 +88,9 @@ namespace BilayerDesign
                         PanelBoard board = new PanelBoard(rowRange, colRange,this,BoardRegionCount);
                         board.RowNumber = i;
                         board.ColumnNumber = j;
+                        board.ID = count;
                         Boards.Add(board);
+                        count++;
                     }
                 }
 
@@ -95,7 +98,7 @@ namespace BilayerDesign
                 else
                 {
                     PanelBoard[] row = new PanelBoard[LengthCount+1];
-
+                    
                     for (int j = 0; j < LengthCount+1; j++)
                     {
                         Interval colRange = new Interval(Width - ((i + 1) * BoardWidth),Width - (i * BoardWidth));
@@ -122,7 +125,9 @@ namespace BilayerDesign
                         PanelBoard board = new PanelBoard( rowRange, colRange,this, regionCount);
                         board.RowNumber = i;
                         board.ColumnNumber = j;
+                        board.ID = count;
                         Boards.Add(board);
+                        count++;
                     }
                 }
             }

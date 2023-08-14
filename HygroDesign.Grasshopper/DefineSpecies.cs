@@ -50,18 +50,13 @@ namespace HygroDesign.Grasshopper.Components
             param.NickName = param.Name;
             param.Description = "Things to be sent around.";
             param.Optional = true;
-            param.Access = GH_ParamAccess.tree;
+            param.Access = GH_ParamAccess.item;
 
-            //param.AttributesChanged += (sender, e) => Debug.WriteLine("Attributes have changed! (of param)");
-            //param.ObjectChanged += (sender, e) => UpdateMetadata();
-
-            //UpdateMetadata();
             return param;
         }
 
         bool IGH_VariableParameterComponent.DestroyParameter(GH_ParameterSide side, int index)
         {
-            //UpdateMetadata();
             return true;
         }
 
@@ -79,17 +74,7 @@ namespace HygroDesign.Grasshopper.Components
         
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            //pManager.AddTextParameter("Name", "N", "Name of the wood species.", GH_ParamAccess.item);
-            //pManager.AddGenericParameter("Density", "D", "Density of the species in kg/m3", GH_ParamAccess.item);
-            //pManager.AddGenericParameter("LExpansion", "LX", "Expansion coefficient in the L grain direction.", GH_ParamAccess.item);
-            //pManager.AddGenericParameter("RExpansion", "RX", "Expansion coefficient in the R grain direction.", GH_ParamAccess.item);
-            //pManager.AddGenericParameter("TExpansion", "TX", "Expansion coefficient in the T grain direction.", GH_ParamAccess.item);
-            //pManager.AddGenericParameter("LElasticModulus", "LE", "Elastic modulus in the L grain direction.", GH_ParamAccess.item);
-            //pManager.AddGenericParameter("RElasticModulus", "RE", "Elastic modulus in the R grain direction.", GH_ParamAccess.item);
-            //AddGenericParameter("TElasticModulus", "TE", "Elastic modulus in the T grain direction.", GH_ParamAccess.item);
-
-
-            
+            pManager.AddTextParameter("Name", "name", "Name of the wood species.", GH_ParamAccess.item);
         }
 
 
@@ -101,34 +86,11 @@ namespace HygroDesign.Grasshopper.Components
         
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            /*
-            string name = null;
-            DA.GetData(0, ref name);
-
-            double Density = 0;
-            double LExpansion = 0;
-            double RExpansion = 0;
-            double TExpansion = 0;
-            double LElasticModulus = 0;
-            double RElasticModulus = 0;
-            double TElasticModulus = 0;
-
-            DA.GetData(1, ref Density);
-            DA.GetData(2, ref LExpansion);
-            DA.GetData(3, ref RExpansion);
-            DA.GetData(4, ref TExpansion);
-            DA.GetData(5, ref LElasticModulus);
-            DA.GetData(6, ref RElasticModulus);
-            DA.GetData(7, ref TElasticModulus);
-
-            DA.SetData(0, new Species(name, Density, LExpansion, RExpansion, TExpansion, LElasticModulus, RElasticModulus, TElasticModulus));
-            */
-
-            var paramDictionary = new Dictionary<string, object>();
+            var paramDictionary = new Dictionary<string, double>();
             dynamic ghInputProperty = null;
-            object valueExtract = null;
+            double valueExtract = 0;
 
-            for (int p = 0; p < Params.Input.Count; p++)
+            for (int p = 1; p < Params.Input.Count; p++)
             {
                 var key = Params.Input[p].NickName;
 
@@ -136,31 +98,8 @@ namespace HygroDesign.Grasshopper.Components
                 {
                     case GH_ParamAccess.item:
                         DA.GetData(p, ref ghInputProperty);
-                        valueExtract = ghInputProperty?.Value;
+                        valueExtract = (double) ghInputProperty?.Value;
                         break;
-                    case GH_ParamAccess.list:
-                        var dataValues = new List<dynamic>();
-                        DA.GetDataList(p, dataValues);
-                        valueExtract = dataValues.Select(x => x.Value).ToList();
-                        break;
-                    case GH_ParamAccess.tree:
-                        var tree = new GH_Structure<IGH_Goo>();
-                        DA.GetDataTree(p, out tree);
-                        var dict = new Dictionary<string, IEnumerable<object>>();
-
-                        for (int j = 0; j < tree.PathCount; j++)
-                        {
-                            var branch = tree.Branches[j];
-                            var list = new List<object>();
-                            for (int k = 0; k < branch.Count; k++)
-                            {
-                                list.Add(branch[k].GetType().GetProperty("Value").GetValue(branch[k], null));
-                            }
-                            dict.Add(j.ToString(), list);
-                        }
-
-                        paramDictionary.Add(key, dict);
-                        continue;
                     default:
                         continue;
                 }
@@ -168,7 +107,12 @@ namespace HygroDesign.Grasshopper.Components
                 paramDictionary.Add(key, valueExtract);
             }
 
-            DA.SetData(0, paramDictionary);
+            String name = null;
+            DA.GetData(0, ref name);
+
+            Species species = new Species(name, paramDictionary);
+
+            DA.SetData(0, species);
         }
 
 

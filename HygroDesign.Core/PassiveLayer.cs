@@ -105,7 +105,7 @@ namespace BilayerDesign
                 if (RhinoDoc.ActiveDoc.ModelUnitSystem == UnitSystem.Meters) volume = Volume;
 
                 //calculate mass in kg
-                return volume * Species.Density;
+                return volume * Species.Attributes["density"];
             }
         }
     }

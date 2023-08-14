@@ -4,12 +4,6 @@ using Rhino;
 
 namespace BilayerDesign
 {
-
-    public class PredictionEnvironment
-    {
-        
-
-    }
     public class StockPile
     {
 
@@ -105,11 +99,11 @@ namespace BilayerDesign
             double h2 = activeThickness;
             double h = h1 + h2;
             double m = h1 / h2;
-            double e1 = passiveMaterial.LElasticModulus;
-            double e2 = GrainAngleInterpolation(rtAngle, activeMaterial.RElasticModulus, activeMaterial.TElasticModulus);
+            double e1 = passiveMaterial.Attributes["LEmod"];
+            double e2 = GrainAngleInterpolation(rtAngle, activeMaterial.Attributes["REmod"], activeMaterial.Attributes["TEmod"]);
             double n = e1 / e2;
-            double a1 = passiveMaterial.LExpansion;
-            double a2 = GrainAngleInterpolation(rtAngle, activeMaterial.RExpansion, activeMaterial.TExpansion);
+            double a1 = passiveMaterial.Attributes["LExp"];
+            double a2 = GrainAngleInterpolation(rtAngle, activeMaterial.Attributes["RExp"], activeMaterial.Attributes["TExp"]);
             double deltaAlpha = a2 - a1;
             double kValue = 6 * Math.Pow(1.0 + m, 2) / (3 * Math.Pow(1 + m, 2) + (1 + m * n) * Math.Pow(m, 2) + (1 / (m * n)));
             double curvature = kValue * ((wmcc * deltaAlpha) / h);

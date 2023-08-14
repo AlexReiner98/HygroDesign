@@ -130,6 +130,10 @@ namespace BilayerDesign
                 {
                     Bilayers[i].Boards.Remove(boardsForRemoval[j]);
                 }
+                for(int j = 0; j < Bilayers[i].Boards.Count; j++)
+                {
+                    Bilayers[i].Boards[j].ID = j;
+                }
                 if (Bilayers[i].Boards.Count == 0) bilayersForRemoval.Add(Bilayers[i]);
             }
             for(int i = 0; i < bilayersForRemoval.Count; i++)
@@ -195,10 +199,10 @@ namespace BilayerDesign
             {
                 foreach (PanelBoard board in bilayer.Boards)
                 {
-                    if (board.Species.LElasticModulus > maxLongStiffness) maxLongStiffness = board.Species.LElasticModulus;
-                    if (board.Species.LElasticModulus < minLongStiffness) minLongStiffness = board.Species.LElasticModulus;
-                    if (board.Species.RElasticModulus > maxHorizStiffness) maxHorizStiffness = board.Species.RElasticModulus;
-                    if (board.Species.RElasticModulus < minHorizStiffness) minHorizStiffness = board.Species.RElasticModulus;
+                    if (board.Species.Attributes["LEmod"] > maxLongStiffness) maxLongStiffness = board.Species.Attributes["LEmod"];
+                    if (board.Species.Attributes["LEmod"] < minLongStiffness) minLongStiffness = board.Species.Attributes["LEmod"];
+                    if (board.Species.Attributes["REmod"] > maxHorizStiffness) maxHorizStiffness = board.Species.Attributes["REmod"];
+                    if (board.Species.Attributes["REmod"] < minHorizStiffness) minHorizStiffness = board.Species.Attributes["REmod"];
                     if (board.Radius < minCurvature) minCurvature = board.Radius;
                 }
             }
@@ -208,8 +212,8 @@ namespace BilayerDesign
                 //set factors
                 foreach (PanelBoard board in bilayer.Boards)
                 {
-                    board.LongStiffnessFactor = Remap(board.Species.LElasticModulus, minLongStiffness, maxLongStiffness, 1 - stiffnessFactor, 1);
-                    board.RadStiffnessFactor = Remap(board.Species.RElasticModulus, minHorizStiffness, maxHorizStiffness, 1 - stiffnessFactor, 1);
+                    board.LongStiffnessFactor = Remap(board.Species.Attributes["LEmod"], minLongStiffness, maxLongStiffness, 1 - stiffnessFactor, 1);
+                    board.RadStiffnessFactor = Remap(board.Species.Attributes["REmod"], minHorizStiffness, maxHorizStiffness, 1 - stiffnessFactor, 1);
 
                     board.RadiusFactor = Remap(board.Radius, minCurvature, maxRadiusInfluence, 1, 0);
                 }
