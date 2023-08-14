@@ -26,6 +26,7 @@ namespace HygroDesign.Grasshopper.Components
             pManager.AddGenericParameter("Panels", "P", "Desired panel designs.", GH_ParamAccess.list);
             pManager.AddGenericParameter("Stock Boards", "S", "The set of stock boards used in this design.", GH_ParamAccess.list);
             pManager.AddGenericParameter("Moisture Changes", "M", "The set of moisture changes used in this design", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Prediction Engine", "E", "The engine used to predict self shaping radius.", GH_ParamAccess.item);
         }
 
 
@@ -58,7 +59,10 @@ namespace HygroDesign.Grasshopper.Components
             List<double> moistureChanges = new List<double>();
             DA.GetDataList(2, moistureChanges);
 
-            StockPile stockPile = new StockPile(copyPanels, copyStockBoards, moistureChanges);
+            PredictionBase predictionBase = null;
+            DA.GetData(3, ref predictionBase);
+
+            StockPile stockPile = new StockPile(copyPanels, copyStockBoards, moistureChanges, predictionBase);
 
             DA.SetData(0, stockPile);
         }
