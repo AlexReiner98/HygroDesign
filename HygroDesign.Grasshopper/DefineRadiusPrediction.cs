@@ -10,11 +10,11 @@ using Grasshopper.Kernel.Types;
 namespace HygroDesign.Grasshopper.Components
 {
 
-    public class DefineTimoshenkoPrediction : GH_Component
+    public class DefineRadiusPrediction : GH_Component
     {
         
-        public DefineTimoshenkoPrediction()
-          : base("Timoshenko Prediction", "Timo Pred",
+        public DefineRadiusPrediction()
+          : base("Radius Prediction", "Rad Pred",
             "Predicts radii for each stock board in all possible bilayer permutations.(Updates StockBoard.PotentialRadii dictionary)",
             "HygroDesign", "Design")
         {
