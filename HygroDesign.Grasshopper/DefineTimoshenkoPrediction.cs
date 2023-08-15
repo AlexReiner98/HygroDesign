@@ -41,20 +41,9 @@ namespace HygroDesign.Grasshopper.Components
             List<Panel> panels = new List<Panel>();
             DA.GetDataList(0, panels);
             
-            List<Panel> copyPanels = new List<Panel>();
-            foreach(Panel panel in panels)
-            {
-                copyPanels.Add(Panel.DeepCopy(panel));
-            }
 
             List<StockBoard> stockBoards = new List<StockBoard>();
             DA.GetDataList(1, stockBoards);
-
-            List<StockBoard> copyStockBoards = new List<StockBoard>();
-            foreach(StockBoard stockBoard in stockBoards)
-            {
-                copyStockBoards.Add(StockBoard.DeepCopy(stockBoard));
-            }
 
             List<double> moistureChanges = new List<double>();
             DA.GetDataList(2, moistureChanges);
@@ -62,7 +51,7 @@ namespace HygroDesign.Grasshopper.Components
             PredictionBase predictionBase = null;
             DA.GetData(3, ref predictionBase);
 
-            StockPile stockPile = new StockPile(copyPanels, copyStockBoards, moistureChanges, predictionBase);
+            StockPile stockPile = new StockPile(panels, stockBoards, moistureChanges, predictionBase);
 
             DA.SetData(0, stockPile);
         }

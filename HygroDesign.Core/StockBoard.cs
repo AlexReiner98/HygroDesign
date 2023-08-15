@@ -15,7 +15,10 @@ namespace BilayerDesign
         public double Width { get; set; }
 
         //first key is active thickness, second is passive thickness, third is passive material, fourth is moisture change
-        public Dictionary<double, Dictionary<double, Dictionary<Species, Dictionary<double, double>>>> PotentialRadii = new Dictionary<double, Dictionary<double, Dictionary<Species, Dictionary<double, double>>>>();
+        //public Dictionary<double, Dictionary<double, Dictionary<Species, Dictionary<double, double>>>> PotentialRadii = new Dictionary<double, Dictionary<double, Dictionary<Species, Dictionary<double, double>>>>();
+
+        //first key is bilayer, second is mc
+        public Dictionary<Bilayer, Dictionary<double, double>> PotentialRadii { get; set; }
         
         
         public StockBoard(string name, Species species, double rtAngle, double thickness, double length, double width, double multiplier)
@@ -28,6 +31,7 @@ namespace BilayerDesign
             Width = width;
             Multiplier = multiplier;
             DesignBoards = new List<PanelBoard>();
+            PotentialRadii = new Dictionary<Bilayer, Dictionary<double, double>>();
         }
 
         public static StockBoard DeepCopy(StockBoard source)

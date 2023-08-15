@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using Rhino;
 
 namespace BilayerDesign
@@ -7,14 +8,9 @@ namespace BilayerDesign
     public class StockPile
     {
         public PredictionBase PredictionBase { get; set; }
-        public Dictionary<Species, List<StockBoard>> StockDictionary = new Dictionary<Species, List<StockBoard>>();
+        public Dictionary<Species, List<StockBoard>> StockDictionary { get; set; }
         public List<Panel> Panels { get; set; }
         public List<StockBoard> StockBoards { get; set; }
-        public List<PanelBoard> PanelBoards { get; set; }
-        public List<double> ActiveThicknesses { get; set; }
-        public List<Species> ActiveSpecies { get; set; }
-        private List<double> PassiveThicknesses { get; set; }
-        public List<Species> PassiveSpecies { get; set; }
         public List<double> MoistureChanges { get; set; }
         public double MaxRadius { get; set; }
         public double MinRadius { get; set; }
@@ -31,64 +27,38 @@ namespace BilayerDesign
             StockBoards = stockBoards;
             MoistureChanges = moistureChanges;
             PredictionBase = predictionBase;
+            StockDictionary = new Dictionary<Species, List<StockBoard>>();
 
             AnalyzeInputs();
         }
 
         public void AnalyzeInputs()
         {
-            PanelBoards = new List<PanelBoard>();
-            ActiveSpecies = new List<Species>();
-            PassiveSpecies = new List<Species>();
-            ActiveThicknesses = new List<double>();
-            PassiveThicknesses = new List<double>();
-
             MaxRadius = double.MinValue;
             MinRadius = double.MaxValue;
 
-            foreach (Panel panel in Panels)
+            for (int s = 0; s < StockBoards.Count; s++)
             {
-                foreach (Bilayer bilayer in panel.Bilayers)
+                if (!StockDictionary.ContainsKey(StockBoards[s].Species)) StockDictionary.Add(StockBoards[s].Species, new List<StockBoard>());
+                StockDictionary[StockBoards[s].Species].Add(StockBoards[s]);
+
+                for (int p = 0; p <  Panels.Count; p++)
                 {
-                    foreach (PanelBoard board in bilayer.Boards)
+                    for(int bi = 0; bi < Panels[p].Bilayers.Count; bi++)
                     {
-                        PanelBoards.Add(board);
-                        if (!ActiveSpecies.Contains(board.Species)) ActiveSpecies.Add(board.Species);
-                    }
-
-                    if (!ActiveThicknesses.Contains(bilayer.ActiveThickness)) ActiveThicknesses.Add(bilayer.ActiveThickness);
-                    if (!PassiveThicknesses.Contains(bilayer.PassiveLayer.Thickness)) PassiveThicknesses.Add(bilayer.PassiveLayer.Thickness);
-                    if (!PassiveSpecies.Contains(bilayer.PassiveLayer.Species)) PassiveSpecies.Add(bilayer.PassiveLayer.Species);
-                }
-            }
-
-            foreach (StockBoard stockBoard in StockBoards)
-            {
-                foreach (double activeThickness in ActiveThicknesses)
-                {
-                    if (activeThickness > stockBoard.Thickness) continue;
-                    stockBoard.PotentialRadii.Add(activeThickness, new Dictionary<double, Dictionary<Species, Dictionary<double, double>>>());
-
-                    foreach (double passiveThickness in PassiveThicknesses)
-                    {
-                        stockBoard.PotentialRadii[activeThickness].Add(passiveThickness, new Dictionary<Species, Dictionary<double, double>>());
-                        foreach (Species passiveSpecies in PassiveSpecies)
+                        StockBoards[s].PotentialRadii.Add(Panels[p].Bilayers[bi], new  Dictionary<double, double>());
+                        for (int m = 0; m < MoistureChanges.Count; m++)
                         {
-                            stockBoard.PotentialRadii[activeThickness][passiveThickness].Add(passiveSpecies, new Dictionary<double, double>());
-                            foreach (double moistureChange in MoistureChanges)
-                            {
-                                double potentialRadius = PredictionBase.Predict(stockBoard, passiveSpecies, moistureChange, activeThickness, passiveThickness);
-                                stockBoard.PotentialRadii[activeThickness][passiveThickness][passiveSpecies].Add(moistureChange, potentialRadius);
+                            double potentialRadius = PredictionBase.Predict(StockBoards[s], Panels[p].Bilayers[bi], MoistureChanges[m]);
+                            StockBoards[s].PotentialRadii[Panels[p].Bilayers[bi]].Add(MoistureChanges[m], potentialRadius);
 
-                                if (potentialRadius > MaxRadius) MaxRadius = potentialRadius;
-                                if (potentialRadius < MinRadius) MinRadius = potentialRadius;
-                            }
+                            if(potentialRadius > MaxRadius) MaxRadius = potentialRadius;
+                            if(potentialRadius < MinRadius) MinRadius = potentialRadius;
                         }
                     }
                 }
-                if (!StockDictionary.ContainsKey(stockBoard.Species)) StockDictionary.Add(stockBoard.Species, new List<StockBoard>());
-                StockDictionary[stockBoard.Species].Add(stockBoard);
             }
+
         }
 
         public static double Remap(double val, double from1, double to1, double from2, double to2)
@@ -99,8 +69,6 @@ namespace BilayerDesign
 
     public abstract class PredictionBase
     {
-        public abstract double Predict(StockBoard board, Species passiveSpecies, double moistureChange, double activeThickness, double passiveThickness);
+        public abstract double Predict(StockBoard board, Bilayer bilayer, double moistureChange);
     }
-
-    
 }

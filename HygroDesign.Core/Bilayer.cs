@@ -25,7 +25,6 @@ namespace BilayerDesign
         public int BoardRegionCount { get; set; }
         public PassiveLayer PassiveLayer { get; set; }
 
-
         public Bilayer(Plane basePlane, double boardWidth, double boardLength, int widthCount, int lengthCount, double activeThickness, double passiveThickness, Species passiveSpecies, int boardRegionCount)
         {
             BasePlane = basePlane;
@@ -56,7 +55,6 @@ namespace BilayerDesign
             Bilayer bilayer = new Bilayer(basePlane, source.BoardWidth, source.BoardLength, source.WidthCount, source.LengthCount, source.ActiveThickness, source.PassiveLayer.Thickness, source.PassiveLayer.Species, source.BoardRegionCount);
             bilayer.ID = source.ID;
             bilayer.Boards.Clear();
-            
 
             for(int i = 0; i < boards.Count; i++)
             {
@@ -67,13 +65,11 @@ namespace BilayerDesign
 
             return bilayer;
         }
-
         
 
         private void GenerateBoards()
         {
             Boards = new List<PanelBoard>();
-            int count = 0;
             for (int i = 0; i < WidthCount; i++)
             {
                 //even value rows
@@ -88,9 +84,7 @@ namespace BilayerDesign
                         PanelBoard board = new PanelBoard(rowRange, colRange,this,BoardRegionCount);
                         board.RowNumber = i;
                         board.ColumnNumber = j;
-                        board.ID = count;
                         Boards.Add(board);
-                        count++;
                     }
                 }
 
@@ -125,9 +119,7 @@ namespace BilayerDesign
                         PanelBoard board = new PanelBoard( rowRange, colRange,this, regionCount);
                         board.RowNumber = i;
                         board.ColumnNumber = j;
-                        board.ID = count;
                         Boards.Add(board);
-                        count++;
                     }
                 }
             }
@@ -167,6 +159,28 @@ namespace BilayerDesign
         public static double Remap(double val, double from1, double to1, double from2, double to2)
         {
             return (val - from1) / (to1 - from1) * (to2 - from2) + from2;
+        }
+
+        public override bool Equals(object other)
+        {
+            if (other == null || !(other is Bilayer))
+                return false;
+            else
+                return Equals(other as Bilayer);
+        }
+
+        public bool Equals(Bilayer other)
+        {
+            if(other.Parent.ID == this.Parent.ID && other.ID == this.ID) return true;
+            else return false;
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = 17;
+            hash = hash * 23 + Parent.ID.GetHashCode();
+            hash = hash * 23 + ID.GetHashCode();
+            return hash;
         }
 
     }

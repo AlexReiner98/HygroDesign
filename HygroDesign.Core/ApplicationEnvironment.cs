@@ -10,6 +10,7 @@ namespace BilayerDesign
     {
         public List<Panel> Panels { get; set; }
         public StockPile StockPile { get; set; }
+        public List<PanelBoard> PanelBoards { get; set; }
         public ApplicationEnvironment(List<Panel> panels, StockPile stockPile)
         {
             Panels = panels;
@@ -20,18 +21,28 @@ namespace BilayerDesign
 
         public void CalculateDesiredRadius()
         {
-            for(int i = 0; i < StockPile.PanelBoards.Count; i++)
+            PanelBoards = new List<PanelBoard>();
+            for(int p = 0; p < Panels.Count; p++)
             {
-                StockPile.PanelBoards[i].DesiredRadius = Remap(StockPile.PanelBoards[i].RadiusParameter, 0, 1, StockPile.MinRadius, StockPile.MaxRadius);
+                for(int bi = 0; bi < Panels[p].Bilayers.Count; bi++)
+                {
+                    for(int bo = 0; bo < Panels[p].Bilayers[bi].Boards.Count; bo++)
+                    {
+                        Panels[p].Bilayers[bi].Boards[bo].DesiredRadius = Remap(Panels[p].Bilayers[bi].Boards[bo].RadiusParameter, 0, 1, StockPile.MinRadius, StockPile.MaxRadius);
+                        PanelBoard board = Panels[p].Bilayers[bi].Boards[bo];
+                        board.Parent = Panels[p].Bilayers[bi];
+                        PanelBoards.Add(board);
+                    }
+                }
             }
         }
 
         public void ApplyStock()
         {
-            StockPile.PanelBoards = StockPile.PanelBoards.OrderByDescending(o => o.RadiusWeight).ToList();
+            PanelBoards = PanelBoards.OrderByDescending(o => o.RadiusWeight).ToList();
             
 
-            foreach (PanelBoard board in StockPile.PanelBoards)
+            foreach (PanelBoard board in PanelBoards)
             {
                 Species activeSpecies = board.Species;
                 double activeThickness = board.Parent.ActiveThickness;
@@ -45,12 +56,10 @@ namespace BilayerDesign
                 foreach (StockBoard stockBoard in StockPile.StockDictionary[activeSpecies])
                 {
                     if (stockBoard.LengthAvailable < board.Length) continue;
-                    if (stockBoard.PotentialRadii[activeThickness][passiveThickness][passiveSpecies] == null) continue;
 
                     foreach (double moistureChange in StockPile.MoistureChanges)
                     {
-                        double prediction = stockBoard.PotentialRadii[activeThickness][passiveThickness][passiveSpecies][moistureChange];
-                        
+                        double prediction = stockBoard.PotentialRadii[board.Parent][moistureChange];
                         double difference = Math.Abs(prediction - board.DesiredRadius);
                         if (difference < smallestRadDiff)
                         {
@@ -68,6 +77,7 @@ namespace BilayerDesign
                 closestStock.LengthAvailable -= board.Length;
                 closestStock.DesignBoards.Add(board);
                 Panels[board.Parent.Parent.ID].Bilayers[board.Parent.ID].Boards[board.ID] = board;
+                
             }
         }
 
