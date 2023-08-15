@@ -160,28 +160,5 @@ namespace BilayerDesign
         {
             return (val - from1) / (to1 - from1) * (to2 - from2) + from2;
         }
-
-        public override bool Equals(object other)
-        {
-            if (other == null || !(other is Bilayer))
-                return false;
-            else
-                return Equals(other as Bilayer);
-        }
-
-        public bool Equals(Bilayer other)
-        {
-            if(other.Parent.ID == this.Parent.ID && other.ID == this.ID) return true;
-            else return false;
-        }
-
-        public override int GetHashCode()
-        {
-            int hash = 17;
-            hash = hash * 23 + Parent.ID.GetHashCode();
-            hash = hash * 23 + ID.GetHashCode();
-            return hash;
-        }
-
     }
 }
