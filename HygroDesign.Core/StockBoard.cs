@@ -13,15 +13,11 @@ namespace BilayerDesign
         public List<PanelBoard> DesignBoards { get; set; }
         public double Length { get; set; }
         public double Width { get; set; }
-
-        //first key is active thickness, second is passive thickness, third is passive material, fourth is moisture change
-        //public Dictionary<double, Dictionary<double, Dictionary<Species, Dictionary<double, double>>>> PotentialRadii = new Dictionary<double, Dictionary<double, Dictionary<Species, Dictionary<double, double>>>>();
-
-        //first key is bilayer, second is mc
+        public Dictionary<string, double> Attributes { get; set; }
         public Dictionary<Bilayer, Dictionary<double, double>> PotentialRadii { get; set; }
         
         
-        public StockBoard(string name, Species species, double rtAngle, double thickness, double length, double width, double multiplier)
+        public StockBoard(string name, Species species, double rtAngle, double thickness, double length, double width, Dictionary<string, double> attributes)
         {
             Name = name;
             Species = species;
@@ -29,7 +25,7 @@ namespace BilayerDesign
             LengthAvailable = Length = length;
             Thickness = thickness;
             Width = width;
-            Multiplier = multiplier;
+            Attributes = attributes;
             DesignBoards = new List<PanelBoard>();
             PotentialRadii = new Dictionary<Bilayer, Dictionary<double, double>>();
         }
@@ -42,8 +38,8 @@ namespace BilayerDesign
             double thickness = source.Thickness;
             double length = source.Length;
             double width = source.Width;
-            double multiplier = source.Multiplier;
-            StockBoard stockBoard = new StockBoard(name, species, rtAngle, thickness, length, width, multiplier);
+            Dictionary<string, double> attributes = source.Attributes;
+            StockBoard stockBoard = new StockBoard(name, species, rtAngle, thickness, length, width, attributes);
             stockBoard.LengthAvailable = source.LengthAvailable;
             stockBoard.DesignBoards = source.DesignBoards;
             return stockBoard;

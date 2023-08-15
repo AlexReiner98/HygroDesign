@@ -18,7 +18,7 @@ namespace HygroDesign.Grasshopper.Components
 
         bool IGH_VariableParameterComponent.CanInsertParameter(GH_ParameterSide side, int index)
         {
-            if (side == GH_ParameterSide.Input)
+            if (side == GH_ParameterSide.Input && index > 0)
             {
                 return true;
             }
@@ -31,7 +31,7 @@ namespace HygroDesign.Grasshopper.Components
         bool IGH_VariableParameterComponent.CanRemoveParameter(GH_ParameterSide side, int index)
         {
             //We can only remove from the input
-            if (side == GH_ParameterSide.Input && Params.Input.Count > 1)
+            if (side == GH_ParameterSide.Input && index>0)
             {
                 return true;
             }

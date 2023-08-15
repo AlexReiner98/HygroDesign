@@ -58,7 +58,6 @@ namespace BilayerDesign
                     }
                 }
             }
-
         }
 
         public static double Remap(double val, double from1, double to1, double from2, double to2)
