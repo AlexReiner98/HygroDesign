@@ -68,7 +68,7 @@ namespace HygroDesign.Grasshopper.Components
                     bilayerStartZ += bilayer.PassiveLayer.Thickness;
 
                     int boardID = 0;
-                    foreach(PanelBoard board in bilayer.Boards)
+                    foreach(ActiveBoard board in bilayer.Boards)
                     {
                         foreach(BoardRegion region in board.Regions)
                         {

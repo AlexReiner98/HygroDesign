@@ -38,7 +38,7 @@ namespace HygroDesign.Grasshopper.Components
             var bilayers = new GH_Structure<IGH_Goo>();
             DA.GetDataTree(0, out bilayers);
 
-            DataTree<PanelBoard> output = new DataTree<PanelBoard>();
+            DataTree<ActiveBoard> output = new DataTree<ActiveBoard>();
             
             for(int i = 0; i < bilayers.Branches.Count; i++)
             {

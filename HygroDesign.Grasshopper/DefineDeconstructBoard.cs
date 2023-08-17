@@ -68,8 +68,8 @@ namespace HygroDesign.Grasshopper.Components
                 for(int j = 0; j < boardStruct.Branches[i].Count; j++)
                 {
                     GH_Path path = boardStruct.Paths[i];
-                    PanelBoard board;
-                    boardStruct[i][j].CastTo<PanelBoard>(out board);
+                    ActiveBoard board;
+                    boardStruct[i][j].CastTo<ActiveBoard>(out board);
 
                     if (board == null) continue;
 
