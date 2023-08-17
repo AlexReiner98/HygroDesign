@@ -10,12 +10,12 @@ using Grasshopper.Kernel.Types;
 namespace HygroDesign.Grasshopper.Components
 {
 
-    public class DefineDesignEnvironment : GH_Component
+    public class DefineRadiusPrediction : GH_Component
     {
         
-        public DefineDesignEnvironment()
-          : base("Design Environment", "Design Env",
-            "Environment for combining stockpile and panel goals in order to generate final panel layouts.",
+        public DefineRadiusPrediction()
+          : base("Radius Prediction", "Rad Pred",
+            "Predicts radii for each stock board in all possible bilayer permutations.(Updates StockBoard.PotentialRadii dictionary)",
             "HygroDesign", "Design")
         {
         }
@@ -26,13 +26,13 @@ namespace HygroDesign.Grasshopper.Components
             pManager.AddGenericParameter("Panels", "P", "Desired panel designs.", GH_ParamAccess.list);
             pManager.AddGenericParameter("Stock Boards", "S", "The set of stock boards used in this design.", GH_ParamAccess.list);
             pManager.AddGenericParameter("Moisture Changes", "M", "The set of moisture changes used in this design", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Prediction Engine", "E", "The engine used to predict self shaping radius.", GH_ParamAccess.item);
         }
 
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("Panels", "P", "The updated panels with stock assigned.", GH_ParamAccess.list);
-            pManager.AddGenericParameter("Stock Boards", "S", "The updated stock boards with fabrication information.", GH_ParamAccess.list);
+            pManager.AddGenericParameter("StockPile", "SP", "The stockpile complete with self shaping radius predictions", GH_ParamAccess.item);
         }
 
 
@@ -41,28 +41,19 @@ namespace HygroDesign.Grasshopper.Components
             List<Panel> panels = new List<Panel>();
             DA.GetDataList(0, panels);
             
-            List<Panel> copyPanels = new List<Panel>();
-            foreach(Panel panel in panels)
-            {
-                copyPanels.Add(Panel.DeepCopy(panel));
-            }
 
             List<StockBoard> stockBoards = new List<StockBoard>();
             DA.GetDataList(1, stockBoards);
 
-            List<StockBoard> copyStockBoards = new List<StockBoard>();
-            foreach(StockBoard stockBoard in stockBoards)
-            {
-                copyStockBoards.Add(StockBoard.DeepCopy(stockBoard));
-            }
-
             List<double> moistureChanges = new List<double>();
             DA.GetDataList(2, moistureChanges);
 
-            DesignEnvironment designEnvironment = new DesignEnvironment(copyPanels, copyStockBoards, moistureChanges);
+            PredictionBase predictionBase = null;
+            DA.GetData(3, ref predictionBase);
 
-            DA.SetDataList(0, designEnvironment.Panels);
-            DA.SetDataList(1, designEnvironment.StockBoards);
+            StockPile stockPile = new StockPile(panels, stockBoards, moistureChanges, predictionBase);
+
+            DA.SetData(0, stockPile);
         }
         
         public override GH_Exposure Exposure => GH_Exposure.primary;

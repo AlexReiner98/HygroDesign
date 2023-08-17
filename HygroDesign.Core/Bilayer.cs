@@ -25,7 +25,6 @@ namespace BilayerDesign
         public int BoardRegionCount { get; set; }
         public PassiveLayer PassiveLayer { get; set; }
 
-
         public Bilayer(Plane basePlane, double boardWidth, double boardLength, int widthCount, int lengthCount, double activeThickness, double passiveThickness, Species passiveSpecies, int boardRegionCount)
         {
             BasePlane = basePlane;
@@ -56,7 +55,6 @@ namespace BilayerDesign
             Bilayer bilayer = new Bilayer(basePlane, source.BoardWidth, source.BoardLength, source.WidthCount, source.LengthCount, source.ActiveThickness, source.PassiveLayer.Thickness, source.PassiveLayer.Species, source.BoardRegionCount);
             bilayer.ID = source.ID;
             bilayer.Boards.Clear();
-            
 
             for(int i = 0; i < boards.Count; i++)
             {
@@ -67,13 +65,12 @@ namespace BilayerDesign
 
             return bilayer;
         }
-
         
 
         private void GenerateBoards()
         {
             Boards = new List<PanelBoard>();
-            for(int i = 0; i < WidthCount; i++)
+            for (int i = 0; i < WidthCount; i++)
             {
                 //even value rows
                 if(i % 2 == 0)
@@ -95,7 +92,7 @@ namespace BilayerDesign
                 else
                 {
                     PanelBoard[] row = new PanelBoard[LengthCount+1];
-
+                    
                     for (int j = 0; j < LengthCount+1; j++)
                     {
                         Interval colRange = new Interval(Width - ((i + 1) * BoardWidth),Width - (i * BoardWidth));
@@ -163,6 +160,5 @@ namespace BilayerDesign
         {
             return (val - from1) / (to1 - from1) * (to2 - from2) + from2;
         }
-
     }
 }

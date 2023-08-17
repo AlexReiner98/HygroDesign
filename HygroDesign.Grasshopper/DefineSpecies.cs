@@ -7,13 +7,63 @@ using System.Collections.Generic;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Rhino;
+using Grasshopper.Kernel.Parameters;
+using System.Linq;
 
 namespace HygroDesign.Grasshopper.Components
 {
 
-    public class DefineSpecies : GH_Component
+    public class DefineSpecies : GH_Component, IGH_VariableParameterComponent
     {
-        
+
+        bool IGH_VariableParameterComponent.CanInsertParameter(GH_ParameterSide side, int index)
+        {
+            if (side == GH_ParameterSide.Input && index > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        bool IGH_VariableParameterComponent.CanRemoveParameter(GH_ParameterSide side, int index)
+        {
+            //We can only remove from the input
+            if (side == GH_ParameterSide.Input && index>0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        IGH_Param IGH_VariableParameterComponent.CreateParameter(GH_ParameterSide side, int index)
+        {
+            Param_GenericObject param = new Param_GenericObject()
+            {
+                Name = GH_ComponentParamServer.InventUniqueNickname("ABCDEFGHIJKLMNOPQRSTUVWXYZ", Params.Input)
+            };
+            param.NickName = param.Name;
+            param.Description = "Things to be sent around.";
+            param.Optional = true;
+            param.Access = GH_ParamAccess.item;
+
+            return param;
+        }
+
+        bool IGH_VariableParameterComponent.DestroyParameter(GH_ParameterSide side, int index)
+        {
+            return true;
+        }
+
+        void IGH_VariableParameterComponent.VariableParameterMaintenance()
+        {
+        }
+
         public DefineSpecies()
           : base("Wood Species", "Species",
             "Define a wood species with material properties relevant to self-shaping curvature prediction.",
@@ -24,14 +74,7 @@ namespace HygroDesign.Grasshopper.Components
         
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("Name", "N", "Name of the wood species.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Density", "D", "Density of the species in kg/m3", GH_ParamAccess.item);
-            pManager.AddGenericParameter("LExpansion", "LX", "Expansion coefficient in the L grain direction.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("RExpansion", "RX", "Expansion coefficient in the R grain direction.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("TExpansion", "TX", "Expansion coefficient in the T grain direction.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("LElasticModulus", "LE", "Elastic modulus in the L grain direction.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("RElasticModulus", "RE", "Elastic modulus in the R grain direction.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("TElasticModulus", "TE", "Elastic modulus in the T grain direction.", GH_ParamAccess.item);
+            pManager.AddTextParameter("Name", "name", "Name of the wood species.", GH_ParamAccess.item);
         }
 
 
@@ -43,26 +86,33 @@ namespace HygroDesign.Grasshopper.Components
         
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            string name = null;
+            var paramDictionary = new Dictionary<string, double>();
+            dynamic ghInputProperty = null;
+            double valueExtract = 0;
+
+            for (int p = 1; p < Params.Input.Count; p++)
+            {
+                var key = Params.Input[p].NickName;
+
+                switch (Params.Input[p].Access)
+                {
+                    case GH_ParamAccess.item:
+                        DA.GetData(p, ref ghInputProperty);
+                        valueExtract = (double) ghInputProperty?.Value;
+                        break;
+                    default:
+                        continue;
+                }
+
+                paramDictionary.Add(key, valueExtract);
+            }
+
+            String name = null;
             DA.GetData(0, ref name);
 
-            double Density = 0;
-            double LExpansion = 0;
-            double RExpansion = 0;
-            double TExpansion = 0;
-            double LElasticModulus = 0;
-            double RElasticModulus = 0;
-            double TElasticModulus = 0;
+            Species species = new Species(name, paramDictionary);
 
-            DA.GetData(1, ref Density);
-            DA.GetData(2, ref LExpansion);
-            DA.GetData(3, ref RExpansion);
-            DA.GetData(4, ref TExpansion);
-            DA.GetData(5, ref LElasticModulus);
-            DA.GetData(6, ref RElasticModulus);
-            DA.GetData(7, ref TElasticModulus);
-
-            DA.SetData(0, new Species(name, Density, LExpansion, RExpansion, TExpansion, LElasticModulus, RElasticModulus, TElasticModulus));
+            DA.SetData(0, species);
         }
 
 

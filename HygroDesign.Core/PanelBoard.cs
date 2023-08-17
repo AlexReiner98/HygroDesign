@@ -32,6 +32,7 @@ namespace BilayerDesign
         public double BlendedRadius { get; set; }
         private int RegionCount { get; set; }
         public List<BoardRegion> Regions { get; set; }
+        public int ID { get; set; }
 
         public PanelBoard(Interval initialRowRange, Interval initialColumnRange, Bilayer parent, int regions)
         {
@@ -72,6 +73,7 @@ namespace BilayerDesign
             newBoard.RadiusFactor = source.RadiusFactor;
             newBoard.ConvolutionWeights = source.ConvolutionWeights;
             newBoard.BlendedRadius = source.BlendedRadius;
+            newBoard.ID = source.ID;
 
             newBoard.Regions = new List<BoardRegion>();
             foreach(BoardRegion region in source.Regions)
@@ -184,7 +186,7 @@ namespace BilayerDesign
                 if (RhinoDoc.ActiveDoc.ModelUnitSystem == UnitSystem.Meters) volume = Volume;
 
                 //calculate mass in kg
-                return volume * Species.Density;
+                return volume * Species.Attributes["density"];
             }
         }
 

@@ -24,19 +24,23 @@ namespace HygroDesign.Grasshopper.Components
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter("Panels", "P", "The panels to perform the convolution on.", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Convolution Engine", "E", "The engine defining the relationship between neighbouring boards' radii", GH_ParamAccess.item);
+
+            /*
             pManager.AddGenericParameter("Tengential Blending", "T", "The tangential blending factor.", GH_ParamAccess.item);
             pManager.AddGenericParameter("Longitudinal Blending", "L", "The longitudinal blending factor.", GH_ParamAccess.item);
             pManager.AddNumberParameter("Max Radius Influence", "R", "The maximum radius in for remapping the radius to the radius factor. Lower numbers bias towards lower  blended radii.", GH_ParamAccess.item, 100000);
             pManager.AddNumberParameter("Stiffness Factor", "SF", "The factor for controlling the effect of stiffness differences on the radius blending.", GH_ParamAccess.item,0.1);
             pManager.AddNumberParameter("Thickness Factor", "TF", "The factor for controlling the effect of thickness differences on the radius blending", GH_ParamAccess.item, 0.1);
             pManager.AddIntegerParameter("Visualize Board Weights", "V", "The index values of the board whose neighbours weights should be visualized", GH_ParamAccess.item, 0);
+            */
         }
 
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddGenericParameter("Panels", "P", "The updated bilayer panel.", GH_ParamAccess.list);
-            pManager.AddGenericParameter("Weights", "W", "The neighbor weights of the selected board", GH_ParamAccess.tree);
+            //pManager.AddGenericParameter("Weights", "W", "The neighbor weights of the selected board", GH_ParamAccess.tree);
         }
 
 
@@ -45,6 +49,18 @@ namespace HygroDesign.Grasshopper.Components
             List<Panel> panels = new List<Panel>();
             DA.GetDataList(0, panels);
 
+            ConvolutionEngine convolutionEngine = null;
+            DA.GetData(1, ref convolutionEngine);
+
+            for(int i = 0; i < panels.Count; i++)
+            {
+                panels[i] = Panel.DeepCopy(panels[i]);
+                panels[i] = convolutionEngine.Convolution(panels[i]);
+            }
+
+            DA.SetDataList(0, panels);
+
+            /*
             double tangential = 0;
             DA.GetData(1, ref tangential);
 
@@ -62,6 +78,7 @@ namespace HygroDesign.Grasshopper.Components
 
             int index = 0;
             DA.GetData(6, ref index);
+            
 
             List<Panel> panelCopies = new List<Panel>();
             foreach(Panel panel in panels)
@@ -77,7 +94,6 @@ namespace HygroDesign.Grasshopper.Components
                 
                 panelCopies[i].SetConvolutionFactors(maxRad, stiffness);
                 panelCopies[i].CurvatureConvolution(longitudinal, tangential);
-                
                 panelCopies[i].ThicknessConvolution(thickness);
             }
 
@@ -106,10 +122,11 @@ namespace HygroDesign.Grasshopper.Components
             }
 
             DA.SetDataTree(1, weights);
+            */
         }
 
 
-        
+
         public override GH_Exposure Exposure => GH_Exposure.primary;
 
         

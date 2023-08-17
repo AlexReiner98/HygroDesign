@@ -1,47 +1,73 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using Rhino;
 
 namespace BilayerDesign
 {
     public class StockPile
     {
-        public Species Species;
-        public List<StockBoard> Boards;
-        public List<double> MoistureChanges;
-        public List<double> Multipliers;
-        public int BoardCount;
-        Species PassiveSpecies;
-        double PassiveThickness;
+        public PredictionBase PredictionBase { get; set; }
+        public Dictionary<Species, List<StockBoard>> StockDictionary { get; set; }
+        public List<Panel> Panels { get; set; }
+        public List<StockBoard> StockBoards { get; set; }
+        public List<double> MoistureChanges { get; set; }
+        public double MaxRadius { get; set; }
+        public double MinRadius { get; set; }
 
-        public StockPile(Species material, List<StockBoard> boards, List<double> moistureChanges, List<double> multipliers, Species passiveSpecies, double passiveThickness)
+        public StockPile(List<Panel> panels, List<StockBoard> stockBoards, List<double> moistureChanges, PredictionBase predictionBase)
         {
-            Species = material;
-            Boards = boards;
-            BoardCount = boards.Count;
+            Panels = panels;
+
+            for (int i = 0; i < Panels.Count; i++)
+            {
+                Panels[i].ID = i;
+            }
+
+            StockBoards = stockBoards;
             MoistureChanges = moistureChanges;
-            Multipliers = multipliers;
-            PassiveSpecies = passiveSpecies;
-            PassiveThickness = passiveThickness;
+            PredictionBase = predictionBase;
+            StockDictionary = new Dictionary<Species, List<StockBoard>>();
+
+            AnalyzeInputs();
         }
 
-        public static StockPile DeepCopy(StockPile source)
+        public void AnalyzeInputs()
         {
-            Species material = source.Species;
-            Species passiveMaterial = source.PassiveSpecies;
-            double passiveThickness = source.PassiveThickness;
+            MaxRadius = double.MinValue;
+            MinRadius = double.MaxValue;
 
-            List<StockBoard> boards = new List<StockBoard>();
-            List<double> moistures = new List<double>();
-            List<double> multipliers = new List<double>();
+            for (int s = 0; s < StockBoards.Count; s++)
+            {
+                if (!StockDictionary.ContainsKey(StockBoards[s].Species)) StockDictionary.Add(StockBoards[s].Species, new List<StockBoard>());
+                StockDictionary[StockBoards[s].Species].Add(StockBoards[s]);
 
-            foreach(StockBoard board in source.Boards) boards.Add(StockBoard.DeepCopy(board));
-            foreach (double moisture in source.MoistureChanges) moistures.Add(moisture);
-            foreach (double multiplier in source.Multipliers) multipliers.Add(multiplier);
+                for (int p = 0; p <  Panels.Count; p++)
+                {
+                    for(int bi = 0; bi < Panels[p].Bilayers.Count; bi++)
+                    {
+                        StockBoards[s].PotentialRadii.Add(Panels[p].Bilayers[bi], new  Dictionary<double, double>());
+                        for (int m = 0; m < MoistureChanges.Count; m++)
+                        {
+                            double potentialRadius = PredictionBase.Predict(StockBoards[s], Panels[p].Bilayers[bi], MoistureChanges[m]);
+                            StockBoards[s].PotentialRadii[Panels[p].Bilayers[bi]].Add(MoistureChanges[m], potentialRadius);
 
-            return new StockPile(material, boards, moistures, multipliers,passiveMaterial,passiveThickness);
+                            if(potentialRadius > MaxRadius) MaxRadius = potentialRadius;
+                            if(potentialRadius < MinRadius) MinRadius = potentialRadius;
+                        }
+                    }
+                }
+            }
         }
 
-        
+        public static double Remap(double val, double from1, double to1, double from2, double to2)
+        {
+            return (val - from1) / (to1 - from1) * (to2 - from2) + from2;
+        }
+    }
+
+    public abstract class PredictionBase
+    {
+        public abstract double Predict(StockBoard board, Bilayer bilayer, double moistureChange);
     }
 }
