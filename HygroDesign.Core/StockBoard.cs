@@ -13,11 +13,11 @@ namespace BilayerDesign
         public List<PanelBoard> DesignBoards { get; set; }
         public double Length { get; set; }
         public double Width { get; set; }
-        public Dictionary<string, double> Attributes { get; set; }
+        public Dictionary<string, object> Attributes { get; set; }
         public Dictionary<Bilayer, Dictionary<double, double>> PotentialRadii { get; set; }
         
         
-        public StockBoard(string name, Species species, double rtAngle, double thickness, double length, double width, Dictionary<string, double> attributes)
+        public StockBoard(string name, Species species, double rtAngle, double thickness, double length, double width, Dictionary<string, object> attributes)
         {
             Name = name;
             Species = species;
@@ -38,7 +38,7 @@ namespace BilayerDesign
             double thickness = source.Thickness;
             double length = source.Length;
             double width = source.Width;
-            Dictionary<string, double> attributes = source.Attributes;
+            Dictionary<string, object> attributes = source.Attributes;
             StockBoard stockBoard = new StockBoard(name, species, rtAngle, thickness, length, width, attributes);
             stockBoard.LengthAvailable = source.LengthAvailable;
             stockBoard.DesignBoards = source.DesignBoards;
