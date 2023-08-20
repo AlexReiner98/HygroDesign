@@ -7,19 +7,16 @@ using Rhino.Geometry;
 
 namespace BilayerDesign
 {
-    public class PassiveLayer
+    public class PassiveLayer : WoodElement
     {
         
-        public double Thickness { get; set; }
-        public Species Species { get; set; }
         public Bilayer Parent { get; set; }
         public Interval XDomain { get; set; }
         public Interval YDomain { get; set; }
 
-
-        public PassiveLayer( double thickness, Species species, Bilayer parent )
+        public PassiveLayer( double height, Species species, Bilayer parent )
         {
-            Thickness = thickness;
+            Height = height;
             Species = species;
             Parent = parent;
             Update();
@@ -27,7 +24,7 @@ namespace BilayerDesign
 
         public static PassiveLayer DeepCopy(PassiveLayer source, Bilayer parent)
         {
-            PassiveLayer passiveLayer = new PassiveLayer(source.Thickness, source.Species, parent);
+            PassiveLayer passiveLayer = new PassiveLayer(source.Height, source.Species, parent);
             passiveLayer.XDomain = source.XDomain;
             passiveLayer.YDomain = source.YDomain;
             return passiveLayer;
@@ -40,7 +37,7 @@ namespace BilayerDesign
             double minY = double.MaxValue;
             double maxY = 0;
 
-            foreach(PanelBoard board in Parent.Boards)
+            foreach(ActiveBoard board in Parent.Boards)
             {
                 if (board.RowRange[0] < minX) minX = board.RowRange[0];
                 if (board.RowRange[1] > maxX) maxX = board.RowRange[1];
@@ -62,12 +59,12 @@ namespace BilayerDesign
             return (val - from1) / (to1 - from1) * (to2 - from2) + from2;
         }
 
-        public double Width { get
+        public new double Width { get
             {
                 return YDomain.Length;
             } }
 
-        public double Length
+        public new double Length
         {
             get
             {
@@ -91,7 +88,7 @@ namespace BilayerDesign
 
         public double Volume { get
             {
-                return Area * Thickness;
+                return Area * Height;
             } }
 
         public double Mass

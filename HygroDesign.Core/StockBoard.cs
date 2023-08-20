@@ -4,29 +4,23 @@ using System.Collections.Generic;
 
 namespace BilayerDesign
 {
-    public class StockBoard : BoardBase
+    public class StockBoard : WoodElement
     {
-        public double LengthAvailable { get; set; }
-        public double SelectedRadius { get; set; }
-        public double Thickness { get; set; }
-        public double Multiplier { get; set; }
-        public List<PanelBoard> DesignBoards { get; set; }
-        public double Length { get; set; }
-        public double Width { get; set; }
-        public Dictionary<string, object> Attributes { get; set; }
+        public double LengthAvailable { get; set; }  
+        public List<ActiveBoard> DesignBoards { get; set; }
         public Dictionary<Bilayer, Dictionary<double, double>> PotentialRadii { get; set; }
         
         
-        public StockBoard(string name, Species species, double rtAngle, double thickness, double length, double width, Dictionary<string, object> attributes)
+        public StockBoard(string name, Species species, double rtAngle, double height, double length, double width, Dictionary<string, object> attributes)
         {
             Name = name;
             Species = species;
             RTAngle = rtAngle;
             LengthAvailable = Length = length;
-            Thickness = thickness;
+            Height = height;
             Width = width;
             Attributes = attributes;
-            DesignBoards = new List<PanelBoard>();
+            DesignBoards = new List<ActiveBoard>();
             PotentialRadii = new Dictionary<Bilayer, Dictionary<double, double>>();
         }
 
@@ -35,11 +29,11 @@ namespace BilayerDesign
             string name = source.Name;
             Species species = source.Species;
             double rtAngle = source.RTAngle;
-            double thickness = source.Thickness;
+            double height = source.Height;
             double length = source.Length;
             double width = source.Width;
             Dictionary<string, object> attributes = source.Attributes;
-            StockBoard stockBoard = new StockBoard(name, species, rtAngle, thickness, length, width, attributes);
+            StockBoard stockBoard = new StockBoard(name, species, rtAngle, height, length, width, attributes);
             stockBoard.LengthAvailable = source.LengthAvailable;
             stockBoard.DesignBoards = source.DesignBoards;
             return stockBoard;

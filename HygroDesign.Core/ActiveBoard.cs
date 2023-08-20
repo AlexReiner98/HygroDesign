@@ -9,7 +9,7 @@ using Rhino.Geometry;
 
 namespace BilayerDesign
 {
-    public class PanelBoard : BoardBase
+    public class ActiveBoard : WoodElement
     {
         public Bilayer Parent { get; set; }
         public Interval InitialRowRange { get; set; }
@@ -17,7 +17,6 @@ namespace BilayerDesign
         public int RowNumber { get; set; }
         public int ColumnNumber { get; set; }
         public Polyline Polyline { get; set; }
-        public Point3d Centroid { get; set; }
         public double RadiusParameter { get; set; }
         public double DesiredRadius { get; set; }
         public double RadiusWeight { get; set; }
@@ -25,16 +24,11 @@ namespace BilayerDesign
         public double Radius { get; set; }
         public double MoistureChange { get; set; }
         public double Error { get; set; }
-        public double LongStiffnessFactor { get; set; }
-        public double RadStiffnessFactor { get; set; }
-        public double RadiusFactor { get; set; }
-        public List<Tuple<double,double>> ConvolutionWeights { get; set; }
         public double BlendedRadius { get; set; }
         private int RegionCount { get; set; }
         public List<BoardRegion> Regions { get; set; }
-        public int ID { get; set; }
 
-        public PanelBoard(Interval initialRowRange, Interval initialColumnRange, Bilayer parent, int regions)
+        public ActiveBoard(Interval initialRowRange, Interval initialColumnRange, Bilayer parent, int regions)
         {
             Parent = parent;
             InitialRowRange = initialRowRange;
@@ -45,12 +39,12 @@ namespace BilayerDesign
 
         }
 
-        public static PanelBoard DeepCopy(PanelBoard source, Bilayer parent)
+        public static ActiveBoard DeepCopy(ActiveBoard source, Bilayer parent)
         {
             Interval initialRowRange = new Interval(source.RowRange[0], source.RowRange[1]);
             Interval initialColumnRange = new Interval(source.ColumnRange[0], source.ColumnRange[1]);
 
-            PanelBoard newBoard = new PanelBoard(initialRowRange, initialColumnRange, parent, source.RegionCount);
+            ActiveBoard newBoard = new ActiveBoard(initialRowRange, initialColumnRange, parent, source.RegionCount);
 
             newBoard.Name = source.Name;
             newBoard.Height = source.Height;
@@ -67,11 +61,6 @@ namespace BilayerDesign
             newBoard.Radius = source.Radius;
             newBoard.MoistureChange = source.MoistureChange;
             newBoard.Error = source.Error;
-
-            newBoard.LongStiffnessFactor = source.LongStiffnessFactor;
-            newBoard.RadStiffnessFactor = source.RadStiffnessFactor;
-            newBoard.RadiusFactor = source.RadiusFactor;
-            newBoard.ConvolutionWeights = source.ConvolutionWeights;
             newBoard.BlendedRadius = source.BlendedRadius;
             newBoard.ID = source.ID;
 
@@ -95,11 +84,11 @@ namespace BilayerDesign
             };
             Polyline = new Polyline(points);
 
-            Centroid += Parent.InitialSurface.PointAt(InitialRowRange[0], InitialColumnRange[0]);
-            Centroid += Parent.InitialSurface.PointAt(InitialRowRange[1], InitialColumnRange[0]);
-            Centroid += Parent.InitialSurface.PointAt(InitialRowRange[1], InitialColumnRange[1]);
-            Centroid += Parent.InitialSurface.PointAt(InitialRowRange[0], InitialColumnRange[1]);
-            Centroid /= 4;
+            CenterOfGravity += Parent.InitialSurface.PointAt(InitialRowRange[0], InitialColumnRange[0]);
+            CenterOfGravity += Parent.InitialSurface.PointAt(InitialRowRange[1], InitialColumnRange[0]);
+            CenterOfGravity += Parent.InitialSurface.PointAt(InitialRowRange[1], InitialColumnRange[1]);
+            CenterOfGravity += Parent.InitialSurface.PointAt(InitialRowRange[0], InitialColumnRange[1]);
+            CenterOfGravity /= 4;
         }
 
         private void CreateBoardRegions()
@@ -140,13 +129,13 @@ namespace BilayerDesign
             } 
         }
 
-        public double Length { get
+        public new double Length { get
             {
                 return RowRange.Length;
             }
         }
 
-        public double Width
+        public new double Width
         {
             get
             {

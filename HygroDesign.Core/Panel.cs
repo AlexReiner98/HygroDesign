@@ -10,13 +10,10 @@ using Rhino.Geometry.Collections;
 
 namespace BilayerDesign
 {
-    public class Panel
+    public class Panel : WoodAssembly
     {
         public List<Bilayer> Bilayers { get; set; }
-        public int ID { get; set; }
         public Surface Surface { get; set; }
-        public Point3d CenterOfGravity { get; set; }
-
         
 
         public Panel(List<Bilayer> bilayers)
@@ -51,7 +48,7 @@ namespace BilayerDesign
 
             foreach(Bilayer bilayer in Bilayers)
             {
-                foreach(PanelBoard board in bilayer.Boards)
+                foreach(ActiveBoard board in bilayer.Boards)
                 {
                     foreach(BoardRegion boardRegion in board.Regions)
                     {
@@ -113,7 +110,7 @@ namespace BilayerDesign
             List<Bilayer> bilayersForRemoval = new List<Bilayer>();
             for(int i = 0; i < Bilayers.Count; i++)
             {
-                List<PanelBoard> boardsForRemoval = new List<PanelBoard>();
+                List<ActiveBoard> boardsForRemoval = new List<ActiveBoard>();
                 for(int j = 0; j < Bilayers[i].Boards.Count; j++)
                 {
                     List<BoardRegion> regionsForRemoval = new List<BoardRegion>();
@@ -164,7 +161,7 @@ namespace BilayerDesign
 
                 //if there is a locking layer, add those values
 
-                foreach (PanelBoard board in bilayer.Boards)
+                foreach (ActiveBoard board in bilayer.Boards)
                 {
                     //add board values
                     Point3d boardCentroid = board.ShapedCentroid;
@@ -186,17 +183,12 @@ namespace BilayerDesign
             CenterOfGravity = new Point3d(xCoord,yCoord,zCoord);
         }
 
-
-        
-
-        
-
         public void FindThicknessNeighbors()
         {
             
             foreach(Bilayer bilayer in Bilayers)
             {
-                foreach(PanelBoard board in bilayer.Boards)
+                foreach(ActiveBoard board in bilayer.Boards)
                 {
                     foreach(BoardRegion region in board.Regions)
                     {
@@ -204,7 +196,7 @@ namespace BilayerDesign
                         foreach (Bilayer otherBilayer in Bilayers)
                         {
                             if (otherBilayer == bilayer) continue;
-                            foreach (PanelBoard otherBoard in otherBilayer.Boards)
+                            foreach (ActiveBoard otherBoard in otherBilayer.Boards)
                             {
                                 foreach(BoardRegion otherRegion in otherBoard.Regions)
                                 {
@@ -230,7 +222,7 @@ namespace BilayerDesign
             //find unique start points and endpoints
             foreach (Bilayer bilayer in Bilayers)
             {
-                foreach(PanelBoard board in bilayer.Boards)
+                foreach(ActiveBoard board in bilayer.Boards)
                 {
                     foreach(BoardRegion region in board.Regions)
                     {
@@ -251,7 +243,7 @@ namespace BilayerDesign
                 List<BoardRegion> column = new List<BoardRegion>();
                 foreach(Bilayer bilayer in Bilayers)
                 {
-                    foreach (PanelBoard board in bilayer.Boards)
+                    foreach (ActiveBoard board in bilayer.Boards)
                     {
                         foreach(BoardRegion region in board.Regions)
                         {
@@ -300,7 +292,7 @@ namespace BilayerDesign
             //find regions below theshold and add them to delete list
             for (int i = 0; i < Bilayers.Count; i++)
             {
-                foreach (PanelBoard board in Bilayers[i].Boards)
+                foreach (ActiveBoard board in Bilayers[i].Boards)
                 {
                     foreach (BoardRegion region in board.Regions)
                     {

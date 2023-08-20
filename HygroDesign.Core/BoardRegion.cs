@@ -9,9 +9,9 @@ using Rhino.Geometry;
 
 namespace BilayerDesign
 {
-    public class BoardRegion : BoardBase
+    public class BoardRegion : WoodElement
     {
-        public PanelBoard Parent { get; set; }
+        public ActiveBoard Parent { get; set; }
         public Interval RowRange { get; set; }
         public Interval ColumnRange { get; set; }
         public Polyline Polyline { get; set; }
@@ -19,13 +19,10 @@ namespace BilayerDesign
         public List<BoardRegion> RegionStack { get; set; }
         public double ThicknessBlendedRadius { get; set; }
         public double ThicknessParameter { get; set; }
-        public int ID { get; set; }
-        private double Width { get; set; }
-        private double Length { get; set; }
 
         public bool Remove { get; set; }
 
-        public BoardRegion(Interval rowRange, PanelBoard parent)
+        public BoardRegion(Interval rowRange, ActiveBoard parent)
         {
             Parent = parent;
 
@@ -38,7 +35,7 @@ namespace BilayerDesign
             Remove = false;
         }
 
-        public static BoardRegion DeepCopy(BoardRegion source, PanelBoard parent)
+        public static BoardRegion DeepCopy(BoardRegion source, ActiveBoard parent)
         {
            
             Interval rowRange = new Interval(Remap(source.RowRange[0], parent.InitialRowRange[0], parent.InitialRowRange[1],0,1), Remap(source.RowRange[1], parent.InitialRowRange[0], parent.InitialRowRange[1], 0, 1));

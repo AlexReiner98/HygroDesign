@@ -50,7 +50,7 @@ namespace HygroDesign.Grasshopper.Components
             foreach(Panel panel in panelList)
             {
                 int boardID = 0;
-                foreach (PanelBoard board in panel.Bilayers[0].Boards)
+                foreach (ActiveBoard board in panel.Bilayers[0].Boards)
                 {
                     foreach(BoardRegion region in board.Regions)
                     {

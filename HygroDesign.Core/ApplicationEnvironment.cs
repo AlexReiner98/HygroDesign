@@ -10,7 +10,7 @@ namespace BilayerDesign
     {
         public List<Panel> Panels { get; set; }
         public StockPile StockPile { get; set; }
-        public List<PanelBoard> PanelBoards { get; set; }
+        public List<ActiveBoard> PanelBoards { get; set; }
         public ApplicationEnvironment(List<Panel> panels, StockPile stockPile)
         {
             Panels = panels;
@@ -21,7 +21,7 @@ namespace BilayerDesign
 
         public void CalculateDesiredRadius()
         {
-            PanelBoards = new List<PanelBoard>();
+            PanelBoards = new List<ActiveBoard>();
             for(int p = 0; p < Panels.Count; p++)
             {
                 for(int bi = 0; bi < Panels[p].Bilayers.Count; bi++)
@@ -29,7 +29,7 @@ namespace BilayerDesign
                     for(int bo = 0; bo < Panels[p].Bilayers[bi].Boards.Count; bo++)
                     {
                         Panels[p].Bilayers[bi].Boards[bo].DesiredRadius = Remap(Panels[p].Bilayers[bi].Boards[bo].RadiusParameter, 0, 1, StockPile.MinRadius, StockPile.MaxRadius);
-                        PanelBoard board = Panels[p].Bilayers[bi].Boards[bo];
+                        ActiveBoard board = Panels[p].Bilayers[bi].Boards[bo];
                         board.Parent = Panels[p].Bilayers[bi];
                         PanelBoards.Add(board);
                     }
@@ -42,7 +42,7 @@ namespace BilayerDesign
             PanelBoards = PanelBoards.OrderByDescending(o => o.RadiusWeight).ToList();
             
 
-            foreach (PanelBoard board in PanelBoards)
+            foreach (ActiveBoard board in PanelBoards)
             {
                 Species activeSpecies = board.Species;
                 double activeThickness = board.Parent.ActiveThickness;

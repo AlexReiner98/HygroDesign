@@ -8,19 +8,16 @@ using Rhino.Geometry.Collections;
 
 namespace BilayerDesign
 {
-    public class Bilayer
+    public class Bilayer: WoodAssembly
     {
-        public List<PanelBoard> Boards { get; set; }
+        public List<ActiveBoard> Boards { get; set; }
         public Plane BasePlane { get; set; }
         public Surface InitialSurface { get; set; }
-        public double Length { get; set; }
-        public double Width { get; set; }
         public int LengthCount { get; set; }
         public int WidthCount { get; set; }
         public double BoardWidth { get; set; }
         public double BoardLength { get; set; }
         public double ActiveThickness { get; set; }
-        public int ID { get; set; }
         public Panel Parent { get; set; }
         public int BoardRegionCount { get; set; }
         public PassiveLayer PassiveLayer { get; set; }
@@ -50,7 +47,7 @@ namespace BilayerDesign
         public static Bilayer DeepCopy(Bilayer source)
         {
             Plane basePlane = new Plane(source.BasePlane);
-            List<PanelBoard> boards = source.Boards;
+            List<ActiveBoard> boards = source.Boards;
 
             Bilayer bilayer = new Bilayer(basePlane, source.BoardWidth, source.BoardLength, source.WidthCount, source.LengthCount, source.ActiveThickness, source.PassiveLayer.Thickness, source.PassiveLayer.Species, source.BoardRegionCount);
             bilayer.ID = source.ID;
@@ -58,7 +55,7 @@ namespace BilayerDesign
 
             for(int i = 0; i < boards.Count; i++)
             {
-                bilayer.Boards.Add(PanelBoard.DeepCopy(boards[i], bilayer));
+                bilayer.Boards.Add(ActiveBoard.DeepCopy(boards[i], bilayer));
             }
 
             bilayer.PassiveLayer = PassiveLayer.DeepCopy(source.PassiveLayer, bilayer);
@@ -69,19 +66,19 @@ namespace BilayerDesign
 
         private void GenerateBoards()
         {
-            Boards = new List<PanelBoard>();
+            Boards = new List<ActiveBoard>();
             for (int i = 0; i < WidthCount; i++)
             {
                 //even value rows
                 if(i % 2 == 0)
                 {
-                    PanelBoard[] row = new PanelBoard[LengthCount];
+                    ActiveBoard[] row = new ActiveBoard[LengthCount];
 
                     for(int j = 0; j < LengthCount; j++)
                     {
                         Interval rowRange = new Interval(j* BoardLength, (j+1)* BoardLength);
                         Interval colRange = new Interval(Width - ((i+1)* BoardWidth), Width - (i * BoardWidth));
-                        PanelBoard board = new PanelBoard(rowRange, colRange,this,BoardRegionCount);
+                        ActiveBoard board = new ActiveBoard(rowRange, colRange,this,BoardRegionCount);
                         board.RowNumber = i;
                         board.ColumnNumber = j;
                         Boards.Add(board);
@@ -91,7 +88,7 @@ namespace BilayerDesign
                 //odd value rows
                 else
                 {
-                    PanelBoard[] row = new PanelBoard[LengthCount+1];
+                    ActiveBoard[] row = new ActiveBoard[LengthCount+1];
                     
                     for (int j = 0; j < LengthCount+1; j++)
                     {
@@ -116,7 +113,7 @@ namespace BilayerDesign
                             regionCount = BoardRegionCount;
                         }
 
-                        PanelBoard board = new PanelBoard( rowRange, colRange,this, regionCount);
+                        ActiveBoard board = new ActiveBoard( rowRange, colRange,this, regionCount);
                         board.RowNumber = i;
                         board.ColumnNumber = j;
                         Boards.Add(board);
@@ -125,13 +122,13 @@ namespace BilayerDesign
             }
         }
 
-        public List<PanelBoard> GetNeighbors(int index)
+        public List<ActiveBoard> GetNeighbors(int index)
         {
-            List<PanelBoard> neighbors = new List<PanelBoard>();
+            List<ActiveBoard> neighbors = new List<ActiveBoard>();
 
-            PanelBoard currentBoard = Boards[index];
+            ActiveBoard currentBoard = Boards[index];
 
-            foreach(PanelBoard testBoard in Boards)
+            foreach(ActiveBoard testBoard in Boards)
             {
                 if (testBoard == currentBoard) continue;
                 if ((testBoard.ColumnRange[0] <= currentBoard.ColumnRange[0] && testBoard.ColumnRange[0] <= currentBoard.ColumnRange[1]) || (testBoard.ColumnRange[1] <= currentBoard.ColumnRange[1] && testBoard.ColumnRange[1] >= currentBoard.ColumnRange[0]))
@@ -144,16 +141,6 @@ namespace BilayerDesign
                 
             }
             return neighbors;
-        }
-
-        public List<double> GetNeighborWeights(int index)
-        {
-            PanelBoard currentBoard = Boards[index];
-
-            var output = new List<double>();
-            foreach(Tuple<double,double> pair in currentBoard.ConvolutionWeights) output.Add(pair.Item2);
-            
-            return output;
         }
 
         public static double Remap(double val, double from1, double to1, double from2, double to2)
