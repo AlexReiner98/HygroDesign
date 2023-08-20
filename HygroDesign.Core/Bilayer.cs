@@ -8,19 +8,16 @@ using Rhino.Geometry.Collections;
 
 namespace BilayerDesign
 {
-    public class Bilayer
+    public class Bilayer: WoodAssembly
     {
         public List<ActiveBoard> Boards { get; set; }
         public Plane BasePlane { get; set; }
         public Surface InitialSurface { get; set; }
-        public double Length { get; set; }
-        public double Width { get; set; }
         public int LengthCount { get; set; }
         public int WidthCount { get; set; }
         public double BoardWidth { get; set; }
         public double BoardLength { get; set; }
         public double ActiveThickness { get; set; }
-        public int ID { get; set; }
         public Panel Parent { get; set; }
         public int BoardRegionCount { get; set; }
         public PassiveLayer PassiveLayer { get; set; }
@@ -144,16 +141,6 @@ namespace BilayerDesign
                 
             }
             return neighbors;
-        }
-
-        public List<double> GetNeighborWeights(int index)
-        {
-            ActiveBoard currentBoard = Boards[index];
-
-            var output = new List<double>();
-            foreach(Tuple<double,double> pair in currentBoard.ConvolutionWeights) output.Add(pair.Item2);
-            
-            return output;
         }
 
         public static double Remap(double val, double from1, double to1, double from2, double to2)

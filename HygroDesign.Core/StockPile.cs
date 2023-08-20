@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
 using Rhino;
 
 namespace BilayerDesign
 {
     public class StockPile
     {
-        public PredictionBase PredictionBase { get; set; }
+        public PredictionEngine PredictionEngine { get; set; }
         public Dictionary<Species, List<StockBoard>> StockDictionary { get; set; }
         public List<Panel> Panels { get; set; }
         public List<StockBoard> StockBoards { get; set; }
@@ -15,7 +14,7 @@ namespace BilayerDesign
         public double MaxRadius { get; set; }
         public double MinRadius { get; set; }
 
-        public StockPile(List<Panel> panels, List<StockBoard> stockBoards, List<double> moistureChanges, PredictionBase predictionBase)
+        public StockPile(List<Panel> panels, List<StockBoard> stockBoards, List<double> moistureChanges, PredictionEngine predictionBase)
         {
             Panels = panels;
 
@@ -26,7 +25,7 @@ namespace BilayerDesign
 
             StockBoards = stockBoards;
             MoistureChanges = moistureChanges;
-            PredictionBase = predictionBase;
+            PredictionEngine = predictionBase;
             StockDictionary = new Dictionary<Species, List<StockBoard>>();
 
             AnalyzeInputs();
@@ -49,7 +48,7 @@ namespace BilayerDesign
                         StockBoards[s].PotentialRadii.Add(Panels[p].Bilayers[bi], new  Dictionary<double, double>());
                         for (int m = 0; m < MoistureChanges.Count; m++)
                         {
-                            double potentialRadius = PredictionBase.Predict(StockBoards[s], Panels[p].Bilayers[bi], MoistureChanges[m]);
+                            double potentialRadius = PredictionEngine.Predict(StockBoards[s], Panels[p].Bilayers[bi], MoistureChanges[m]);
                             StockBoards[s].PotentialRadii[Panels[p].Bilayers[bi]].Add(MoistureChanges[m], potentialRadius);
 
                             if(potentialRadius > MaxRadius) MaxRadius = potentialRadius;
@@ -66,7 +65,7 @@ namespace BilayerDesign
         }
     }
 
-    public abstract class PredictionBase
+    public abstract class PredictionEngine
     {
         public abstract double Predict(StockBoard board, Bilayer bilayer, double moistureChange);
     }

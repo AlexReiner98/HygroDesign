@@ -24,10 +24,6 @@ namespace BilayerDesign
         public double Radius { get; set; }
         public double MoistureChange { get; set; }
         public double Error { get; set; }
-        public double LongStiffnessFactor { get; set; }
-        public double RadStiffnessFactor { get; set; }
-        public double RadiusFactor { get; set; }
-        public List<Tuple<double,double>> ConvolutionWeights { get; set; }
         public double BlendedRadius { get; set; }
         private int RegionCount { get; set; }
         public List<BoardRegion> Regions { get; set; }
@@ -65,11 +61,6 @@ namespace BilayerDesign
             newBoard.Radius = source.Radius;
             newBoard.MoistureChange = source.MoistureChange;
             newBoard.Error = source.Error;
-
-            newBoard.LongStiffnessFactor = source.LongStiffnessFactor;
-            newBoard.RadStiffnessFactor = source.RadStiffnessFactor;
-            newBoard.RadiusFactor = source.RadiusFactor;
-            newBoard.ConvolutionWeights = source.ConvolutionWeights;
             newBoard.BlendedRadius = source.BlendedRadius;
             newBoard.ID = source.ID;
 

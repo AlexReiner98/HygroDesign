@@ -183,11 +183,6 @@ namespace BilayerDesign
             CenterOfGravity = new Point3d(xCoord,yCoord,zCoord);
         }
 
-
-        
-
-        
-
         public void FindThicknessNeighbors()
         {
             

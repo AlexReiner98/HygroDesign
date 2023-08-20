@@ -48,7 +48,7 @@ namespace HygroDesign.Grasshopper.Components
             List<double> moistureChanges = new List<double>();
             DA.GetDataList(2, moistureChanges);
 
-            PredictionBase predictionBase = null;
+            PredictionEngine predictionBase = null;
             DA.GetData(3, ref predictionBase);
 
             StockPile stockPile = new StockPile(panels, stockBoards, moistureChanges, predictionBase);

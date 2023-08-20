@@ -6,7 +6,7 @@ namespace BilayerDesign
 {
     public class StockBoard : WoodElement
     {
-        public double LengthAvailable { get; set; }
+        public double LengthAvailable { get; set; }  
         public List<ActiveBoard> DesignBoards { get; set; }
         public Dictionary<Bilayer, Dictionary<double, double>> PotentialRadii { get; set; }
         

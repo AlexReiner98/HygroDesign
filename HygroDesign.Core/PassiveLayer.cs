@@ -14,9 +14,9 @@ namespace BilayerDesign
         public Interval XDomain { get; set; }
         public Interval YDomain { get; set; }
 
-        public PassiveLayer( double thickness, Species species, Bilayer parent )
+        public PassiveLayer( double height, Species species, Bilayer parent )
         {
-            Height = thickness;
+            Height = height;
             Species = species;
             Parent = parent;
             Update();
