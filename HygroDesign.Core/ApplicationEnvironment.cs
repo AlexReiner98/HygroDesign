@@ -46,7 +46,7 @@ namespace BilayerDesign
             {
                 Species activeSpecies = board.Species;
                 double activeThickness = board.Parent.ActiveThickness;
-                double passiveThickness = board.Parent.PassiveLayer.Thickness;
+                double passiveThickness = board.Parent.PassiveLayer.Height;
                 Species passiveSpecies = board.Parent.PassiveLayer.Species;
 
                 StockBoard closestStock = null;
@@ -55,7 +55,8 @@ namespace BilayerDesign
                 double selectedRadius = 0;
                 foreach (StockBoard stockBoard in StockPile.StockDictionary[activeSpecies])
                 {
-                    if (stockBoard.LengthAvailable < board.Length) continue;
+                    
+                    if (stockBoard == null || stockBoard.LengthAvailable < board.Length) continue;
 
                     foreach (double moistureChange in StockPile.MoistureChanges)
                     {

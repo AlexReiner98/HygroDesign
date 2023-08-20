@@ -31,6 +31,32 @@ namespace BilayerDesign
             AnalyzeInputs();
         }
 
+        public static StockPile DeepCopy(StockPile source)
+        {
+            /*
+            List<Panel> panels = new List<Panel>();
+            for(int i = 0; i < source.Panels.Count; i++)
+            {
+                panels.Add(Panel.DeepCopy(source.Panels[i]));
+            }
+            */
+            List<Panel> panels = source.Panels;
+
+            List<StockBoard> boards = new List<StockBoard>();
+            for(int i = 0; i < source.StockBoards.Count; i++)
+            {
+                boards.Add(StockBoard.DeepCopy(source.StockBoards[i]));
+            }
+
+            List<double> moistureChanges = source.MoistureChanges;
+            PredictionEngine predictionEngine = source.PredictionEngine;
+            
+            StockPile newSP = new StockPile(panels,boards, moistureChanges, predictionEngine);
+            newSP.MinRadius = source.MinRadius;
+            newSP.MaxRadius = source.MaxRadius;
+            return newSP;
+        }
+
         public void AnalyzeInputs()
         {
             MaxRadius = double.MinValue;
@@ -38,6 +64,7 @@ namespace BilayerDesign
 
             for (int s = 0; s < StockBoards.Count; s++)
             {
+                StockBoards[s].PotentialRadii.Clear();
                 if (!StockDictionary.ContainsKey(StockBoards[s].Species)) StockDictionary.Add(StockBoards[s].Species, new List<StockBoard>());
                 StockDictionary[StockBoards[s].Species].Add(StockBoards[s]);
 

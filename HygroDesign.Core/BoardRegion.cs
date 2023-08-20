@@ -15,12 +15,11 @@ namespace BilayerDesign
         public Interval RowRange { get; set; }
         public Interval ColumnRange { get; set; }
         public Polyline Polyline { get; set; }
-        public Point3d Centroid { get; set; }
         public List<BoardRegion> RegionStack { get; set; }
         public double ThicknessBlendedRadius { get; set; }
         public double ThicknessParameter { get; set; }
-
         public bool Remove { get; set; }
+        public BrepFace TrimmedRegion { get; set; }
 
         public BoardRegion(Interval rowRange, ActiveBoard parent)
         {
@@ -49,6 +48,7 @@ namespace BilayerDesign
             newBoard.ThicknessBlendedRadius = source.ThicknessBlendedRadius;
             newBoard.ID = source.ID;
             newBoard.Remove = source.Remove;
+            newBoard.TrimmedRegion = source.TrimmedRegion;
 
             newBoard.EvaluateBoardRegion();
 

@@ -15,7 +15,7 @@ namespace BilayerDesign
         public double Height { get; set; }
         public double Width { get; set; }
         public double Length { get; set; }
-        public Point3d CenterOfGravity { get; set; }
+        public Point3d Centroid { get; set; }
         public Dictionary<string, object> Attributes { get; set; }
     }
 }

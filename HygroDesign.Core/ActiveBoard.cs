@@ -27,6 +27,10 @@ namespace BilayerDesign
         public double BlendedRadius { get; set; }
         private int RegionCount { get; set; }
         public List<BoardRegion> Regions { get; set; }
+        public double LongStiffnessFactor { get; set; }
+        public double RadStiffnessFactor { get; set; }
+        public double RadiusFactor { get; set; }
+        public List<Tuple<double,double>> ConvolutionWeights { get; set; }
 
         public ActiveBoard(Interval initialRowRange, Interval initialColumnRange, Bilayer parent, int regions)
         {
@@ -36,6 +40,7 @@ namespace BilayerDesign
             RegionCount = regions;
             CreateBoardRegions();
             EvaluateBoard();
+            ConvolutionWeights = new List<Tuple<double,double>>();
 
         }
 
@@ -84,11 +89,11 @@ namespace BilayerDesign
             };
             Polyline = new Polyline(points);
 
-            CenterOfGravity += Parent.InitialSurface.PointAt(InitialRowRange[0], InitialColumnRange[0]);
-            CenterOfGravity += Parent.InitialSurface.PointAt(InitialRowRange[1], InitialColumnRange[0]);
-            CenterOfGravity += Parent.InitialSurface.PointAt(InitialRowRange[1], InitialColumnRange[1]);
-            CenterOfGravity += Parent.InitialSurface.PointAt(InitialRowRange[0], InitialColumnRange[1]);
-            CenterOfGravity /= 4;
+            Centroid += Parent.InitialSurface.PointAt(InitialRowRange[0], InitialColumnRange[0]);
+            Centroid += Parent.InitialSurface.PointAt(InitialRowRange[1], InitialColumnRange[0]);
+            Centroid += Parent.InitialSurface.PointAt(InitialRowRange[1], InitialColumnRange[1]);
+            Centroid += Parent.InitialSurface.PointAt(InitialRowRange[0], InitialColumnRange[1]);
+            Centroid /= 4;
         }
 
         private void CreateBoardRegions()

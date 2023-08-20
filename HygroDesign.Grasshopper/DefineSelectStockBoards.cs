@@ -13,8 +13,8 @@ namespace HygroDesign.Grasshopper.Components
     public class DefineSelectStockBoards : GH_Component
     {
         public DefineSelectStockBoards()
-          : base("Design Environment", "Design Env",
-            "Environment applying stock to panels using StockBoard.PotentialRadii dictionaries.",
+          : base("Apply Stock", "App Stock",
+            "Apply stock to panels using StockBoard.PotentialRadii dictionaries.",
             "HygroDesign", "Design")
         {
         }
@@ -41,7 +41,9 @@ namespace HygroDesign.Grasshopper.Components
             StockPile stockPile = null;
             DA.GetData(1, ref stockPile);
 
-            ApplicationEnvironment applicationEnvironment = new ApplicationEnvironment(panels, stockPile);
+            
+
+            ApplicationEnvironment applicationEnvironment = new ApplicationEnvironment(panels, StockPile.DeepCopy(stockPile));
 
             DA.SetDataList(0, applicationEnvironment.Panels);
         }

@@ -32,6 +32,7 @@ namespace HygroDesign.Grasshopper.Components
         {
             pManager.AddGenericParameter("Wood Species", "S", "The set of wood species for each board segment.", GH_ParamAccess.tree);
             pManager.AddGenericParameter("Thicknesses", "T", "The set of layer thicknesses for each board segment.", GH_ParamAccess.tree);
+            pManager.AddGenericParameter("Face", "F", "The geometry describing the segment.", GH_ParamAccess.tree);
         }
 
 
@@ -46,6 +47,7 @@ namespace HygroDesign.Grasshopper.Components
 
             DataTree<Species> species = new DataTree<Species>();
             DataTree<double> thicknesses = new DataTree<double>();
+            DataTree<BrepFace> faces = new DataTree<BrepFace>();
 
             foreach(Panel panel in panelList)
             {
@@ -57,16 +59,17 @@ namespace HygroDesign.Grasshopper.Components
                         var path = new GH_Path(panel.ID, boardID, region.ID);
                         species.Add(panel.Bilayers[0].PassiveLayer.Species, path);
                         species.Add(board.Species, path);
-                        thicknesses.Add(panel.Bilayers[0].PassiveLayer.Thickness, path);
+                        thicknesses.Add(panel.Bilayers[0].PassiveLayer.Height, path);
                         thicknesses.Add(panel.Bilayers[0].ActiveThickness, path);
-
+                        faces.Add(region.TrimmedRegion, path );
                         if (region.RegionStack != null)
                         {
+                            
                             foreach (BoardRegion thicknessNeighbor in region.RegionStack)
                             {
                                 species.Add(thicknessNeighbor.Parent.Parent.PassiveLayer.Species, path);
                                 species.Add(thicknessNeighbor.Species, path);
-                                thicknesses.Add(thicknessNeighbor.Parent.Parent.PassiveLayer.Thickness, path);
+                                thicknesses.Add(thicknessNeighbor.Parent.Parent.PassiveLayer.Height, path);
                                 thicknesses.Add(thicknessNeighbor.Parent.Parent.ActiveThickness, path);
                             }
                         }
@@ -76,6 +79,7 @@ namespace HygroDesign.Grasshopper.Components
             }
             DA.SetDataTree(0, species);
             DA.SetDataTree(1, thicknesses);
+            DA.SetDataTree(2, faces);
         }
 
 

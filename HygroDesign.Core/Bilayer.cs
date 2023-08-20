@@ -49,7 +49,7 @@ namespace BilayerDesign
             Plane basePlane = new Plane(source.BasePlane);
             List<ActiveBoard> boards = source.Boards;
 
-            Bilayer bilayer = new Bilayer(basePlane, source.BoardWidth, source.BoardLength, source.WidthCount, source.LengthCount, source.ActiveThickness, source.PassiveLayer.Thickness, source.PassiveLayer.Species, source.BoardRegionCount);
+            Bilayer bilayer = new Bilayer(basePlane, source.BoardWidth, source.BoardLength, source.WidthCount, source.LengthCount, source.ActiveThickness, source.PassiveLayer.Height, source.PassiveLayer.Species, source.BoardRegionCount);
             bilayer.ID = source.ID;
             bilayer.Boards.Clear();
 

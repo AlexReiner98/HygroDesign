@@ -36,7 +36,7 @@ namespace BilayerDesign
             }
             var panel = new Panel(copies);
             panel.ID = source.ID;
-            panel.CenterOfGravity = new Point3d(source.CenterOfGravity);
+            panel.Centroid = new Point3d(source.Centroid);
             if(source.Surface != null) panel.Surface = (Surface)source.Surface.Duplicate();
 
             return panel;
@@ -44,6 +44,7 @@ namespace BilayerDesign
 
         public DataTree<BoardRegion> MatchBrep(Brep brep, double tolerance)
         {
+            DataTree<Brep> trimmedFaces = new DataTree<Brep>();
             DataTree<BoardRegion> boardRegions = new DataTree<BoardRegion>();
 
             foreach(Bilayer bilayer in Bilayers)
@@ -92,16 +93,18 @@ namespace BilayerDesign
                             }
                         }
                     }
-                    if(boardID != int.MaxValue && regionID != int.MaxValue)
+
+                    if(boardID != int.MaxValue && regionID != int.MaxValue && Bilayers[b].Boards[boardID].Regions[regionID] != null)
                     {
                         regions[v] = Bilayers[b].Boards[boardID].Regions[regionID];
                         Bilayers[b].Boards[boardID].Regions[regionID].Remove = false;
+                        Bilayers[b].Boards[boardID].Regions[regionID].TrimmedRegion = faces[v];
                     }
-                    
                 }
                 boardRegions.AddRange(regions, path);
             }
             CleanPanel();
+            CalculateCenterOfGravity();
             return boardRegions;
         }
 
@@ -180,7 +183,7 @@ namespace BilayerDesign
             zCoord /= totalMass;
 
             //return point
-            CenterOfGravity = new Point3d(xCoord,yCoord,zCoord);
+            Centroid = new Point3d(xCoord,yCoord,zCoord);
         }
 
         public void FindThicknessNeighbors()
