@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using Grasshopper.Kernel.Data;
 using Rhino.DocObjects;
-
+using Rhino.UI;
 
 namespace HygroDesign.Grasshopper.Components
 {
@@ -52,6 +52,7 @@ namespace HygroDesign.Grasshopper.Components
             foreach(Panel panel in panelList)
             {
                 int boardID = 0;
+                if (panel.Bilayers.Count == 0) continue;
                 foreach (ActiveBoard board in panel.Bilayers[0].Boards)
                 {
                     foreach(BoardRegion region in board.Regions)
