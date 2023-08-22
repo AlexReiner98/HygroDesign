@@ -38,29 +38,6 @@ namespace HygroDesign.Grasshopper.Components
         
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            Panel panel = null;
-            DA.GetData(0, ref panel);
-
-            GH_Structure<IGH_Goo> thicknesses = new GH_Structure<IGH_Goo>();
-            DA.GetDataTree(1, out thicknesses);
-
-            List<List<double>> thickness = new List<List<double>>();
-            for(int i = 0; i < thicknesses.Branches.Count; i++)
-            {
-                List<double> innerBranch = new List<double>();
-                for(int j = 0; j < thicknesses.Branches[i].Count ; j++)
-                {
-                    double thisThickness = 0;
-                    thicknesses.Branches[i][j].CastTo<double>(out thisThickness);
-                    innerBranch.Add(thisThickness);
-                }
-                thickness.Add(innerBranch);
-            }
-            
-            Panel newPanel = Panel.DeepCopy(panel);
-            newPanel.ApplyThicknessGradient(thickness);
-            
-            DA.SetData(0, newPanel);
         }
 
 
