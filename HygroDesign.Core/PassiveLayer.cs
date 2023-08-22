@@ -9,13 +9,17 @@ namespace BilayerDesign
 {
     public class PassiveLayer : WoodElement
     {
-        public PassiveLayer()
+        private Bilayer Bilayer { get; set; }
+        public PassiveLayer(Bilayer bilayer, Species species, double thickness)
         {
+            Bilayer = bilayer;
+            Species = species;
+            Thickness = thickness;
         }
 
         public static PassiveLayer DeepCopy(PassiveLayer source, Bilayer parent)
         {
-           
+           return new PassiveLayer(parent, source.Species, source.Thickness);
         }
 
     }

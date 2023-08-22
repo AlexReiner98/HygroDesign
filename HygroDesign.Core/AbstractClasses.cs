@@ -12,7 +12,8 @@ namespace BilayerDesign
     {
         public string Name { get ; set; }
         public int ID { get; set; }
-        public double Height { get; set; }
+        public Species Species { get; set; }
+        public double Thickness { get; set; }
         public double Width { get; set; }
         public double Length { get; set; }
         public Point3d Centroid { get; set; }
@@ -24,7 +25,7 @@ namespace BilayerDesign
         public string Name { get; set; }
         public int ID { get; set; }
         public Species Species { get; set; }
-        public double Height { get; set; }
+        public double Thickness { get; set; }
         public double Width { get; set; }
         public double Length { get; set; }
         public double RTAngle { get; set; }

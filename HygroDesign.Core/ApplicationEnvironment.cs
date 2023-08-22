@@ -26,11 +26,11 @@ namespace BilayerDesign
             {
                 for(int bi = 0; bi < Panels[p].Bilayers.Count; bi++)
                 {
-                    for(int bo = 0; bo < Panels[p].Bilayers[bi].Boards.Count; bo++)
+                    for(int bo = 0; bo < Panels[p].Bilayers[bi].ActiveLayer.Boards.Count; bo++)
                     {
-                        Panels[p].Bilayers[bi].Boards[bo].DesiredRadius = Remap(Panels[p].Bilayers[bi].Boards[bo].RadiusParameter, 0, 1, StockPile.MinRadius, StockPile.MaxRadius);
-                        ActiveBoard board = Panels[p].Bilayers[bi].Boards[bo];
-                        board.Parent = Panels[p].Bilayers[bi];
+                        Panels[p].Bilayers[bi].ActiveLayer.Boards[bo].DesiredRadius = Remap(Panels[p].Bilayers[bi].ActiveLayer.Boards[bo].RadiusParameter, 0, 1, StockPile.MinRadius, StockPile.MaxRadius);
+                        ActiveBoard board = Panels[p].Bilayers[bi].ActiveLayer.Boards[bo];
+                        board.ActiveLayer.Bilayer = Panels[p].Bilayers[bi];
                         PanelBoards.Add(board);
                     }
                 }
@@ -45,9 +45,6 @@ namespace BilayerDesign
             foreach (ActiveBoard board in PanelBoards)
             {
                 Species activeSpecies = board.Species;
-                double activeThickness = board.Parent.ActiveThickness;
-                double passiveThickness = board.Parent.PassiveLayer.Height;
-                Species passiveSpecies = board.Parent.PassiveLayer.Species;
 
                 StockBoard closestStock = null;
                 double smallestRadDiff = double.MaxValue;
@@ -60,7 +57,7 @@ namespace BilayerDesign
 
                     foreach (double moistureChange in StockPile.MoistureChanges)
                     {
-                        double prediction = stockBoard.PotentialRadii[board.Parent][moistureChange];
+                        double prediction = stockBoard.PotentialRadii[board.ActiveLayer.Bilayer][moistureChange];
                         double difference = Math.Abs(prediction - board.DesiredRadius);
                         if (difference < smallestRadDiff)
                         {
@@ -77,7 +74,7 @@ namespace BilayerDesign
                 board.RTAngle = closestStock.RTAngle;
                 closestStock.LengthAvailable -= board.Length;
                 closestStock.DesignBoards.Add(board);
-                Panels[board.Parent.Parent.ID].Bilayers[board.Parent.ID].Boards[board.ID] = board;
+                //Panels[board.ActiveLayer.Bilayer.Panel.ID].Bilayers[board.ActiveLayer.Bilayer.ID].ActiveLayer.Boards[board.ID] = board;
                 
             }
         }
