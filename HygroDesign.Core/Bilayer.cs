@@ -12,7 +12,7 @@ namespace BilayerDesign
     {
         public Panel Panel { get; set; }
         public ActiveLayer ActiveLayer { get; set; }
-        private PassiveLayer PassiveLayer { get; set; }
+        public PassiveLayer PassiveLayer { get; set; }
         private int BoardLength { get; set; }
         private List<int> BoardOffsets { get; set; }
         private double TotalHeight { get; set; }
@@ -69,7 +69,7 @@ namespace BilayerDesign
                     {
                         if (boardMaxels.Count != 0)
                         {
-                            ActiveLayer.Boards.Add(new ActiveBoard(boardMaxels, ActiveLayer));
+                            ActiveLayer.Boards.Add(new ActiveBoard(boardMaxels, ActiveLayer, ActiveLayer.Boards.Count));
                             boardMaxels.Clear();
                         }
                         continue;
@@ -78,32 +78,32 @@ namespace BilayerDesign
                     if (j < thisOffset)
                     {
                         boardMaxels.Add(Panel.HMaxels[i, j]);
-                        Panel.HMaxels[i, j].Bilayers.Add(this);
+                        Panel.HMaxels[i, j].PassiveLayers.Add(PassiveLayer);
                     }
                     else if (j == thisOffset)
                     {
-                        ActiveLayer.Boards.Add(new ActiveBoard(boardMaxels, ActiveLayer));
+                        ActiveLayer.Boards.Add(new ActiveBoard(boardMaxels, ActiveLayer, ActiveLayer.Boards.Count));
                         boardMaxels.Clear();
                         boardMaxels.Add(Panel.HMaxels[i, j]);
-                        Panel.HMaxels[i, j].Bilayers.Add(this);
+                        Panel.HMaxels[i, j].PassiveLayers.Add(PassiveLayer);
 
                     }
                     else if (j % BoardLength == 0)
                     {
-                        ActiveLayer.Boards.Add(new ActiveBoard(boardMaxels, ActiveLayer));
+                        ActiveLayer.Boards.Add(new ActiveBoard(boardMaxels, ActiveLayer, ActiveLayer.Boards.Count));
                         boardMaxels.Clear();
                         boardMaxels.Add(Panel.HMaxels[i, j]);
-                        Panel.HMaxels[i, j].Bilayers.Add(this);
+                        Panel.HMaxels[i, j].PassiveLayers.Add(PassiveLayer);
 
                     }
                     else if (j == Panel.Length - 1)
                     {
-                        ActiveLayer.Boards.Add(new ActiveBoard(boardMaxels, ActiveLayer));
+                        ActiveLayer.Boards.Add(new ActiveBoard(boardMaxels, ActiveLayer, ActiveLayer.Boards.Count));
                     }
                     else
                     {
                         boardMaxels.Add(Panel.HMaxels[i, j]);
-                        Panel.HMaxels[i, j].Bilayers.Add(this);
+                        Panel.HMaxels[i, j].PassiveLayers.Add(PassiveLayer);
                     }
                 }
             }

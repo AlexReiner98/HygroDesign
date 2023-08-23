@@ -22,5 +22,10 @@ namespace BilayerDesign
            return new PassiveLayer(parent, source.Species, source.Thickness);
         }
 
+        new public int ID { get
+            {
+                return Bilayer.ID;
+            } }
+
     }
 }

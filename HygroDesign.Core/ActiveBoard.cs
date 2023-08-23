@@ -12,17 +12,18 @@ namespace BilayerDesign
     public class ActiveBoard : WoodElement
     {
         public ActiveLayer ActiveLayer { get; set; }
-        private List<HMaxel> HMaxels { get; set; }
+        public List<HMaxel> HMaxels { get; set; }
         public StockBoard StockBoard { get; set; }
         public double RadiusParameter { get; set; }
         public double RadiusWeight { get; set; }
         public double DesiredRadius { get; set; }
         public double Radius { get; set; }
         public double MoistureChange { get; set; }
-        public ActiveBoard(List<HMaxel> hMaxels, ActiveLayer activeLayer)
+        public ActiveBoard(List<HMaxel> hMaxels, ActiveLayer activeLayer, int id)
         {
             HMaxels = hMaxels;
             ActiveLayer = activeLayer;
+            ID = id;
         }
 
         public static ActiveBoard DeepCopy(ActiveBoard source, ActiveLayer parent)
@@ -33,7 +34,7 @@ namespace BilayerDesign
                 hmaxels.Add(parent.Bilayer.Panel.HMaxels[source.HMaxels[i].I, source.HMaxels[i].J]);
             }
 
-            return new ActiveBoard(hmaxels, parent);
+            return new ActiveBoard(hmaxels, parent, source.ID);
         }
 
         public Interval RowRange 

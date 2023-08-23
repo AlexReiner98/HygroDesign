@@ -22,6 +22,7 @@ namespace BilayerDesign
             LengthCount = lengthCount;
             WidthCount = widthCount;
             HMaxels = new HMaxel[widthCount, lengthCount];
+            Bilayers = new List<Bilayer>();
 
             double totalWidth = 0;
             for(int i = 0; i < WidthCount; i++)
@@ -57,14 +58,25 @@ namespace BilayerDesign
             {
                 for (int j = 0; j < source.LengthCount; j++)
                 {
-                    List<Bilayer> newBilayers = new List<Bilayer>();
-                    foreach (Bilayer oldBilayer in hmaxels[i,j].Bilayers)
+                    List<PassiveLayer> newPassiveLayers = new List<PassiveLayer>();
+                    List<ActiveBoard> newActiveBoards = new List<ActiveBoard>();
+
+                    foreach (PassiveLayer oldPassiveLayer in hmaxels[i,j].PassiveLayers)
                     {
-                        newBilayers.Add(bilayers[oldBilayer.ID]);
+                        newPassiveLayers.Add(bilayers[oldPassiveLayer.ID].PassiveLayer);
                     }
-                    hmaxels[i,j].Bilayers = newBilayers;
+                    foreach(ActiveBoard oldActiveBoard in hmaxels[i,j].ActiveBoards)
+                    {
+                        newActiveBoards.Add(bilayers[oldActiveBoard.ActiveLayer.Bilayer.ID].ActiveLayer.Boards[oldActiveBoard.ID]);
+                    }
+
+                    hmaxels[i,j].PassiveLayers = newPassiveLayers;
+                    hmaxels[i,j].ActiveBoards = newActiveBoards;
                 }
             }
+
+
+
             panel.HMaxels = hmaxels;
             panel.Bilayers = bilayers;
             return panel;

@@ -14,7 +14,8 @@ namespace BilayerDesign
         Panel Panel { get; set; }
         public Interval RowRange { get; set; }
         public Interval ColumnRange { get; set; }
-        public List<Bilayer> Bilayers { get; set; }
+        public List<PassiveLayer> PassiveLayers { get; set; }
+        public List<ActiveBoard> ActiveBoards { get; set; }
         public double Height { get; set; }
         public int I { get; set; }
         public int J { get; set; }

@@ -9,6 +9,17 @@
     <BaseOutputPath>..\bin\</BaseOutputPath>
     <OutputType>Library</OutputType>
   </PropertyGroup>
+	
+  <ItemGroup>
+    <None Include="ScriptSync\ScriptSyncExternalScripts_VS\.vs\ScriptSyncExternalScripts\v14\.suo" />
+    <None Include="ScriptSync\ScriptSyncExternalScripts_VS\.vs\ScriptSyncExternalScripts\v15\.suo" />
+    <None Include="ScriptSync\ScriptSyncExternalScripts_VS\.vs\ScriptSyncExternalScripts\v15\Server\sqlite3\db.lock" />
+    <None Include="ScriptSync\ScriptSyncExternalScripts_VS\.vs\ScriptSyncExternalScripts\v15\Server\sqlite3\storage.ide" />
+    <None Include="ScriptSync\ScriptSyncExternalScripts_VS\.vs\ScriptSyncExternalScripts\v15\Server\sqlite3\storage.ide-shm" />
+    <None Include="ScriptSync\ScriptSyncExternalScripts_VS\.vs\ScriptSyncExternalScripts\v15\Server\sqlite3\storage.ide-wal" />
+    <None Include="ScriptSync\ScriptSyncExternalScripts_VS\ScriptSyncExternalScripts.sln" />
+    <None Include="ScriptSync\ScriptSyncExternalScripts_VS\ScriptSyncExternalScripts\ScriptSyncExternalScripts.csproj" />
+  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="Grasshopper" Version="7.30.23163.13001" IncludeAssets="compile;build" />
@@ -21,6 +32,17 @@
   
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="ScriptSync\ScriptSyncExternalScripts_VS\.vs\ScriptSyncExternalScripts\v16\" />
+    <Folder Include="ScriptSync\ScriptSyncExternalScripts_VS\ScriptSyncExternalScripts\bin\Debug\" />
+    <Folder Include="ScriptSync\ScriptSyncExternalScripts_VS\ScriptSyncExternalScripts\bin\Release\" />
+    <Folder Include="ScriptSync\ScriptSyncExternalScripts_VS\ScriptSyncExternalScripts\bin\x64\Debug\" />
+    <Folder Include="ScriptSync\ScriptSyncExternalScripts_VS\ScriptSyncExternalScripts\bin\x64\Release\" />
+    <Folder Include="ScriptSync\ScriptSyncExternalScripts_VS\ScriptSyncExternalScripts\obj\Debug\TempPE\" />
+    <Folder Include="ScriptSync\ScriptSyncExternalScripts_VS\ScriptSyncExternalScripts\obj\x64\Debug\TempPE\" />
+    <Folder Include="ScriptSync\ScriptSyncExternalScripts_VS\ScriptSyncExternalScripts\obj\x64\Release\TempPE\" />
   </ItemGroup>
   
   <PropertyGroup Condition="$(Configuration) == 'Debug' AND $([MSBuild]::IsOSPlatform(Windows))">
