@@ -32,7 +32,7 @@ namespace HygroDesign.Grasshopper.Deconstruct
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
             pManager.AddGenericParameter("Bilayers", "B", "The panel's bilayers.", GH_ParamAccess.list);
-            pManager.AddGenericParameter("HMaxels", "H", "The list of HMaxles in the panel.", GH_ParamAccess.list);
+            pManager.AddGenericParameter("HMaxels", "HM", "The list of HMaxles in the panel.", GH_ParamAccess.list);
         }
 
 

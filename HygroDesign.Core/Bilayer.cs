@@ -17,12 +17,11 @@ namespace BilayerDesign
         private List<int> BoardOffsets { get; set; }
         private double TotalHeight { get; set; }
         
-        public Bilayer(Panel panel, int boardLength, List<int> boardOffsets, Species passiveSpecies, double activeThickness, double passiveThickness, int id)
+        public Bilayer(Panel panel, int boardLength, List<int> boardOffsets, Species passiveSpecies, double activeThickness, double passiveThickness)
         {
             Panel = panel;
             BoardLength = boardLength;
             BoardOffsets = boardOffsets;
-            ID = id;
 
             PassiveLayer = new PassiveLayer(this, passiveSpecies, passiveThickness);
             ActiveLayer = new ActiveLayer(this, activeThickness);
@@ -40,9 +39,9 @@ namespace BilayerDesign
 
         public static Bilayer DeepCopy(Bilayer source, Panel panel)
         {
-            
-            Bilayer bilayer = new Bilayer(panel, source.BoardLength, source.BoardOffsets, source.PassiveLayer.Species, source.ActiveLayer.Thickness, source.PassiveLayer.Thickness, source.ID);
+            Bilayer bilayer = new Bilayer(panel, source.BoardLength, source.BoardOffsets, source.PassiveLayer.Species, source.ActiveLayer.Thickness, source.PassiveLayer.Thickness);
             bilayer.ActiveLayer = ActiveLayer.DeepCopy(source.ActiveLayer, bilayer);
+            bilayer.ID = source.ID;
             return bilayer;
         }
 

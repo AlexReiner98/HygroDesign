@@ -16,7 +16,7 @@ namespace HygroDesign.Grasshopper.Construct
     {
 
         public DefinePanel()
-          : base("Panel", "Panel",
+          : base("Cosntruct Panel", "Panel",
             "Create a new self shaping panel.",
             "HygroDesign", "Design")
         {

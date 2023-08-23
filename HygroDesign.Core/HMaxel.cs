@@ -27,6 +27,8 @@ namespace BilayerDesign
             Panel = panel;
             I = i;
             J = j;
+            PassiveLayers = new List<PassiveLayer>();
+            ActiveBoards = new List<ActiveBoard>();
         }
 
         public static HMaxel DeepCopy(HMaxel source, Panel parent)

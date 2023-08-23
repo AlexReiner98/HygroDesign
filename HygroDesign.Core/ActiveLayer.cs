@@ -15,6 +15,7 @@ namespace BilayerDesign
         {
             Bilayer = bilayer;
             Thickness = thickness;
+            Boards = new List<ActiveBoard>();
         }
 
         public static ActiveLayer DeepCopy(ActiveLayer source, Bilayer parent)
