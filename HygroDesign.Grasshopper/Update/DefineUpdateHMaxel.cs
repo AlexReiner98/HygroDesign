@@ -71,7 +71,7 @@ namespace HygroDesign.Grasshopper.Update
                 }
                 HMaxel hmaxel = HMaxel.DeepCopy(oldHMaxel, oldHMaxel.Panel);
                 hmaxel.Height = height;
-                hmaxel.RadiusFactor = radiusFactor;
+                hmaxel.RadiusParameter = radiusFactor;
                 hmaxel.Species = speciesList;
 
                 hmaxelOutput.Add(hmaxel, oldhmaxels.Paths[i]);

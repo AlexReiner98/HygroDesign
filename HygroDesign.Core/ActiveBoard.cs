@@ -14,11 +14,9 @@ namespace BilayerDesign
         public ActiveLayer ActiveLayer { get; set; }
         public List<HMaxel> HMaxels { get; set; }
         public StockBoard StockBoard { get; set; }
-        public double RadiusParameter { get; set; }
-        public double RadiusWeight { get; set; }
         public double DesiredRadius { get; set; }
-        public double Radius { get; set; }
         public double MoistureChange { get; set; }
+        public double Radius { get; set; }
         public ActiveBoard(List<HMaxel> hMaxels, ActiveLayer activeLayer, int id)
         {
             HMaxels = hMaxels;
@@ -36,6 +34,46 @@ namespace BilayerDesign
 
             return new ActiveBoard(hmaxels, parent, source.ID);
         }
+
+        public new Species Species
+        {
+            get
+            {
+                int bilayerID = ActiveLayer.ID;
+                Dictionary<Species, int> speciesCounts = new Dictionary<Species, int>();
+                for (int i = 0; i < HMaxels.Count; i++)
+                {
+                    Species thisSpecies = HMaxels[i].Species[bilayerID];
+                    if (!speciesCounts.ContainsKey(thisSpecies)) speciesCounts.Add(thisSpecies, 1);
+                    else speciesCounts[thisSpecies]++;
+                }
+                int largestCount = 0;
+                Species species = null;
+                foreach(KeyValuePair<Species, int> pair in speciesCounts)
+                {
+                    if(pair.Value > largestCount)
+                    {
+                        largestCount = pair.Value;
+                        species = pair.Key;
+                    }
+                }
+                return species;
+            }
+        }
+
+        public double RadiusParameter
+        { get
+            {
+                double radiusFactor = 0;
+                for(int i = 0; i < HMaxels.Count; i++)
+                {
+                    radiusFactor += HMaxels[i].RadiusParameter;
+                }
+                return radiusFactor /= HMaxels.Count;
+            }
+        }
+
+
 
         public Interval RowRange 
         { get

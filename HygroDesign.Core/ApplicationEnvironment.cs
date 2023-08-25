@@ -6,12 +6,12 @@ using System.Linq;
 
 namespace BilayerDesign
 {
-    public class ApplicationEnvironment
+    public class SelectionEnvironment
     {
         public List<Panel> Panels { get; set; }
         public StockPile StockPile { get; set; }
         public List<ActiveBoard> PanelBoards { get; set; }
-        public ApplicationEnvironment(List<Panel> panels, StockPile stockPile)
+        public SelectionEnvironment(List<Panel> panels, StockPile stockPile)
         {
             Panels = panels;
             StockPile = stockPile;
@@ -39,7 +39,7 @@ namespace BilayerDesign
 
         public void ApplyStock()
         {
-            PanelBoards = PanelBoards.OrderByDescending(o => o.RadiusWeight).ToList();
+            //PanelBoards = PanelBoards.OrderByDescending(o => o.RadiusWeight).ToList();
             
 
             foreach (ActiveBoard board in PanelBoards)

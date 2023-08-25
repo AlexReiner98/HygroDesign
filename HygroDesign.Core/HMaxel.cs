@@ -16,7 +16,7 @@ namespace BilayerDesign
         public List<PassiveLayer> PassiveLayers { get; set; }
         public List<ActiveBoard> ActiveBoards { get; set; }
         public double Height { get; set; }
-        public double RadiusFactor { get; set; }
+        public double RadiusParameter { get; set; }
         public double DesiredRadius { get; set; }
         public List<Species> Species { get; set; }
         public int I { get; set; }
@@ -50,7 +50,7 @@ namespace BilayerDesign
                 activeBoards.Add(ActiveBoard.DeepCopy(source.ActiveBoards[i], parent.Bilayers[source.ActiveBoards[i].ActiveLayer.Bilayer.ID].ActiveLayer));
             }
             hmaxel.Height = source.Height;
-            hmaxel.RadiusFactor = source.RadiusFactor;
+            hmaxel.RadiusParameter = source.RadiusParameter;
             hmaxel.DesiredRadius = source.DesiredRadius;
             hmaxel.Species = source.Species;
             hmaxel.PassiveLayers = passiveLayers;
