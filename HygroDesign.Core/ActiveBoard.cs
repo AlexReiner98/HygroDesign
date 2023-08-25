@@ -50,7 +50,7 @@ namespace BilayerDesign
                     }
                     if (HMaxels[i].RowRange[1] > largest)
                     {
-                        largest = HMaxels[i].RowRange[0];
+                        largest = HMaxels[i].RowRange[1];
                     }
                 }
                 return new Interval(smallest, largest);
@@ -71,7 +71,7 @@ namespace BilayerDesign
                     }
                     if (HMaxels[i].ColumnRange[1] > largest)
                     {
-                        largest = HMaxels[i].ColumnRange[0];
+                        largest = HMaxels[i].ColumnRange[1];
                     }
                 }
                 return new Interval(smallest, largest);

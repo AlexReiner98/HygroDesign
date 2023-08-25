@@ -45,6 +45,7 @@ namespace HygroDesign.Grasshopper.Deconstruct
             HMaxel hmaxel = null;
             DA.GetData(0, ref hmaxel);
 
+            if (hmaxel == null) return;
             DA.SetDataList(0, hmaxel.PassiveLayers);
             DA.SetDataList(1, hmaxel.ActiveBoards);
             DA.SetData(2, hmaxel.Height);

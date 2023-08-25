@@ -32,8 +32,10 @@ namespace BilayerDesign
                 {
                     HMaxels[i, j] = new HMaxel(new Interval(totalLength, totalLength + hmaxelLength), new Interval(totalWidth, totalWidth + hmaxelWidth), this, i, j);
                     totalLength += hmaxelLength;
+                    if (totalLength > Length) Length = totalLength;
                 }
                 totalWidth += hmaxelWidth;
+                if(totalWidth > Width) Width = totalWidth;
             }
         }
 
@@ -53,7 +55,6 @@ namespace BilayerDesign
             {
                 bilayers.Add(Bilayer.DeepCopy(bilayer, panel));
             }
-
             for (int i = 0; i < source.WidthCount; i++)
             {
                 for (int j = 0; j < source.LengthCount; j++)
@@ -61,11 +62,11 @@ namespace BilayerDesign
                     List<PassiveLayer> newPassiveLayers = new List<PassiveLayer>();
                     List<ActiveBoard> newActiveBoards = new List<ActiveBoard>();
 
-                    foreach (PassiveLayer oldPassiveLayer in hmaxels[i,j].PassiveLayers)
+                    foreach (PassiveLayer oldPassiveLayer in source.HMaxels[i,j].PassiveLayers)
                     {
                         newPassiveLayers.Add(bilayers[oldPassiveLayer.ID].PassiveLayer);
                     }
-                    foreach(ActiveBoard oldActiveBoard in hmaxels[i,j].ActiveBoards)
+                    foreach(ActiveBoard oldActiveBoard in source.HMaxels[i,j].ActiveBoards)
                     {
                         newActiveBoards.Add(bilayers[oldActiveBoard.ActiveLayer.Bilayer.ID].ActiveLayer.Boards[oldActiveBoard.ID]);
                     }
@@ -74,12 +75,20 @@ namespace BilayerDesign
                     hmaxels[i,j].ActiveBoards = newActiveBoards;
                 }
             }
-
-
-
             panel.HMaxels = hmaxels;
             panel.Bilayers = bilayers;
             return panel;
+        }
+
+        public void ComputeBoards()
+        {
+            double totalHeight = 0;
+            for(int i = 0; i < Bilayers.Count; i++)
+            {
+                totalHeight += Bilayers[i].Thickness;
+                Bilayers[i].TotalHeight = totalHeight;
+                Bilayers[i].GenerateBoards();
+            }
         }
     }
 }

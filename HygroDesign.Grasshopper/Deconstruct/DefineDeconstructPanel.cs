@@ -33,6 +33,8 @@ namespace HygroDesign.Grasshopper.Deconstruct
         {
             pManager.AddGenericParameter("Bilayers", "B", "The panel's bilayers.", GH_ParamAccess.list);
             pManager.AddGenericParameter("HMaxels", "HM", "The list of HMaxles in the panel.", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Length Range", "LR", "The interval describing the length of the panel.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Width Range", "WR", "The interval describing the width of the panel.", GH_ParamAccess.item);
         }
 
 
@@ -56,6 +58,8 @@ namespace HygroDesign.Grasshopper.Deconstruct
                 }
             }
             DA.SetDataList(1, hmaxels);
+            DA.SetData(2, new Interval(0,panel.Length));
+            DA.SetData(3, new Interval(0,panel.Width));
         }
 
 

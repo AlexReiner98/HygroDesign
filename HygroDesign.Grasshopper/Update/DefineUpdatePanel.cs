@@ -7,7 +7,7 @@ using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using Rhino;
-
+using System.Linq;
 
 namespace HygroDesign.Grasshopper.Update
 {
@@ -43,22 +43,36 @@ namespace HygroDesign.Grasshopper.Update
             DA.GetData(0, ref oldPanel);
             Panel panel = Panel.DeepCopy(oldPanel);
 
+            
+            List<Bilayer> oldbilayers = new List<Bilayer>();
+            DA.GetDataList(1, oldbilayers);
             List<Bilayer> bilayers = new List<Bilayer>();
-            DA.GetDataList(1, bilayers);
+            for(int i = 0; i < oldbilayers.Count; i++)
+            {
+                bilayers.Add(Bilayer.DeepCopy(oldbilayers[i], panel));
+            }
 
+            List<HMaxel> oldhmaxels = new List<HMaxel>();
+            DA.GetDataList(2, oldhmaxels);
             List<HMaxel> hmaxels = new List<HMaxel>();
-            DA.GetDataList(2, hmaxels);
+            foreach (HMaxel hmaxel in oldhmaxels)
+            {
+                hmaxels.Add(HMaxel.DeepCopy(hmaxel, panel));
+            }
 
             panel.Bilayers = bilayers;
             for(int i = 0; i < panel.Bilayers.Count; i++) 
             {
                 panel.Bilayers[i].ID = i;
+                
             }
 
             foreach(HMaxel hmaxel in hmaxels)
             {
                 panel.HMaxels[hmaxel.I,hmaxel.J] = hmaxel;
             }
+
+            panel.ComputeBoards();
 
             DA.SetData(0, panel);
         }

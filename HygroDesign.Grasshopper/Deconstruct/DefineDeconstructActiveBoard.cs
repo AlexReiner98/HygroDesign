@@ -25,28 +25,56 @@ namespace HygroDesign.Grasshopper.Deconstruct
 
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("Active Board", "A", "The active layer board to deconstruct.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Active Board", "A", "The active layer board to deconstruct.", GH_ParamAccess.tree);
 
         }
 
 
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("HMaxels", "HM", "The active board's HMaxels.", GH_ParamAccess.list);
-            pManager.AddGenericParameter("StockBoard", "S", "The active board's StockBoard.", GH_ParamAccess.item);
-            pManager.AddNumberParameter("Desired Radius", "DR", "The active board's desired radius.", GH_ParamAccess.item);
+            pManager.AddGenericParameter("HMaxels", "HM", "The active board's HMaxels.", GH_ParamAccess.tree);
+            pManager.AddGenericParameter("StockBoard", "S", "The active board's StockBoard.", GH_ParamAccess.tree);
+            pManager.AddIntervalParameter("Row Range", "R", "The active board's row range.", GH_ParamAccess.tree);
+            pManager.AddIntervalParameter("Column Range", "C", "The active board's column range.", GH_ParamAccess.tree);
+            pManager.AddNumberParameter("Desired Radius", "DR", "The active board's desired radius.", GH_ParamAccess.tree);
             //more properties need to be added here after prediction and board selection are updated
         }
 
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            ActiveBoard activeBoard = null;
-            DA.GetData(0, ref activeBoard);
+            DataTree<HMaxel> hmaxelTree = new DataTree<HMaxel>();
+            DataTree<StockBoard> stockTree = new DataTree<StockBoard>();
+            DataTree<double> drTree = new DataTree<double>();
+            DataTree<Interval> rowRanges = new DataTree<Interval>();
+            DataTree<Interval> columnRanges = new DataTree<Interval>();
 
-            DA.SetData(0, activeBoard.HMaxels);
-            DA.SetData(1, activeBoard.StockBoard);
-            DA.SetData(2, activeBoard.DesiredRadius);
+
+            GH_Structure<IGH_Goo> activeBoards = new GH_Structure<IGH_Goo>();
+            DA.GetDataTree(0, out activeBoards);
+            for(int i = 0; i< activeBoards.Branches.Count; i++)
+            {
+                for(int j = 0; j < activeBoards.Branches[i].Count; j++)
+                {
+                    ActiveBoard activeBoard = null;
+                    activeBoards.Branches[i][j].CastTo<ActiveBoard>(out activeBoard);
+
+                    GH_Path path = activeBoards.Paths[i].AppendElement(j);
+                    hmaxelTree.AddRange(activeBoard.HMaxels, path);
+                    stockTree.Add(activeBoard.StockBoard, path);
+                    drTree.Add(activeBoard.DesiredRadius, path);
+                    rowRanges.Add(activeBoard.RowRange, path);
+                    columnRanges.Add(activeBoard.ColumnRange, path);
+                }
+                
+            }
+            
+
+            DA.SetDataTree(0, hmaxelTree);
+            DA.SetDataTree(1, stockTree);
+            DA.SetDataTree(2, rowRanges);
+            DA.SetDataTree(3, columnRanges);
+            DA.SetDataTree(4, drTree); 
 
         }
 
