@@ -18,9 +18,12 @@ namespace BilayerDesign
         public double Height { get; set; }
         public double RadiusParameter { get; set; }
         public double DesiredRadius { get; set; }
+        public double BlendedRaidus { get; set; }
         public List<Species> Species { get; set; }
         public int I { get; set; }
         public int J { get; set; }
+        public Dictionary<string, object> Attributes { get; set; }
+
 
         public HMaxel(Interval rowRange, Interval columnRange, Panel panel, int i, int j)
         {
