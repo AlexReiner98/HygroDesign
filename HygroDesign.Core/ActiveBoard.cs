@@ -22,6 +22,7 @@ namespace BilayerDesign
             HMaxels = hMaxels;
             ActiveLayer = activeLayer;
             ID = id;
+            Attributes = new Dictionary<string, object>();
         }
 
         public static ActiveBoard DeepCopy(ActiveBoard source, ActiveLayer parent)
@@ -31,8 +32,13 @@ namespace BilayerDesign
             {
                 hmaxels.Add(parent.Bilayer.Panel.HMaxels[source.HMaxels[i].I, source.HMaxels[i].J]);
             }
+            ActiveBoard activeBoard = new ActiveBoard(hmaxels, parent, source.ID);
+            activeBoard.StockBoard = source.StockBoard;
+            activeBoard.DesiredRadius = source.DesiredRadius;
+            activeBoard.MoistureChange = source.MoistureChange;
+            activeBoard.Radius = source.Radius;
 
-            return new ActiveBoard(hmaxels, parent, source.ID);
+            return activeBoard;
         }
 
         public new Species Species
@@ -43,6 +49,7 @@ namespace BilayerDesign
                 Dictionary<Species, int> speciesCounts = new Dictionary<Species, int>();
                 for (int i = 0; i < HMaxels.Count; i++)
                 {
+                    if (HMaxels[i].Species.Count <= i) continue;
                     Species thisSpecies = HMaxels[i].Species[bilayerID];
                     if (!speciesCounts.ContainsKey(thisSpecies)) speciesCounts.Add(thisSpecies, 1);
                     else speciesCounts[thisSpecies]++;
@@ -70,6 +77,19 @@ namespace BilayerDesign
                     radiusFactor += HMaxels[i].RadiusParameter;
                 }
                 return radiusFactor /= HMaxels.Count;
+            }
+        }
+
+        public double BlendedRadius
+        {
+            get
+            {
+                double blendedRadius = 0;
+                for (int i = 0; i < HMaxels.Count; i++)
+                {
+                    blendedRadius += HMaxels[i].BlendedRaidus;
+                }
+                return blendedRadius /= HMaxels.Count;
             }
         }
 

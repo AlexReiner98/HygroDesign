@@ -57,7 +57,6 @@ namespace HygroDesign.Grasshopper.Update
                 throw new Exception("Input trees must have same number of branches and HMaxels must be grafted.");
             }
 
-            RhinoApp.WriteLine(oldhmaxels.Branches.Count.ToString());
             for(int i = 0; i < oldhmaxels.Branches.Count; i++)
             {
                 List<Species> speciesList = new List<Species>();

@@ -46,12 +46,12 @@ namespace HygroDesign.Grasshopper.Update
                 panels.Add(Panel.DeepCopy(panel));
             }
             ConvolutionEngine convolutionEngine = null;
-            DA.GetData(1, ref convolutionEngine);
+            DA.GetData("Convolution Engine", ref convolutionEngine);
 
             List<Panel> results = new List<Panel>();
             foreach(Panel panel in panels)
             {
-                results.Add(convolutionEngine.Convolution(panel));
+                 results.Add(convolutionEngine.Convolution(panel));
             }    
             DA.SetDataList(0, results);
         }

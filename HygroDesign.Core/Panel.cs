@@ -17,6 +17,7 @@ namespace BilayerDesign
         public List<Bilayer> Bilayers { get; set; }
         public int LengthCount { get; set; }
         public int WidthCount { get; set; }
+        public Surface ShapedSurface { get; set; }
         public Panel(double hmaxelLength, double hmaxelWidth, int lengthCount, int widthCount)
         {
             LengthCount = lengthCount;
@@ -77,6 +78,20 @@ namespace BilayerDesign
             }
             panel.HMaxels = hmaxels;
             panel.Bilayers = bilayers;
+
+            for(int i = 0; i < panel.Bilayers.Count; i++)
+            {
+                for(int j = 0; j < panel.Bilayers[i].ActiveLayer.Boards.Count; j++)
+                {
+                    List<HMaxel> newhmaxels = new List<HMaxel>();
+                    for(int v = 0; v < panel.Bilayers[i].ActiveLayer.Boards[j].HMaxels.Count; v++)
+                    {
+                        newhmaxels.Add(panel.HMaxels[panel.Bilayers[i].ActiveLayer.Boards[j].HMaxels[v].I, panel.Bilayers[i].ActiveLayer.Boards[j].HMaxels[v].J]);
+                    }
+                    panel.Bilayers[i].ActiveLayer.Boards[j].HMaxels = newhmaxels;
+                }
+            }
+
             return panel;
         }
 

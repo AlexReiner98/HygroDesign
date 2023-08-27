@@ -34,9 +34,12 @@ namespace HygroDesign.Grasshopper.Deconstruct
         {
             pManager.AddGenericParameter("HMaxels", "HM", "The active board's HMaxels.", GH_ParamAccess.tree);
             pManager.AddGenericParameter("StockBoard", "S", "The active board's StockBoard.", GH_ParamAccess.tree);
-            pManager.AddIntervalParameter("Row Range", "R", "The active board's row range.", GH_ParamAccess.tree);
-            pManager.AddIntervalParameter("Column Range", "C", "The active board's column range.", GH_ParamAccess.tree);
+            pManager.AddIntervalParameter("Row Range", "RR", "The active board's row range.", GH_ParamAccess.tree);
+            pManager.AddIntervalParameter("Column Range", "CR", "The active board's column range.", GH_ParamAccess.tree);
             pManager.AddNumberParameter("Desired Radius", "DR", "The active board's desired radius.", GH_ParamAccess.tree);
+            pManager.AddNumberParameter("Radius", "R", "The active board's predicted radius before blending.", GH_ParamAccess.tree);
+            pManager.AddNumberParameter("Blended Radius", "BR", "The active board's blended radius.", GH_ParamAccess.tree);
+
             //more properties need to be added here after prediction and board selection are updated
         }
 
@@ -48,6 +51,10 @@ namespace HygroDesign.Grasshopper.Deconstruct
             DataTree<double> drTree = new DataTree<double>();
             DataTree<Interval> rowRanges = new DataTree<Interval>();
             DataTree<Interval> columnRanges = new DataTree<Interval>();
+            DataTree<double> radTree = new DataTree<double>();
+            DataTree<double> blendedTree = new DataTree<double>();
+
+
 
 
             GH_Structure<IGH_Goo> activeBoards = new GH_Structure<IGH_Goo>();
@@ -65,6 +72,8 @@ namespace HygroDesign.Grasshopper.Deconstruct
                     drTree.Add(activeBoard.DesiredRadius, path);
                     rowRanges.Add(activeBoard.RowRange, path);
                     columnRanges.Add(activeBoard.ColumnRange, path);
+                    radTree.Add(activeBoard.Radius, path);
+                    blendedTree.Add(activeBoard.BlendedRadius, path);
                 }
                 
             }
@@ -74,7 +83,9 @@ namespace HygroDesign.Grasshopper.Deconstruct
             DA.SetDataTree(1, stockTree);
             DA.SetDataTree(2, rowRanges);
             DA.SetDataTree(3, columnRanges);
-            DA.SetDataTree(4, drTree); 
+            DA.SetDataTree(4, drTree);
+            DA.SetDataTree(5, radTree);
+            DA.SetDataTree(6, blendedTree);
 
         }
 

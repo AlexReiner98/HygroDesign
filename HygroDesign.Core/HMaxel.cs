@@ -17,7 +17,6 @@ namespace BilayerDesign
         public List<ActiveBoard> ActiveBoards { get; set; }
         public double Height { get; set; }
         public double RadiusParameter { get; set; }
-        public double DesiredRadius { get; set; }
         public double BlendedRaidus { get; set; }
         public List<Species> Species { get; set; }
         public int I { get; set; }
@@ -34,6 +33,10 @@ namespace BilayerDesign
             J = j;
             PassiveLayers = new List<PassiveLayer>();
             ActiveBoards = new List<ActiveBoard>();
+            Attributes = new Dictionary<string, object>();
+            Species = new List<Species>();
+            RadiusParameter = 0;
+            BlendedRaidus = 0;
         }
 
         public static HMaxel DeepCopy(HMaxel source, Panel parent)
@@ -54,12 +57,24 @@ namespace BilayerDesign
             }
             hmaxel.Height = source.Height;
             hmaxel.RadiusParameter = source.RadiusParameter;
-            hmaxel.DesiredRadius = source.DesiredRadius;
+            hmaxel.BlendedRaidus = source.BlendedRaidus;
             hmaxel.Species = source.Species;
             hmaxel.PassiveLayers = passiveLayers;
             hmaxel.ActiveBoards = activeBoards;
-            
             return hmaxel;
+        }
+
+        public double DesiredRadius
+        {
+            get
+            {
+                double desiredRadius = 0;
+                for(int i = 0; i < ActiveBoards.Count; i++)
+                {
+                    desiredRadius += ActiveBoards[i].DesiredRadius;
+                }
+                return desiredRadius / ActiveBoards.Count;
+            }
         }
 
         public double Length {
@@ -74,6 +89,22 @@ namespace BilayerDesign
             get
             {
                 return ColumnRange.Length;
+            }
+        }
+
+        public double X
+        {
+            get
+            {
+                return RowRange[0] + (Length / 2);
+            }
+        }
+
+        public double Y
+        {
+            get
+            {
+                return ColumnRange[0] + (Width / 2);
             }
         }
 
