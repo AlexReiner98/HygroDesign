@@ -22,6 +22,7 @@ namespace BilayerDesign
         public int I { get; set; }
         public int J { get; set; }
         public Dictionary<string, object> Attributes { get; set; }
+        public Surface ShapedHMaxel { get; set; }
 
 
         public HMaxel(Interval rowRange, Interval columnRange, Panel panel, int i, int j)
@@ -61,6 +62,7 @@ namespace BilayerDesign
             hmaxel.Species = source.Species;
             hmaxel.PassiveLayers = passiveLayers;
             hmaxel.ActiveBoards = activeBoards;
+            hmaxel.ShapedHMaxel = source.ShapedHMaxel;
             return hmaxel;
         }
 
@@ -115,5 +117,16 @@ namespace BilayerDesign
                 return new Rectangle3d(Plane.WorldXY, RowRange, ColumnRange);
             }
         }
+
+        /*
+        public Surface ShapedHMaxel
+        {
+            get
+            {
+                if (Panel.ShapedSurface == null) return null;
+                else return Panel.ShapedSurface.Trim(RowRange, ColumnRange);
+            }
+        }
+        */
     }
 }

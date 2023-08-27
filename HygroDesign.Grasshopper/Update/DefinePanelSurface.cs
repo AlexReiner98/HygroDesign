@@ -43,7 +43,7 @@ namespace HygroDesign.Grasshopper.Update
             DA.GetData(0, ref oldpanel);
             DA.GetData(1, ref surface);
             Panel panel = Panel.DeepCopy(oldpanel);
-            panel.ShapedSurface = surface;
+            panel.GenerateShapedSurfaces(surface);
             DA.SetData(0, panel);
         }
 

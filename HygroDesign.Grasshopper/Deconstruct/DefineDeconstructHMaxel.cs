@@ -39,6 +39,8 @@ namespace HygroDesign.Grasshopper.Deconstruct
             pManager.AddGenericParameter("Column Range", "C", "The HMaxel's width interval.", GH_ParamAccess.item);
             pManager.AddNumberParameter("Desired Radius", "DR", "The HMaxel's desired radius.", GH_ParamAccess.item);
             pManager.AddNumberParameter("Blended Radius", "BR", "The HMaxel's blended radius.", GH_ParamAccess.item);
+            pManager.AddSurfaceParameter("Shaped HMaxel", "SH", "The HMaxel's shaped surface.", GH_ParamAccess.item);
+
         }
 
 
@@ -55,6 +57,8 @@ namespace HygroDesign.Grasshopper.Deconstruct
             DA.SetData(4, hmaxel.ColumnRange);
             DA.SetData(5, hmaxel.DesiredRadius);
             DA.SetData(6, hmaxel.BlendedRaidus);
+            DA.SetData(7, hmaxel.ShapedHMaxel);
+
         }
 
 

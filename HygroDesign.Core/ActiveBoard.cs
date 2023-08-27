@@ -93,8 +93,6 @@ namespace BilayerDesign
             }
         }
 
-
-
         public Interval RowRange 
         { get
             {
@@ -141,6 +139,15 @@ namespace BilayerDesign
             {
                 return new Rectangle3d(Plane.WorldXY, RowRange, ColumnRange);
             } 
+        }
+
+        public Surface ShapedBoard
+        {
+            get
+            {
+                if (ActiveLayer.Bilayer.Panel.ShapedSurface == null) return null;
+                else return ActiveLayer.Bilayer.Panel.ShapedSurface.Trim(RowRange, ColumnRange);
+            }
         }
     }
 }

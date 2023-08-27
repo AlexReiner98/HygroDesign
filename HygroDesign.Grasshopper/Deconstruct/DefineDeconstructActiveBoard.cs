@@ -39,6 +39,7 @@ namespace HygroDesign.Grasshopper.Deconstruct
             pManager.AddNumberParameter("Desired Radius", "DR", "The active board's desired radius.", GH_ParamAccess.tree);
             pManager.AddNumberParameter("Radius", "R", "The active board's predicted radius before blending.", GH_ParamAccess.tree);
             pManager.AddNumberParameter("Blended Radius", "BR", "The active board's blended radius.", GH_ParamAccess.tree);
+            pManager.AddSurfaceParameter("Shaped Board", "SB", "The shaped active board surface.", GH_ParamAccess.tree);
 
             //more properties need to be added here after prediction and board selection are updated
         }
@@ -53,6 +54,7 @@ namespace HygroDesign.Grasshopper.Deconstruct
             DataTree<Interval> columnRanges = new DataTree<Interval>();
             DataTree<double> radTree = new DataTree<double>();
             DataTree<double> blendedTree = new DataTree<double>();
+            DataTree<Surface> surfaces = new DataTree<Surface>();
 
 
 
@@ -74,6 +76,7 @@ namespace HygroDesign.Grasshopper.Deconstruct
                     columnRanges.Add(activeBoard.ColumnRange, path);
                     radTree.Add(activeBoard.Radius, path);
                     blendedTree.Add(activeBoard.BlendedRadius, path);
+                    surfaces.Add(activeBoard.ShapedBoard, path);
                 }
                 
             }
@@ -86,6 +89,8 @@ namespace HygroDesign.Grasshopper.Deconstruct
             DA.SetDataTree(4, drTree);
             DA.SetDataTree(5, radTree);
             DA.SetDataTree(6, blendedTree);
+            DA.SetDataTree(7, surfaces);
+
 
         }
 

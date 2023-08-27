@@ -91,7 +91,6 @@ namespace BilayerDesign
                     panel.Bilayers[i].ActiveLayer.Boards[j].HMaxels = newhmaxels;
                 }
             }
-
             return panel;
         }
 
@@ -103,6 +102,41 @@ namespace BilayerDesign
                 totalHeight += Bilayers[i].Thickness;
                 Bilayers[i].TotalHeight = totalHeight;
                 Bilayers[i].GenerateBoards();
+            }
+        }
+
+        public void GenerateShapedSurfaces(Surface surface)
+        {
+            ShapedSurface = surface;
+            Brep brep = surface.ToBrep();
+
+            for(int i = 0; i < HMaxels.GetLength(0); i++)
+            {
+                for (int j = 0; j < HMaxels.GetLength(1); j++)
+                {
+                    HMaxel hmaxel = HMaxels[i, j];
+                    List<Point3d> points = new List<Point3d>()
+                    {
+                        surface.PointAt(hmaxel.RowRange[0], hmaxel.ColumnRange[0]),
+                        surface.PointAt(hmaxel.RowRange[1], hmaxel.ColumnRange[0]),
+                        surface.PointAt(hmaxel.RowRange[0], hmaxel.ColumnRange[1]),
+                        surface.PointAt(hmaxel.RowRange[1], hmaxel.ColumnRange[1])
+                    };
+
+                    bool allOn = true;
+                    for(int v = 0; v < points.Count; v++)
+                    {
+                        if (brep.ClosestPoint(points[i]).DistanceTo(points[i]) > 10) allOn = false;
+                    }
+
+                    if(allOn) hmaxel.ShapedHMaxel = surface.Trim(hmaxel.RowRange, hmaxel.ColumnRange);
+                    else
+                    {
+                        Brep hmaxelBrep = surface.Trim(hmaxel.RowRange, hmaxel.ColumnRange).ToBrep();
+                        var results = hmaxelBrep.Split(brep.Edges, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
+                        hmaxel.ShapedHMaxel = hmaxelBrep
+                    }
+                }
             }
         }
     }
