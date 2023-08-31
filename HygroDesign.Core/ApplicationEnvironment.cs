@@ -40,7 +40,13 @@ namespace BilayerDesign
         public void ApplyStock()
         {
             //PanelBoards = PanelBoards.OrderByDescending(o => o.RadiusWeight).ToList();
-            
+            foreach(Species species in StockPile.StockDictionary.Keys)
+            {
+                foreach(StockBoard stockboard in StockPile.StockDictionary[species])
+                {
+                    stockboard.DesignBoards.Clear();
+                }
+            }
 
             foreach (ActiveBoard board in PanelBoards)
             {
@@ -74,8 +80,6 @@ namespace BilayerDesign
                 board.RTAngle = closestStock.RTAngle;
                 closestStock.LengthAvailable -= board.Length;
                 closestStock.DesignBoards.Add(board);
-                //Panels[board.ActiveLayer.Bilayer.Panel.ID].Bilayers[board.ActiveLayer.Bilayer.ID].ActiveLayer.Boards[board.ID] = board;
-                
             }
         }
 

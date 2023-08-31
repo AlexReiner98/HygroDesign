@@ -17,6 +17,7 @@ namespace BilayerDesign
         public double DesiredRadius { get; set; }
         public double MoistureChange { get; set; }
         public double Radius { get; set; }
+        public Brep ShapedBoard { get; set; }
         public ActiveBoard(List<HMaxel> hMaxels, ActiveLayer activeLayer, int id)
         {
             HMaxels = hMaxels;
@@ -28,7 +29,7 @@ namespace BilayerDesign
         public static ActiveBoard DeepCopy(ActiveBoard source, ActiveLayer parent)
         {
             List<HMaxel> hmaxels = new List<HMaxel>();
-            for(int i = 0; i < source.HMaxels.Count; i++)
+            for (int i = 0; i < source.HMaxels.Count; i++)
             {
                 hmaxels.Add(parent.Bilayer.Panel.HMaxels[source.HMaxels[i].I, source.HMaxels[i].J]);
             }
@@ -56,9 +57,9 @@ namespace BilayerDesign
                 }
                 int largestCount = 0;
                 Species species = null;
-                foreach(KeyValuePair<Species, int> pair in speciesCounts)
+                foreach (KeyValuePair<Species, int> pair in speciesCounts)
                 {
-                    if(pair.Value > largestCount)
+                    if (pair.Value > largestCount)
                     {
                         largestCount = pair.Value;
                         species = pair.Key;
@@ -72,7 +73,7 @@ namespace BilayerDesign
         { get
             {
                 double radiusFactor = 0;
-                for(int i = 0; i < HMaxels.Count; i++)
+                for (int i = 0; i < HMaxels.Count; i++)
                 {
                     radiusFactor += HMaxels[i].RadiusParameter;
                 }
@@ -93,12 +94,12 @@ namespace BilayerDesign
             }
         }
 
-        public Interval RowRange 
+        public Interval RowRange
         { get
             {
                 double smallest = double.MaxValue;
                 double largest = double.MinValue;
-                for(int i = 0; i < HMaxels.Count; i++)
+                for (int i = 0; i < HMaxels.Count; i++)
                 {
                     if (HMaxels[i].RowRange[0] < smallest)
                     {
@@ -110,7 +111,7 @@ namespace BilayerDesign
                     }
                 }
                 return new Interval(smallest, largest);
-            } 
+            }
         }
 
         public Interval ColumnRange
@@ -134,19 +135,34 @@ namespace BilayerDesign
             }
         }
 
-        public Rectangle3d Outline { 
-            get
-            {
-                return new Rectangle3d(Plane.WorldXY, RowRange, ColumnRange);
-            } 
-        }
-
-        public Surface ShapedBoard
+        public new double Length
         {
             get
             {
-                if (ActiveLayer.Bilayer.Panel.ShapedSurface == null) return null;
-                else return ActiveLayer.Bilayer.Panel.ShapedSurface.Trim(RowRange, ColumnRange);
+                return RowRange.Length;
+            }
+        }
+
+        public new double Width
+        {
+            get
+            {
+                return RowRange.Length;
+            }
+        }
+
+        public Rectangle3d Outline {
+            get
+            {
+                return new Rectangle3d(Plane.WorldXY, RowRange, ColumnRange);
+            }
+        }
+
+        public new double Thickness
+        {
+            get
+            {
+                return ActiveLayer.Thickness;
             }
         }
     }

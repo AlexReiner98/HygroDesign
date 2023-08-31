@@ -34,6 +34,7 @@ namespace HygroDesign.Grasshopper.Deconstruct
         {
             pManager.AddGenericParameter("HMaxels", "HM", "The active board's HMaxels.", GH_ParamAccess.tree);
             pManager.AddGenericParameter("StockBoard", "S", "The active board's StockBoard.", GH_ParamAccess.tree);
+            pManager.AddNumberParameter("Thickness", "T", "The active board's thickness.", GH_ParamAccess.tree);
             pManager.AddIntervalParameter("Row Range", "RR", "The active board's row range.", GH_ParamAccess.tree);
             pManager.AddIntervalParameter("Column Range", "CR", "The active board's column range.", GH_ParamAccess.tree);
             pManager.AddNumberParameter("Desired Radius", "DR", "The active board's desired radius.", GH_ParamAccess.tree);
@@ -49,12 +50,13 @@ namespace HygroDesign.Grasshopper.Deconstruct
         {
             DataTree<HMaxel> hmaxelTree = new DataTree<HMaxel>();
             DataTree<StockBoard> stockTree = new DataTree<StockBoard>();
+            DataTree<double> thicknessTree = new DataTree<double>();
             DataTree<double> drTree = new DataTree<double>();
             DataTree<Interval> rowRanges = new DataTree<Interval>();
             DataTree<Interval> columnRanges = new DataTree<Interval>();
             DataTree<double> radTree = new DataTree<double>();
             DataTree<double> blendedTree = new DataTree<double>();
-            DataTree<Surface> surfaces = new DataTree<Surface>();
+            DataTree<Brep> breps = new DataTree<Brep>();
 
 
 
@@ -71,25 +73,26 @@ namespace HygroDesign.Grasshopper.Deconstruct
                     GH_Path path = activeBoards.Paths[i].AppendElement(j);
                     hmaxelTree.AddRange(activeBoard.HMaxels, path);
                     stockTree.Add(activeBoard.StockBoard, path);
+                    thicknessTree.Add(activeBoard.Thickness,path);
                     drTree.Add(activeBoard.DesiredRadius, path);
                     rowRanges.Add(activeBoard.RowRange, path);
                     columnRanges.Add(activeBoard.ColumnRange, path);
                     radTree.Add(activeBoard.Radius, path);
                     blendedTree.Add(activeBoard.BlendedRadius, path);
-                    surfaces.Add(activeBoard.ShapedBoard, path);
+                    breps.Add(activeBoard.ShapedBoard, path);
                 }
-                
             }
             
 
             DA.SetDataTree(0, hmaxelTree);
             DA.SetDataTree(1, stockTree);
-            DA.SetDataTree(2, rowRanges);
-            DA.SetDataTree(3, columnRanges);
-            DA.SetDataTree(4, drTree);
-            DA.SetDataTree(5, radTree);
-            DA.SetDataTree(6, blendedTree);
-            DA.SetDataTree(7, surfaces);
+            DA.SetDataTree(2, thicknessTree);
+            DA.SetDataTree(3, rowRanges);
+            DA.SetDataTree(4, columnRanges);
+            DA.SetDataTree(5, drTree);
+            DA.SetDataTree(6, radTree);
+            DA.SetDataTree(7, blendedTree);
+            DA.SetDataTree(8, breps);
 
 
         }

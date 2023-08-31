@@ -22,7 +22,7 @@ namespace BilayerDesign
         public int I { get; set; }
         public int J { get; set; }
         public Dictionary<string, object> Attributes { get; set; }
-        public Surface ShapedHMaxel { get; set; }
+        public Brep ShapedHMaxel { get; set; }
 
 
         public HMaxel(Interval rowRange, Interval columnRange, Panel panel, int i, int j)

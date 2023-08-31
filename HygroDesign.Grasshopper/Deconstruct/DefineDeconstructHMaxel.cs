@@ -39,7 +39,7 @@ namespace HygroDesign.Grasshopper.Deconstruct
             pManager.AddGenericParameter("Column Range", "C", "The HMaxel's width interval.", GH_ParamAccess.item);
             pManager.AddNumberParameter("Desired Radius", "DR", "The HMaxel's desired radius.", GH_ParamAccess.item);
             pManager.AddNumberParameter("Blended Radius", "BR", "The HMaxel's blended radius.", GH_ParamAccess.item);
-            pManager.AddSurfaceParameter("Shaped HMaxel", "SH", "The HMaxel's shaped surface.", GH_ParamAccess.item);
+            pManager.AddBrepParameter("Shaped HMaxel", "SH", "The HMaxel's shaped surface.", GH_ParamAccess.item);
 
         }
 

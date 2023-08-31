@@ -17,7 +17,7 @@ namespace BilayerDesign
         public List<Bilayer> Bilayers { get; set; }
         public int LengthCount { get; set; }
         public int WidthCount { get; set; }
-        public Surface ShapedSurface { get; set; }
+        public Brep Brep { get; set; }
         public Panel(double hmaxelLength, double hmaxelWidth, int lengthCount, int widthCount)
         {
             LengthCount = lengthCount;
@@ -105,11 +105,13 @@ namespace BilayerDesign
             }
         }
 
-        public void GenerateShapedSurfaces(Surface surface)
+        public void GenerateShapedSurfaces(Brep brep)
         {
-            ShapedSurface = surface;
-            Brep brep = surface.ToBrep();
+            if (brep.Faces.Count != 1) throw new Exception("Only single face breps are allowed.");
 
+            Brep = brep;
+
+            //trim hmaxels
             for(int i = 0; i < HMaxels.GetLength(0); i++)
             {
                 for (int j = 0; j < HMaxels.GetLength(1); j++)
@@ -117,24 +119,75 @@ namespace BilayerDesign
                     HMaxel hmaxel = HMaxels[i, j];
                     List<Point3d> points = new List<Point3d>()
                     {
-                        surface.PointAt(hmaxel.RowRange[0], hmaxel.ColumnRange[0]),
-                        surface.PointAt(hmaxel.RowRange[1], hmaxel.ColumnRange[0]),
-                        surface.PointAt(hmaxel.RowRange[0], hmaxel.ColumnRange[1]),
-                        surface.PointAt(hmaxel.RowRange[1], hmaxel.ColumnRange[1])
+                        Brep.Faces[0].PointAt(hmaxel.RowRange[0], hmaxel.ColumnRange[0]),
+                        Brep.Faces[0].PointAt(hmaxel.RowRange[1], hmaxel.ColumnRange[0]),
+                        Brep.Faces[0].PointAt(hmaxel.RowRange[0], hmaxel.ColumnRange[1]),
+                        Brep.Faces[0].PointAt(hmaxel.RowRange[1], hmaxel.ColumnRange[1])
                     };
 
-                    bool allOn = true;
+                    List<int> notOnID = new List<int>();
                     for(int v = 0; v < points.Count; v++)
                     {
-                        if (brep.ClosestPoint(points[i]).DistanceTo(points[i]) > 10) allOn = false;
+                        if (brep.ClosestPoint(points[v]).DistanceTo(points[v]) > 10) notOnID.Add(v);
                     }
 
-                    if(allOn) hmaxel.ShapedHMaxel = surface.Trim(hmaxel.RowRange, hmaxel.ColumnRange);
+                    if(notOnID.Count == 0) hmaxel.ShapedHMaxel = Brep.Faces[0].Trim(hmaxel.RowRange, hmaxel.ColumnRange).ToBrep();
                     else
                     {
-                        Brep hmaxelBrep = surface.Trim(hmaxel.RowRange, hmaxel.ColumnRange).ToBrep();
+                        Brep hmaxelBrep = Brep.Faces[0].Trim(hmaxel.RowRange, hmaxel.ColumnRange).ToBrep();
                         var results = hmaxelBrep.Split(brep.Edges, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
-                        hmaxel.ShapedHMaxel = hmaxelBrep
+                        for(int v = 0; v < results.Length; v++)
+                        {
+                            bool keepFragment = true;
+                            Brep fragment = results[v];
+                            for (int x = 0; x < notOnID.Count; x++) 
+                            {
+                                Point3d point = points[notOnID[x]];
+                                
+                                if (fragment.ClosestPoint(point).DistanceTo(point) < 10) keepFragment = false;
+                            }
+                            if (keepFragment) HMaxels[i, j].ShapedHMaxel = fragment;
+                        }
+                    }
+                }
+            }
+
+            //trim boards
+            foreach(Bilayer bilayer in Bilayers)
+            {
+                foreach(ActiveBoard board in bilayer.ActiveLayer.Boards)
+                {
+                    List<Point3d> points = new List<Point3d>()
+                    {
+                        Brep.Faces[0].PointAt(board.RowRange[0], board.ColumnRange[0]),
+                        Brep.Faces[0].PointAt(board.RowRange[1], board.ColumnRange[0]),
+                        Brep.Faces[0].PointAt(board.RowRange[0], board.ColumnRange[1]),
+                        Brep.Faces[0].PointAt(board.RowRange[1], board.ColumnRange[1])
+                    };
+
+                    List<int> notOnID = new List<int>();
+                    for (int v = 0; v < points.Count; v++)
+                    {
+                        if (brep.ClosestPoint(points[v]).DistanceTo(points[v]) > 10) notOnID.Add(v);
+                    }
+
+                    if (notOnID.Count == 0) board.ShapedBoard = Brep.Faces[0].Trim(board.RowRange, board.ColumnRange).ToBrep();
+                    else
+                    {
+                        Brep hmaxelBrep = Brep.Faces[0].Trim(board.RowRange, board.ColumnRange).ToBrep();
+                        var results = hmaxelBrep.Split(brep.Edges, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
+                        for (int v = 0; v < results.Length; v++)
+                        {
+                            bool keepFragment = true;
+                            Brep fragment = results[v];
+                            for (int x = 0; x < notOnID.Count; x++)
+                            {
+                                Point3d point = points[notOnID[x]];
+
+                                if (fragment.ClosestPoint(point).DistanceTo(point) < 10) keepFragment = false;
+                            }
+                            if (keepFragment) board.ShapedBoard = fragment;
+                        }
                     }
                 }
             }

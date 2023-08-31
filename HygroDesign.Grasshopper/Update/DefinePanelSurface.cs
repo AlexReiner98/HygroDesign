@@ -26,7 +26,7 @@ namespace HygroDesign.Grasshopper.Update
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter("Panel", "P", "The panel to update.", GH_ParamAccess.item);
-            pManager.AddSurfaceParameter("Surface", "S", "The surface to update the panel with.", GH_ParamAccess.item);
+            pManager.AddSurfaceParameter("Brep", "B", "The brep to update the panel with.", GH_ParamAccess.item);
         }
 
 
@@ -39,11 +39,11 @@ namespace HygroDesign.Grasshopper.Update
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             Panel oldpanel = null;
-            Surface surface = null;
+            Brep brep = null;
             DA.GetData(0, ref oldpanel);
-            DA.GetData(1, ref surface);
+            DA.GetData(1, ref brep);
             Panel panel = Panel.DeepCopy(oldpanel);
-            panel.GenerateShapedSurfaces(surface);
+            panel.GenerateShapedSurfaces(brep);
             DA.SetData(0, panel);
         }
 
