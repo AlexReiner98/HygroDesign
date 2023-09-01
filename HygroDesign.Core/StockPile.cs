@@ -92,8 +92,5 @@ namespace BilayerDesign
         }
     }
 
-    public abstract class PredictionEngine
-    {
-        public abstract double Predict(StockBoard board, Bilayer bilayer, double moistureChange);
-    }
+
 }

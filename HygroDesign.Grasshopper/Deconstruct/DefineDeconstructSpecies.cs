@@ -31,13 +31,6 @@ namespace HygroDesign.Grasshopper.Components
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddGenericParameter("Name", "N", "The species name.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("L Expansion", "LX", "The expansion coefficient in the L direction.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("R Expansion", "RX", "The expansion coefficient in the R direction.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("L Expansion", "TX", "The expansion coefficient in the T direction.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("L Elastic Modulus", "LE", "The elastic modulus in the L direction.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("R Elastic Modulus", "RE", "The elastic modulus in the R direction.", GH_ParamAccess.item);
-            pManager.AddGenericParameter("T Elastic Modulus", "TE", "The elastic modulus in the T direction.", GH_ParamAccess.item);
-
         }
 
 
@@ -47,14 +40,7 @@ namespace HygroDesign.Grasshopper.Components
             DA.GetData(0, ref species);
 
             DA.SetData(0, species.Name);
-            /*
-            DA.SetData(1, species.LExpansion);
-            DA.SetData(2, species.RExpansion);
-            DA.SetData(3, species.TExpansion);
-            DA.SetData(4, species.LElasticModulus);
-            DA.SetData(5, species.RElasticModulus);
-            DA.SetData(6, species.TElasticModulus);
-            */
+            //populate outputs based on attributes dictionary
         }
 
 

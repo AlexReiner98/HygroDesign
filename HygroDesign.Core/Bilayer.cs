@@ -10,142 +10,87 @@ namespace BilayerDesign
 {
     public class Bilayer: WoodAssembly
     {
-        public List<ActiveBoard> Boards { get; set; }
-        public Plane BasePlane { get; set; }
-        public Surface InitialSurface { get; set; }
-        public int LengthCount { get; set; }
-        public int WidthCount { get; set; }
-        public double BoardWidth { get; set; }
-        public double BoardLength { get; set; }
-        public double ActiveThickness { get; set; }
-        public Panel Parent { get; set; }
-        public int BoardRegionCount { get; set; }
+        public Panel Panel { get; set; }
+        public ActiveLayer ActiveLayer { get; set; }
         public PassiveLayer PassiveLayer { get; set; }
-
-        public Bilayer(Plane basePlane, double boardWidth, double boardLength, int widthCount, int lengthCount, double activeThickness, double passiveThickness, Species passiveSpecies, int boardRegionCount)
+        private int BoardLength { get; set; }
+        private List<int> BoardOffsets { get; set; }
+        public double TotalHeight { get; set; }
+        
+        public Bilayer(Panel panel, int boardLength, List<int> boardOffsets, Species passiveSpecies, double activeThickness, double passiveThickness)
         {
-            BasePlane = basePlane;
-            LengthCount = lengthCount;
-            WidthCount = widthCount;
-            BoardWidth = boardWidth;
-            BoardLength = boardLength; 
-            Length = boardLength * lengthCount;
-            Width = boardWidth * widthCount;
-            ActiveThickness = activeThickness;
-            BoardRegionCount = boardRegionCount;
+            Panel = panel;
+            BoardLength = boardLength;
+            BoardOffsets = boardOffsets;
 
-            //create surface
-            InitialSurface = Brep.CreatePlanarBreps(new Rectangle3d(BasePlane, Length, Width).ToNurbsCurve(), RhinoDoc.ActiveDoc.ModelAbsoluteTolerance)[0].Faces[0];
+            PassiveLayer = new PassiveLayer(this, passiveSpecies, passiveThickness);
+            ActiveLayer = new ActiveLayer(this, activeThickness);
 
-            //generate boards
-            GenerateBoards();
-
-            //generate passive layer
-            PassiveLayer = new PassiveLayer(passiveThickness, passiveSpecies, this);
+            Thickness = activeThickness + passiveThickness;
         }
 
-        public static Bilayer DeepCopy(Bilayer source)
+        public static Bilayer DeepCopy(Bilayer source, Panel panel)
         {
-            Plane basePlane = new Plane(source.BasePlane);
-            List<ActiveBoard> boards = source.Boards;
-
-            Bilayer bilayer = new Bilayer(basePlane, source.BoardWidth, source.BoardLength, source.WidthCount, source.LengthCount, source.ActiveThickness, source.PassiveLayer.Height, source.PassiveLayer.Species, source.BoardRegionCount);
+            Bilayer bilayer = new Bilayer(panel, source.BoardLength, source.BoardOffsets, source.PassiveLayer.Species, source.ActiveLayer.Thickness, source.PassiveLayer.Thickness);
+            bilayer.ActiveLayer = ActiveLayer.DeepCopy(source.ActiveLayer, bilayer);
             bilayer.ID = source.ID;
-            bilayer.Boards.Clear();
-
-            for(int i = 0; i < boards.Count; i++)
-            {
-                bilayer.Boards.Add(ActiveBoard.DeepCopy(boards[i], bilayer));
-            }
-
-            bilayer.PassiveLayer = PassiveLayer.DeepCopy(source.PassiveLayer, bilayer);
-
+            bilayer.TotalHeight = source.TotalHeight;
             return bilayer;
         }
-        
 
-        private void GenerateBoards()
+        public void GenerateBoards()
         {
-            Boards = new List<ActiveBoard>();
-            for (int i = 0; i < WidthCount; i++)
+            for(int i = 0; i < Panel.WidthCount; i++)
             {
-                //even value rows
-                if(i % 2 == 0)
+                //pick offset based on which row we are on
+                int thisOffset = 0;
+                thisOffset = BoardOffsets[i % BoardOffsets.Count];
+
+                //create boards with that offset pattern
+                List<HMaxel> boardMaxels = new List<HMaxel>();
+                int lengthCount = 0;
+                for(int j = 0; j < Panel.LengthCount; j++)
                 {
-                    ActiveBoard[] row = new ActiveBoard[LengthCount];
-
-                    for(int j = 0; j < LengthCount; j++)
+                    if (Panel.HMaxels[i, j].Height < TotalHeight)
                     {
-                        Interval rowRange = new Interval(j* BoardLength, (j+1)* BoardLength);
-                        Interval colRange = new Interval(Width - ((i+1)* BoardWidth), Width - (i * BoardWidth));
-                        ActiveBoard board = new ActiveBoard(rowRange, colRange,this,BoardRegionCount);
-                        board.RowNumber = i;
-                        board.ColumnNumber = j;
-                        Boards.Add(board);
-                    }
-                }
+                        if (boardMaxels.Count != 0)
+                        {
+                            ActiveBoard board = new ActiveBoard(boardMaxels, ActiveLayer, ActiveLayer.Boards.Count);
 
-                //odd value rows
-                else
-                {
-                    ActiveBoard[] row = new ActiveBoard[LengthCount+1];
-                    
-                    for (int j = 0; j < LengthCount+1; j++)
+                            ActiveLayer.Boards.Add(board);
+                            foreach (HMaxel maxel in boardMaxels) maxel.ActiveBoards.Add(board);
+
+                            boardMaxels = new List<HMaxel>();
+                        }
+                    }
+
+                    if ((j == thisOffset || lengthCount == BoardLength) && boardMaxels.Count != 0 && Panel.HMaxels[i, j].Height >= TotalHeight)
                     {
-                        Interval colRange = new Interval(Width - ((i + 1) * BoardWidth),Width - (i * BoardWidth));
-                        Interval rowRange;
-                        int regionCount = 0;
+                        ActiveBoard board = new ActiveBoard(boardMaxels, ActiveLayer, ActiveLayer.Boards.Count);
 
-                        //first half board
-                        if (j == 0)
-                        {
-                            rowRange = new Interval(0, BoardLength / 2);
-                            regionCount = BoardRegionCount / 2 ;
-                        }
-                        else if (j == LengthCount)
-                        {
-                            rowRange = new Interval(j * BoardLength - BoardLength/2, (j * BoardLength));
-                            regionCount = BoardRegionCount / 2;
-                        }
-                        else 
-                        {
-                        rowRange = new Interval( (j * BoardLength)- (BoardLength / 2),((j+1) * BoardLength) - (BoardLength / 2));
-                            regionCount = BoardRegionCount;
-                        }
+                        ActiveLayer.Boards.Add(board);
+                        foreach (HMaxel maxel in boardMaxels) maxel.ActiveBoards.Add(board);
 
-                        ActiveBoard board = new ActiveBoard( rowRange, colRange,this, regionCount);
-                        board.RowNumber = i;
-                        board.ColumnNumber = j;
-                        Boards.Add(board);
+                        boardMaxels = new List<HMaxel>();
                     }
+
+                    if (j == thisOffset || lengthCount == BoardLength) lengthCount = 0;
+
+                    if(Panel.HMaxels[i, j].Height >= TotalHeight)
+                    {
+                        boardMaxels.Add(Panel.HMaxels[i, j]);
+                        Panel.HMaxels[i, j].PassiveLayers.Add(PassiveLayer);
+                    }
+
+                    if (j == Panel.LengthCount - 1 && Panel.HMaxels[i, j].Height >= TotalHeight)
+                    {
+                        ActiveBoard board = new ActiveBoard(boardMaxels, ActiveLayer, ActiveLayer.Boards.Count);
+                        ActiveLayer.Boards.Add(board);
+                        foreach (HMaxel maxel in boardMaxels) maxel.ActiveBoards.Add(board);
+                    }
+                    lengthCount++;
                 }
             }
-        }
-
-        public List<ActiveBoard> GetNeighbors(int index)
-        {
-            List<ActiveBoard> neighbors = new List<ActiveBoard>();
-
-            ActiveBoard currentBoard = Boards[index];
-
-            foreach(ActiveBoard testBoard in Boards)
-            {
-                if (testBoard == currentBoard) continue;
-                if ((testBoard.ColumnRange[0] <= currentBoard.ColumnRange[0] && testBoard.ColumnRange[0] <= currentBoard.ColumnRange[1]) || (testBoard.ColumnRange[1] <= currentBoard.ColumnRange[1] && testBoard.ColumnRange[1] >= currentBoard.ColumnRange[0]))
-                {
-                    if ((testBoard.RowRange[0] > currentBoard.RowRange[0] && testBoard.RowRange[0] < currentBoard.RowRange[1]) || (testBoard.RowRange[1] < currentBoard.RowRange[1] && testBoard.RowRange[1] > currentBoard.RowRange[0]))
-                    {
-                        neighbors.Add(testBoard);
-                    }
-                }
-                
-            }
-            return neighbors;
-        }
-
-        public static double Remap(double val, double from1, double to1, double from2, double to2)
-        {
-            return (val - from1) / (to1 - from1) * (to2 - from2) + from2;
         }
     }
 }

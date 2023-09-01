@@ -9,6 +9,12 @@
     <BaseOutputPath>..\bin\</BaseOutputPath>
     <OutputType>Library</OutputType>
   </PropertyGroup>
+	
+  <ItemGroup>
+    <Compile Remove="ScriptSync\**" />
+    <EmbeddedResource Remove="ScriptSync\**" />
+    <None Remove="ScriptSync\**" />
+  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="Grasshopper" Version="7.30.23163.13001" IncludeAssets="compile;build" />

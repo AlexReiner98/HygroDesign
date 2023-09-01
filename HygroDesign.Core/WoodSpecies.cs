@@ -25,10 +25,5 @@ namespace BilayerDesign
             Name = source.Name;
             Attributes = new Dictionary<string,double>(source.Attributes);
         }
-
-        public Species() 
-        {
-            Name = null;
-        }
     }
 }
