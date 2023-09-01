@@ -117,16 +117,5 @@ namespace BilayerDesign
                 return new Rectangle3d(Plane.WorldXY, RowRange, ColumnRange);
             }
         }
-
-        /*
-        public Surface ShapedHMaxel
-        {
-            get
-            {
-                if (Panel.ShapedSurface == null) return null;
-                else return Panel.ShapedSurface.Trim(RowRange, ColumnRange);
-            }
-        }
-        */
     }
 }
