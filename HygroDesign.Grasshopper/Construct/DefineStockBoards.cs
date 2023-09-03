@@ -117,6 +117,11 @@ namespace HygroDesign.Grasshopper.Components
             List<object> ghInputProperty = new List<object>();
             object valueExtract = null;
 
+            for(int i = 0; i < lengths.Count; i++)
+            {
+                paramDictionary.Add(new Dictionary<string, object>());
+            }
+
             for (int p = 6; p < Params.Input.Count; p++)
             {
                 var key = Params.Input[p].NickName;
@@ -124,7 +129,7 @@ namespace HygroDesign.Grasshopper.Components
 
                 for (int i = 0; i < lengths.Count; i++)
                 {
-                    paramDictionary.Add(new Dictionary<string, object>());
+                    
                     valueExtract = ghInputProperty[i];
                     paramDictionary[i].Add(key, valueExtract);
                 }
