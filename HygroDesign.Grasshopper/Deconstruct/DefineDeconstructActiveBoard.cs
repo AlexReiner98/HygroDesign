@@ -40,6 +40,7 @@ namespace HygroDesign.Grasshopper.Deconstruct
             pManager.AddNumberParameter("Desired Radius", "DR", "The active board's desired radius.", GH_ParamAccess.tree);
             pManager.AddNumberParameter("Radius", "R", "The active board's predicted radius before blending.", GH_ParamAccess.tree);
             pManager.AddNumberParameter("Blended Radius", "BR", "The active board's blended radius.", GH_ParamAccess.tree);
+            pManager.AddNumberParameter("Moisture Change", "MC", "The active board's required moisture change.", GH_ParamAccess.tree);
             pManager.AddSurfaceParameter("Shaped Board", "SB", "The shaped active board surface.", GH_ParamAccess.tree);
 
             //more properties need to be added here after prediction and board selection are updated
@@ -56,10 +57,8 @@ namespace HygroDesign.Grasshopper.Deconstruct
             DataTree<Interval> columnRanges = new DataTree<Interval>();
             DataTree<double> radTree = new DataTree<double>();
             DataTree<double> blendedTree = new DataTree<double>();
+            DataTree<double> moistureTree = new DataTree<double>();
             DataTree<Brep> breps = new DataTree<Brep>();
-
-
-
 
             GH_Structure<IGH_Goo> activeBoards = new GH_Structure<IGH_Goo>();
             DA.GetDataTree(0, out activeBoards);
@@ -79,6 +78,7 @@ namespace HygroDesign.Grasshopper.Deconstruct
                     columnRanges.Add(activeBoard.ColumnRange, path);
                     radTree.Add(activeBoard.Radius, path);
                     blendedTree.Add(activeBoard.BlendedRadius, path);
+                    moistureTree.Add(activeBoard.MoistureChange, path);
                     breps.Add(activeBoard.ShapedBoard, path);
                 }
             }
@@ -92,7 +92,8 @@ namespace HygroDesign.Grasshopper.Deconstruct
             DA.SetDataTree(5, drTree);
             DA.SetDataTree(6, radTree);
             DA.SetDataTree(7, blendedTree);
-            DA.SetDataTree(8, breps);
+            DA.SetDataTree(8, moistureTree);
+            DA.SetDataTree(9, breps);
 
 
         }

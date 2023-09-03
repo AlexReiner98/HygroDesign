@@ -18,6 +18,7 @@ namespace BilayerDesign
         public double MoistureChange { get; set; }
         public double Radius { get; set; }
         public Brep ShapedBoard { get; set; }
+        public List<int> TrimmedByBrepID { get; set; }
         public ActiveBoard(List<HMaxel> hMaxels, ActiveLayer activeLayer, int id)
         {
             HMaxels = hMaxels;
