@@ -43,8 +43,13 @@ namespace HygroDesign.Grasshopper.Construct
             List<Panel> panels = new List<Panel>();
             DA.GetDataList(0, panels);
 
+            List<StockBoard> oldStockBoards = new List<StockBoard>();
+            DA.GetDataList(1, oldStockBoards);
             List<StockBoard> stockBoards = new List<StockBoard>();
-            DA.GetDataList(1, stockBoards);
+            for(int i = 0; i < oldStockBoards.Count; i++)
+            {
+                stockBoards.Add(StockBoard.DeepCopy(oldStockBoards[i]));
+            }
 
             List<double> moistureChanges = new List<double>();
             DA.GetDataList(2, moistureChanges);

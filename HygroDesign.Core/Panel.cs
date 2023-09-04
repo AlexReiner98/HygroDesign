@@ -44,6 +44,7 @@ namespace BilayerDesign
         {
             Panel panel = new Panel(source.HMaxels[0, 0].Length, source.HMaxels[0, 0].Width, source.LengthCount, source.WidthCount);
             HMaxel[,] hmaxels = new HMaxel[source.WidthCount, source.LengthCount];
+            panel.Brep = source.Brep;
             for(int i = 0; i < source.WidthCount; i++)
             {
                 for(int j = 0; j < source.LengthCount; j++)

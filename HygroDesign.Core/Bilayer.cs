@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rhino;
+using Rhino.DocObjects;
 using Rhino.Geometry;
 using Rhino.Geometry.Collections;
 
@@ -36,6 +37,56 @@ namespace BilayerDesign
             bilayer.ID = source.ID;
             bilayer.TotalHeight = source.TotalHeight;
             return bilayer;
+        }
+
+        public void Trim(List<Brep> breps)
+        {
+            foreach (ActiveBoard board in ActiveLayer.Boards)
+            {
+                if (board.ShapedBoard == null) board.ShapedBoard = Panel.Brep.Faces[0].Trim(board.RowRange, board.ColumnRange).ToBrep();
+
+                List<Point3d> points = new List<Point3d>()
+                    {
+                        Panel.Brep.Faces[0].PointAt(board.RowRange[0], board.ColumnRange[0]),
+                        Panel.Brep.Faces[0].PointAt(board.RowRange[1], board.ColumnRange[0]),
+                        Panel.Brep.Faces[0].PointAt(board.RowRange[0], board.ColumnRange[1]),
+                        Panel.Brep.Faces[0].PointAt(board.RowRange[1], board.ColumnRange[1])
+                    };
+
+                int notOnBrepCount = 0;
+                for (int x = 0; x < breps.Count; x++)
+                {
+                    List<int> notOnID = new List<int>();
+                    for (int v = 0; v < points.Count; v++)
+                    {
+                        if (breps[x].ClosestPoint(points[v]).DistanceTo(points[v]) > 0.1) notOnID.Add(v);
+                    }
+                    if (notOnID.Count == 4)
+                    {
+                        notOnBrepCount++;
+                    }
+
+                    else if (notOnID.Count != 0)
+                    {
+                        Brep hmaxelBrep = board.ShapedBoard.Duplicate() as Brep;
+                        var results = hmaxelBrep.Split(breps[x].Edges, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
+                        for (int v = 0; v < results.Length; v++)
+                        {
+                            bool keepFragment = true;
+                            Brep fragment = results[v];
+                            for (int y = 0; y < notOnID.Count; y++)
+                            {
+                                Point3d point = points[notOnID[y]];
+
+                                if (fragment.ClosestPoint(point).DistanceTo(point) < 0.1) keepFragment = false;
+                            }
+                            if (keepFragment) board.ShapedBoard = fragment;
+                        }
+                    }
+                    
+                }
+                if (notOnBrepCount == breps.Count) board.ShapedBoard = null;
+            }
         }
 
         public void GenerateBoards()

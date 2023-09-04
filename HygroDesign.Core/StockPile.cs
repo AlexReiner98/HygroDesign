@@ -33,13 +33,6 @@ namespace BilayerDesign
 
         public static StockPile DeepCopy(StockPile source)
         {
-            /*
-            List<Panel> panels = new List<Panel>();
-            for(int i = 0; i < source.Panels.Count; i++)
-            {
-                panels.Add(Panel.DeepCopy(source.Panels[i]));
-            }
-            */
             List<Panel> panels = source.Panels;
 
             List<StockBoard> boards = new List<StockBoard>();
