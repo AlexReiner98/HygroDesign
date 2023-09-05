@@ -16,7 +16,7 @@ namespace HygroDesign.Grasshopper.Components
     {
         bool IGH_VariableParameterComponent.CanInsertParameter(GH_ParameterSide side, int index)
         {
-            if (side == GH_ParameterSide.Input && index > 5)
+            if (side == GH_ParameterSide.Input && index > 6)
             {
                 return true;
             }
@@ -29,7 +29,7 @@ namespace HygroDesign.Grasshopper.Components
         bool IGH_VariableParameterComponent.CanRemoveParameter(GH_ParameterSide side, int index)
         {
             //We can only remove from the input
-            if (side == GH_ParameterSide.Input && index > 5)
+            if (side == GH_ParameterSide.Input && index > 6)
             {
                 return true;
             }
@@ -78,7 +78,8 @@ namespace HygroDesign.Grasshopper.Components
             pManager.AddGenericParameter("Length", "L", "The list of lengths for the boards.", GH_ParamAccess.list);
             pManager.AddGenericParameter("Width", "W", "The list of widths for the boards.", GH_ParamAccess.list);
             pManager.AddGenericParameter("RT Angle", "RT", "The list of RT angles for the boards.", GH_ParamAccess.list);
-
+            pManager.AddNumberParameter("Moisture Change", "MC", "The moisture change of the board.", GH_ParamAccess.list, 0.0);
+            pManager[6].Optional = true;
         }
 
 
@@ -90,9 +91,6 @@ namespace HygroDesign.Grasshopper.Components
         
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-
-
-
             List<Species> species = new List<Species>();
             DA.GetDataList("Species", species);
 
@@ -110,8 +108,17 @@ namespace HygroDesign.Grasshopper.Components
 
             List<double> rts = new List<double>();
             DA.GetDataList("RT Angle", rts);
+            
+            List<double> mc = new List<double>();
+            DA.GetDataList("Moisture Change", mc);
 
-
+            if (mc.Count < species.Count)
+            {
+                for(int i = 0; i < species.Count; i++)
+                {
+                    mc.Add(0);
+                }
+            }
 
             var paramDictionary = new List<Dictionary<string, object>>();
             List<object> ghInputProperty = new List<object>();
@@ -122,7 +129,7 @@ namespace HygroDesign.Grasshopper.Components
                 paramDictionary.Add(new Dictionary<string, object>());
             }
 
-            for (int p = 6; p < Params.Input.Count; p++)
+            for (int p = 7; p < Params.Input.Count; p++)
             {
                 var key = Params.Input[p].NickName;
                 DA.GetDataList(p, ghInputProperty);
@@ -139,7 +146,9 @@ namespace HygroDesign.Grasshopper.Components
             List<StockBoard> boards = new List<StockBoard>();
             for(int i = 0; i < lengths.Count; i++)
             {
-                boards.Add(new StockBoard(names[i], species[i], rts[i], thicknesses[i],lengths[i], widths[i], paramDictionary[i]));
+                StockBoard board = new StockBoard(names[i], species[i], rts[i], thicknesses[i], lengths[i], widths[i], paramDictionary[i]);
+                board.MoistureChange = mc[i];
+                boards.Add(board);
             }
 
             DA.SetDataList(0, boards);
