@@ -102,7 +102,7 @@ namespace BilayerDesign
                 int lengthCount = 0;
                 for(int j = 0; j < Panel.LengthCount; j++)
                 {
-                    if (Panel.HMaxels[i, j].Height < TotalHeight)
+                    if (Panel.HMaxels[i, j].Height < TotalHeight && Panel.HMaxels[i, j].Height != -1)
                     {
                         if (boardMaxels.Count != 0)
                         {
@@ -115,7 +115,7 @@ namespace BilayerDesign
                         }
                     }
 
-                    if ((j == thisOffset || lengthCount == BoardLength) && boardMaxels.Count != 0 && Panel.HMaxels[i, j].Height >= TotalHeight)
+                    if ((j == thisOffset || lengthCount == BoardLength) && boardMaxels.Count != 0 && (Panel.HMaxels[i, j].Height == -1 || Panel.HMaxels[i, j].Height >= TotalHeight))
                     {
                         ActiveBoard board = new ActiveBoard(boardMaxels, ActiveLayer, ActiveLayer.Boards.Count);
 
@@ -127,13 +127,12 @@ namespace BilayerDesign
 
                     if (j == thisOffset || lengthCount == BoardLength) lengthCount = 0;
 
-                    if(Panel.HMaxels[i, j].Height >= TotalHeight)
+                    if(Panel.HMaxels[i, j].Height == -1 || Panel.HMaxels[i, j].Height >= TotalHeight)
                     {
                         boardMaxels.Add(Panel.HMaxels[i, j]);
                         Panel.HMaxels[i, j].PassiveLayers.Add(PassiveLayer);
                     }
-
-                    if (j == Panel.LengthCount - 1 && Panel.HMaxels[i, j].Height >= TotalHeight)
+                    if (j == Panel.LengthCount - 1 && (Panel.HMaxels[i, j].Height == -1 ||Panel.HMaxels[i, j].Height >= TotalHeight))
                     {
                         ActiveBoard board = new ActiveBoard(boardMaxels, ActiveLayer, ActiveLayer.Boards.Count);
                         ActiveLayer.Boards.Add(board);

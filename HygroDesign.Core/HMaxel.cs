@@ -38,6 +38,7 @@ namespace BilayerDesign
             Species = new List<Species>();
             RadiusParameter = 0;
             BlendedRaidus = 0;
+            Height = -1;
         }
 
         public static HMaxel DeepCopy(HMaxel source, Panel parent)
