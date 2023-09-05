@@ -152,6 +152,69 @@ namespace BilayerDesign
             }
         }
 
+        public Point3d ShapedCentroid
+        {
+            get
+            {
+                if (ActiveLayer.Bilayer.Panel.Brep == null) throw new Exception("The parent panel's shaped surface must be set before the shaped centroid can be calculated.");
+                /*
+                double xCoord = RowRange[0] + (Length / 2);
+                double yCoord = ColumnRange[0] + (Width / 2);
+
+                return ActiveLayer.Bilayer.Panel.Brep.Faces[0].PointAt(xCoord, yCoord);
+                */
+
+                if (ShapedBoard == null) return new Point3d(0,0,0);
+                AreaMassProperties results = AreaMassProperties.Compute(ShapedBoard);
+                return results.Centroid;
+            }
+        }
+
+        public double Area
+        {
+            get
+            {
+                return Width * Length;
+            }
+        }
+
+        public double Volume
+        {
+            get
+            {
+                return Area * Thickness;
+            }
+        }
+
+        public double Mass
+        {
+            get
+            {
+                //get rhinodoc units and convert volume to m3
+                double volume = 0;
+                if (RhinoDoc.ActiveDoc.ModelUnitSystem == UnitSystem.Millimeters) volume = Volume * 1e-9;
+                if (RhinoDoc.ActiveDoc.ModelUnitSystem == UnitSystem.Centimeters) volume = Volume * 1e-6;
+                if (RhinoDoc.ActiveDoc.ModelUnitSystem == UnitSystem.Meters) volume = Volume;
+
+                //calculate mass in kg
+                return volume * Species.Attributes["density"];
+            }
+        }
+
+        public double PassiveMass
+        {
+            get
+            {
+                double passiveVolume = Area * ActiveLayer.Bilayer.PassiveLayer.Thickness;
+                double volume = 0;
+                if (RhinoDoc.ActiveDoc.ModelUnitSystem == UnitSystem.Millimeters) volume = passiveVolume * 1e-9;
+                if (RhinoDoc.ActiveDoc.ModelUnitSystem == UnitSystem.Centimeters) volume = passiveVolume * 1e-6;
+                if (RhinoDoc.ActiveDoc.ModelUnitSystem == UnitSystem.Meters) volume = passiveVolume;
+
+                return volume * ActiveLayer.Bilayer.PassiveLayer.Species.Attributes["density"];
+            }
+        }
+
         public Rectangle3d Outline {
             get
             {

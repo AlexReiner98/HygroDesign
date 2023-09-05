@@ -106,6 +106,40 @@ namespace BilayerDesign
             }
         }
 
+        public void CalculateCenterOfGravity()
+        {
+            double xCoord = 0;
+            double yCoord = 0;
+            double zCoord = 0;
+
+            double totalMass = 0;
+
+            foreach (Bilayer bilayer in Bilayers)
+            {
+
+                foreach (ActiveBoard board in bilayer.ActiveLayer.Boards)
+                {
+                    //add board values
+                    Point3d boardCentroid = board.ShapedCentroid;
+                    if (boardCentroid.X == 0 && boardCentroid.Y == 0 && boardCentroid.Z == 0) continue;
+                    double mass = board.Mass + board.PassiveMass;
+
+                    xCoord += boardCentroid.X * mass;
+                    yCoord += boardCentroid.Y * mass;
+                    zCoord += boardCentroid.Z * mass;
+                    totalMass += mass;
+                }
+            }
+
+            //divide coords by total mass
+            xCoord /= totalMass;
+            yCoord /= totalMass;
+            zCoord /= totalMass;
+
+            //return point
+            Centroid = new Point3d(xCoord, yCoord, zCoord);
+        }
+
         public void GenerateShapedSurfaces(Brep brep)
         {
             if (brep.Faces.Count != 1) throw new Exception("Only single face breps are allowed.");
