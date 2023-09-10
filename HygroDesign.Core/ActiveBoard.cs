@@ -39,6 +39,7 @@ namespace BilayerDesign
             activeBoard.DesiredRadius = source.DesiredRadius;
             activeBoard.MoistureChange = source.MoistureChange;
             activeBoard.Radius = source.Radius;
+            activeBoard.ShapedBoard = source.ShapedBoard;
 
             return activeBoard;
         }

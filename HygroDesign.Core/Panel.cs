@@ -121,6 +121,7 @@ namespace BilayerDesign
                 {
                     //add board values
                     Point3d boardCentroid = board.ShapedCentroid;
+                    RhinoApp.Write(boardCentroid.ToString());
                     if (boardCentroid.X == 0 && boardCentroid.Y == 0 && boardCentroid.Z == 0) continue;
                     double mass = board.Mass + board.PassiveMass;
 

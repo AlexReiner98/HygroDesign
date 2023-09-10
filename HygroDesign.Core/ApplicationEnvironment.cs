@@ -58,7 +58,6 @@ namespace BilayerDesign
                 double selectedRadius = 0;
                 foreach (StockBoard stockBoard in StockPile.StockDictionary[activeSpecies])
                 {
-                    
                     if (stockBoard == null || stockBoard.LengthAvailable < board.Length) continue;
 
                     foreach (double moistureChange in StockPile.MoistureChanges)
@@ -78,7 +77,6 @@ namespace BilayerDesign
                 board.Radius = selectedRadius;
                 board.MoistureChange = selectedMCChange;
                 board.RTAngle = closestStock.RTAngle;
-                closestStock.LengthAvailable -= board.Length;
                 closestStock.DesignBoards.Add(board);
             }
         }

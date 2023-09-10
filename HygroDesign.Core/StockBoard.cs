@@ -6,7 +6,7 @@ namespace BilayerDesign
 {
     public class StockBoard : WoodElement
     {
-        public double LengthAvailable { get; set; }  
+         
         public double MoistureChange { get; set; }
         public List<ActiveBoard> DesignBoards { get; set; }
         public Dictionary<Bilayer, Dictionary<double, double>> PotentialRadii { get; set; }
@@ -15,9 +15,9 @@ namespace BilayerDesign
         public StockBoard(string name, Species species, double rtAngle, double thickness, double length, double width, Dictionary<string, object> attributes)
         {
             Name = name;
+            Length = length;
             Species = species;
             RTAngle = rtAngle;
-            LengthAvailable = Length = length;
             Thickness = thickness;
             Width = width;
             Attributes = attributes;
@@ -35,9 +35,21 @@ namespace BilayerDesign
             double width = source.Width;
             Dictionary<string, object> attributes = source.Attributes;
             StockBoard stockBoard = new StockBoard(name, species, rtAngle, height, length, width, attributes);
-            stockBoard.LengthAvailable = source.LengthAvailable;
             stockBoard.DesignBoards = source.DesignBoards;
             return stockBoard;
+        }
+
+        public double LengthAvailable
+        {
+            get
+            {
+                double total = 0;
+                for(int i = 0; i < DesignBoards.Count; i++)
+                {
+                    total += DesignBoards[i].Length;
+                }
+                return Length - total;
+            }
         }
     }
 }
