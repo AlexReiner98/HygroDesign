@@ -97,58 +97,6 @@ namespace BilayerDesign
 
         public void GenerateBoards()
         {
-            /*
-            for(int i = 0; i < Panel.WidthCount; i++)
-            {
-                //pick offset based on which row we are on
-                int thisOffset = 0;
-                thisOffset = BoardOffsets[i % BoardOffsets.Count];
-
-                //create boards with that offset pattern
-                List<HMaxel> boardMaxels = new List<HMaxel>();
-                int lengthCount = 0;
-                for(int j = 0; j < Panel.LengthCount; j++)
-                {
-                    if (Panel.HMaxels[i, j].Height < TotalHeight && Panel.HMaxels[i, j].Height != -1)
-                    {
-                        if (boardMaxels.Count != 0)
-                        {
-                            ActiveBoard board = new ActiveBoard(boardMaxels, ActiveLayer, ActiveLayer.Boards.Count);
-
-                            ActiveLayer.Boards.Add(board);
-                            foreach (HMaxel maxel in boardMaxels) maxel.ActiveBoards.Add(board);
-
-                            boardMaxels = new List<HMaxel>();
-                        }
-                    }
-
-                    if ((j == thisOffset || lengthCount == BoardLength) && boardMaxels.Count != 0 && (Panel.HMaxels[i, j].Height == -1 || Panel.HMaxels[i, j].Height >= TotalHeight))
-                    {
-                        ActiveBoard board = new ActiveBoard(boardMaxels, ActiveLayer, ActiveLayer.Boards.Count);
-
-                        ActiveLayer.Boards.Add(board);
-                        foreach (HMaxel maxel in boardMaxels) maxel.ActiveBoards.Add(board);
-
-                        boardMaxels = new List<HMaxel>();
-                    }
-
-                    if (j == thisOffset || lengthCount == BoardLength) lengthCount = 0;
-
-                    if(Panel.HMaxels[i, j].Height == -1 || Panel.HMaxels[i, j].Height >= TotalHeight)
-                    {
-                        boardMaxels.Add(Panel.HMaxels[i, j]);
-                        Panel.HMaxels[i, j].PassiveLayers.Add(PassiveLayer);
-                    }
-                    if (j == Panel.LengthCount - 1 && (Panel.HMaxels[i, j].Height == -1 ||Panel.HMaxels[i, j].Height >= TotalHeight))
-                    {
-                        ActiveBoard board = new ActiveBoard(boardMaxels, ActiveLayer, ActiveLayer.Boards.Count);
-                        ActiveLayer.Boards.Add(board);
-                        foreach (HMaxel maxel in boardMaxels) maxel.ActiveBoards.Add(board);
-                    }
-                    lengthCount++;
-                }
-            }*/
-
             for (int i = 0; i < Panel.WidthCount; i++)
             {
                 //pick offset based on which row we are on
@@ -169,8 +117,6 @@ namespace BilayerDesign
                             ActiveBoard board = new ActiveBoard(newBoardMaxels, ActiveLayer, ActiveLayer.Boards.Count);
 
                             ActiveLayer.Boards[ActiveLayer.Boards.Count - 1] = board;
-                            Panel.HMaxels[i,j].ActiveBoards.Add(board);
-
                             boardMaxels = new List<HMaxel>();
 
                         }
@@ -179,8 +125,6 @@ namespace BilayerDesign
                             ActiveBoard board = new ActiveBoard(boardMaxels, ActiveLayer, ActiveLayer.Boards.Count);
 
                             ActiveLayer.Boards.Add(board);
-                            foreach (HMaxel maxel in boardMaxels) maxel.ActiveBoards.Add(board);
-
                             boardMaxels = new List<HMaxel>();
                         }
                     }
@@ -194,8 +138,6 @@ namespace BilayerDesign
                         ActiveBoard board = new ActiveBoard(boardMaxels, ActiveLayer, ActiveLayer.Boards.Count);
 
                         ActiveLayer.Boards.Add(board);
-                        foreach (HMaxel maxel in boardMaxels) maxel.ActiveBoards.Add(board);
-
                         boardMaxels = new List<HMaxel>();
                     }
 
@@ -210,7 +152,6 @@ namespace BilayerDesign
                     {
                         ActiveBoard board = new ActiveBoard(boardMaxels, ActiveLayer, ActiveLayer.Boards.Count);
                         ActiveLayer.Boards.Add(board);
-                        foreach (HMaxel maxel in boardMaxels) maxel.ActiveBoards.Add(board);
                     }
                     lengthCount++;
                 }
