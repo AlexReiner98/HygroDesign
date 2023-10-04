@@ -112,12 +112,18 @@ namespace BilayerDesign
                     {
                         if(boardMaxels.Count == 1)
                         {
+                            
                             List<HMaxel> newBoardMaxels = ActiveLayer.Boards[ActiveLayer.Boards.Count - 1].HMaxels;
+                            foreach(HMaxel hmaxel in newBoardMaxels)
+                            {
+                                hmaxel.ActiveBoards.RemoveAt(hmaxel.ActiveBoards.Count - 1);
+                            }
                             newBoardMaxels.Add(boardMaxels[0]);
-                            ActiveBoard board = new ActiveBoard(newBoardMaxels, ActiveLayer, ActiveLayer.Boards.Count);
+                            ActiveBoard board = new ActiveBoard(newBoardMaxels, ActiveLayer, ActiveLayer.Boards.Count-1);
 
                             ActiveLayer.Boards[ActiveLayer.Boards.Count - 1] = board;
                             boardMaxels = new List<HMaxel>();
+                            
 
                         }
                         else if (boardMaxels.Count != 0)
@@ -127,10 +133,6 @@ namespace BilayerDesign
                             ActiveLayer.Boards.Add(board);
                             boardMaxels = new List<HMaxel>();
                         }
-                    }
-                    if ((j == thisOffset) && boardMaxels.Count != 0 && (Panel.HMaxels[i, j].Height == -1 || Panel.HMaxels[i, j].Height >= TotalHeight))
-                    {
-
                     }
 
                     if ((lengthCount == BoardLength) && boardMaxels.Count != 0 && (Panel.HMaxels[i, j].Height == -1 || Panel.HMaxels[i, j].Height >= TotalHeight))

@@ -25,6 +25,14 @@ namespace BilayerDesign
             ActiveLayer = activeLayer;
             ID = id;
             Attributes = new Dictionary<string, object>();
+
+            foreach(HMaxel hMaxel in HMaxels)
+            {
+                if (!hMaxel.ActiveBoards.Contains(this))
+                {
+                    hMaxel.ActiveBoards.Add(this);
+                }
+            }
         }
 
         public static ActiveBoard DeepCopy(ActiveBoard source, ActiveLayer parent)
