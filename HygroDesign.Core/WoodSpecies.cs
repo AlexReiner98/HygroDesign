@@ -11,39 +11,19 @@ namespace BilayerDesign
 {
     public class Species
     {
-        public string Name; 
-        public double LExpansion;
-        public double RExpansion;
-        public double TExpansion;
-        public double LElasticModulus;
-        public double RElasticModulus;
-        public double TElasticModulus;
+        public string Name;
+        public Dictionary<string, double> Attributes;
 
-        public Species(string name, double LExp, double RExp, double TExp, double LElast, double RElast, double TElast)
+        public Species(string name, Dictionary<string, double> attributes)
         {
             Name = name;
-            LExpansion = LExp;
-            RExpansion = RExp;
-            TExpansion = TExp;
-            LElasticModulus = LElast;
-            RElasticModulus = RElast;
-            TElasticModulus = TElast;
+            Attributes = attributes;
         }
 
         public Species(Species source)
         {
             Name = source.Name;
-            LExpansion = source.LExpansion;
-            RExpansion = source.RExpansion;
-            TExpansion = source.TExpansion;
-            LElasticModulus = source.LElasticModulus;
-            RElasticModulus = source.RElasticModulus;
-            TElasticModulus = source.TElasticModulus;
-        }
-
-        public Species() 
-        {
-            Name = null;
+            Attributes = new Dictionary<string,double>(source.Attributes);
         }
     }
 }

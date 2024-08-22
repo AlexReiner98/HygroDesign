@@ -4,25 +4,25 @@ using System.Collections.Generic;
 
 namespace BilayerDesign
 {
-    public class StockBoard : BoardBase
+    public class StockBoard : WoodElement
     {
-        public double LengthAvailable = 0;
-        public double SelectedRadius = 0;
-        public double Thickness = 0;
-        public double Multiplier = 0;
-        public List<PanelBoard> DesignBoards = new List<PanelBoard>();
-
-        //first key is active thickness, second is passive thickness, third is passive material, fourth is moisture change
-        public Dictionary<double, Dictionary<double, Dictionary<Species, Dictionary<double, double>>>> PotentialRadii = new Dictionary<double, Dictionary<double, Dictionary<Species, Dictionary<double, double>>>>();
-        public StockBoard(string name, Species species, double rtAngle, double thickness, double length, double width, double multiplier)
+         
+        public double MoistureChange { get; set; }
+        public List<ActiveBoard> DesignBoards { get; set; }
+        public Dictionary<Bilayer, Dictionary<double, double>> PotentialRadii { get; set; }
+        
+        
+        public StockBoard(string name, Species species, double rtAngle, double thickness, double length, double width, Dictionary<string, object> attributes)
         {
             Name = name;
+            Length = length;
             Species = species;
             RTAngle = rtAngle;
-            LengthAvailable = Length = length;
             Thickness = thickness;
             Width = width;
-            Multiplier = multiplier;
+            Attributes = attributes;
+            DesignBoards = new List<ActiveBoard>();
+            PotentialRadii = new Dictionary<Bilayer, Dictionary<double, double>>();
         }
 
         public static StockBoard DeepCopy(StockBoard source)
@@ -30,14 +30,26 @@ namespace BilayerDesign
             string name = source.Name;
             Species species = source.Species;
             double rtAngle = source.RTAngle;
-            double thickness = source.Thickness;
+            double height = source.Thickness;
             double length = source.Length;
             double width = source.Width;
-            double multiplier = source.Multiplier;
-            StockBoard stockBoard = new StockBoard(name, species, rtAngle, thickness, length, width, multiplier);
-            stockBoard.LengthAvailable = source.LengthAvailable;
+            Dictionary<string, object> attributes = source.Attributes;
+            StockBoard stockBoard = new StockBoard(name, species, rtAngle, height, length, width, attributes);
             stockBoard.DesignBoards = source.DesignBoards;
             return stockBoard;
+        }
+
+        public double LengthAvailable
+        {
+            get
+            {
+                double total = 0;
+                for(int i = 0; i < DesignBoards.Count; i++)
+                {
+                    total += DesignBoards[i].Length;
+                }
+                return Length - total;
+            }
         }
     }
 }

@@ -6,42 +6,84 @@ namespace BilayerDesign
 {
     public class StockPile
     {
-        public Species Species;
-        public List<StockBoard> Boards;
-        public List<double> MoistureChanges;
-        public List<double> Multipliers;
-        public int BoardCount;
-        Species PassiveSpecies;
-        double PassiveThickness;
+        public PredictionEngine PredictionEngine { get; set; }
+        public Dictionary<Species, List<StockBoard>> StockDictionary { get; set; }
+        public List<Panel> Panels { get; set; }
+        public List<StockBoard> StockBoards { get; set; }
+        public List<double> MoistureChanges { get; set; }
+        public double MaxRadius { get; set; }
+        public double MinRadius { get; set; }
 
-        public StockPile(Species material, List<StockBoard> boards, List<double> moistureChanges, List<double> multipliers, Species passiveSpecies, double passiveThickness)
+        public StockPile(List<Panel> panels, List<StockBoard> stockBoards, List<double> moistureChanges, PredictionEngine predictionBase)
         {
-            Species = material;
-            Boards = boards;
-            BoardCount = boards.Count;
+            Panels = panels;
+
+            for (int i = 0; i < Panels.Count; i++)
+            {
+                Panels[i].ID = i;
+            }
+
+            StockBoards = stockBoards;
             MoistureChanges = moistureChanges;
-            Multipliers = multipliers;
-            PassiveSpecies = passiveSpecies;
-            PassiveThickness = passiveThickness;
+            PredictionEngine = predictionBase;
+            StockDictionary = new Dictionary<Species, List<StockBoard>>();
+
+            AnalyzeInputs();
         }
 
         public static StockPile DeepCopy(StockPile source)
         {
-            Species material = source.Species;
-            Species passiveMaterial = source.PassiveSpecies;
-            double passiveThickness = source.PassiveThickness;
+            List<Panel> panels = source.Panels;
 
             List<StockBoard> boards = new List<StockBoard>();
-            List<double> moistures = new List<double>();
-            List<double> multipliers = new List<double>();
+            for(int i = 0; i < source.StockBoards.Count; i++)
+            {
+                boards.Add(StockBoard.DeepCopy(source.StockBoards[i]));
+            }
 
-            foreach(StockBoard board in source.Boards) boards.Add(StockBoard.DeepCopy(board));
-            foreach (double moisture in source.MoistureChanges) moistures.Add(moisture);
-            foreach (double multiplier in source.Multipliers) multipliers.Add(multiplier);
-
-            return new StockPile(material, boards, moistures, multipliers,passiveMaterial,passiveThickness);
+            List<double> moistureChanges = source.MoistureChanges;
+            PredictionEngine predictionEngine = source.PredictionEngine;
+            
+            StockPile newSP = new StockPile(panels,boards, moistureChanges, predictionEngine);
+            newSP.MinRadius = source.MinRadius;
+            newSP.MaxRadius = source.MaxRadius;
+            return newSP;
         }
 
-        
+        public void AnalyzeInputs()
+        {
+            MaxRadius = double.MinValue;
+            MinRadius = double.MaxValue;
+
+            for (int s = 0; s < StockBoards.Count; s++)
+            {
+                StockBoards[s].PotentialRadii.Clear();
+                if (!StockDictionary.ContainsKey(StockBoards[s].Species)) StockDictionary.Add(StockBoards[s].Species, new List<StockBoard>());
+                StockDictionary[StockBoards[s].Species].Add(StockBoards[s]);
+
+                for (int p = 0; p <  Panels.Count; p++)
+                {
+                    for(int bi = 0; bi < Panels[p].Bilayers.Count; bi++)
+                    {
+                        StockBoards[s].PotentialRadii.Add(Panels[p].Bilayers[bi], new  Dictionary<double, double>());
+                        for (int m = 0; m < MoistureChanges.Count; m++)
+                        {
+                            double potentialRadius = PredictionEngine.Predict(StockBoards[s], Panels[p].Bilayers[bi], MoistureChanges[m]);
+                            StockBoards[s].PotentialRadii[Panels[p].Bilayers[bi]].Add(MoistureChanges[m], potentialRadius);
+
+                            if(potentialRadius > MaxRadius) MaxRadius = potentialRadius;
+                            if(potentialRadius < MinRadius) MinRadius = potentialRadius;
+                        }
+                    }
+                }
+            }
+        }
+
+        public static double Remap(double val, double from1, double to1, double from2, double to2)
+        {
+            return (val - from1) / (to1 - from1) * (to2 - from2) + from2;
+        }
     }
+
+
 }
